@@ -26,7 +26,7 @@
                 <option value="">-- Select Academic Year --</option>
                 <?php foreach ($academicYears as $ay): ?>
                     <option value="<?= $ay['id'] ?>" <?= ($academicYearId == $ay['id']) ? 'selected' : '' ?>>
-                        <?= e($ay['name']) ?> (<?= e($ay['year_code']) ?>)
+                        <?= e($ay['name']) ?>
                     </option>
                 <?php endforeach; ?>
             </select>

@@ -148,8 +148,17 @@ class AttendanceService
             'total_absent'    => (int) $row['total_absent'],
             'total_late'      => (int) $row['total_late'],
             'total_holiday'   => (int) $row['total_holiday'],
-            'percentage'      => $percentage
+            'percentage'      => $percentage,
+            'overall_pct'     => $percentage,
         ];
+    }
+
+    /**
+     * Alias for getStudentSummary.
+     */
+    public function getStudentOverallSummary(int $studentId): array
+    {
+        return $this->getStudentSummary($studentId);
     }
 
     /**

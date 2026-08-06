@@ -21,8 +21,8 @@ class AdmitCardService
     public function checkEligibility(int $studentId, int $academicYearId, int $semesterId): array
     {
         // 1. Calculate Attendance Percentage
-        $summary = $this->attendanceService->getStudentOverallSummary($studentId);
-        $attendancePct = (float) ($summary['overall_pct'] ?? 100.0);
+        $summary = $this->attendanceService->getStudentSummary($studentId);
+        $attendancePct = (float) ($summary['percentage'] ?? 100.0);
 
         // If no attendance records exist yet, treat as 100% for fresh semesters
         if (($summary['total_conducted'] ?? 0) === 0) {
