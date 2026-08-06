@@ -107,8 +107,8 @@ class AttendanceService
         }
 
         // Fallback: search student by matching email or username
-        $stmt = db()->prepare('SELECT id FROM students WHERE email = (SELECT email FROM users WHERE id = :id) OR roll_number = (SELECT username FROM users WHERE id = :id) LIMIT 1');
-        $stmt->execute([':id' => $userId]);
+        $stmt = db()->prepare('SELECT id FROM students WHERE email = (SELECT email FROM users WHERE id = :id1) OR roll_number = (SELECT username FROM users WHERE id = :id2) LIMIT 1');
+        $stmt->execute([':id1' => $userId, ':id2' => $userId]);
         $val = $stmt->fetchColumn();
 
         return $val ? (int) $val : null;
