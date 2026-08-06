@@ -1,20 +1,27 @@
 <?php if (!empty($error)): ?>
-    <div class="alert alert-danger"><?= e($error) ?></div>
+    <div class="alert alert-danger" style="margin-bottom: 1.5rem;"><?= e($error) ?></div>
 <?php endif; ?>
 
 <?php if (!empty($success)): ?>
-    <div class="alert alert-success"><?= e($success) ?></div>
+    <div class="alert alert-success" style="margin-bottom: 1.5rem;"><?= e($success) ?></div>
 <?php endif; ?>
 
-<div class="panel">
-    <div class="panel-header">
-        <h2 class="panel-title">Internal Marks Entry</h2>
+<div class="card" style="width: 100%;">
+    <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem;">
+        <div>
+            <h2 style="font-size: 1.25rem; font-weight: 800; color: var(--text-primary); margin: 0; display: flex; align-items: center; gap: 0.5rem;">
+                <span>📝</span> Internal Assessment (CIA) Marks Entry
+            </h2>
+            <div style="font-size: 0.8125rem; color: var(--text-secondary); margin-top: 0.25rem;">
+                Enter mid-term, assignment, or continuous internal assessment marks
+            </div>
+        </div>
     </div>
 
-    <!-- Selector Bar -->
-    <form method="GET" action="/marks/internal" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; align-items: end; margin-bottom: 1.5rem;">
+    <!-- Selector Bar — Full Width Grid -->
+    <form method="GET" action="/marks/internal" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; align-items: end; background: var(--bg-main); padding: 1.25rem; border-radius: 10px; border: 1px solid var(--border-color); width: 100%;">
         <div>
-            <label class="form-label">Academic Year *</label>
+            <label class="form-label">Academic Session *</label>
             <select name="academic_year_id" class="form-control" required>
                 <?php foreach ($academicYears as $ay): ?>
                     <option value="<?= $ay['id'] ?>" <?= (int)$ay['id'] === $academicYearId || ((int)$ay['is_current'] === 1 && $academicYearId === 0) ? 'selected' : '' ?>>
@@ -29,8 +36,12 @@
             <select name="section_id" class="form-control" required>
                 <option value="">-- Select Section --</option>
                 <?php foreach ($sections as $sec): ?>
+                    <?php 
+                        $secName = $sec['name'] ?? '';
+                        $cleanSec = (strpos(strtolower($secName), 'section') !== false) ? $secName : 'Section ' . $secName;
+                    ?>
                     <option value="<?= $sec['id'] ?>" <?= $sectionId == $sec['id'] ? 'selected' : '' ?>>
-                        <?= e($sec['course_code']) ?> Sem <?= e($sec['semester_number']) ?> (Sec <?= e($sec['name']) ?>)
+                        <?= e($sec['course_code']) ?> Sem <?= e($sec['semester_number']) ?> (<?= e($cleanSec) ?>)
                     </option>
                 <?php endforeach; ?>
             </select>
@@ -60,20 +71,22 @@
         </div>
 
         <div>
-            <button type="submit" class="btn-primary" style="width: 100%; margin-top: 0;">Load Roster</button>
+            <button type="submit" class="btn-primary" style="width: 100%; margin-top: 0;">Load Marks Roster</button>
         </div>
     </form>
 </div>
 
 <?php if ($sectionId > 0 && $subjectId > 0): ?>
-    <div class="panel">
-        <div class="panel-header">
-            <h2 class="panel-title">Enter Internal Marks</h2>
-            <span class="badge badge-info">Exam: <?= strtoupper(e($examType)) ?></span>
+    <div class="card" style="width: 100%;">
+        <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem;">
+            <h2 style="font-size: 1.125rem; font-weight: 700; color: var(--text-primary); margin: 0; display: flex; align-items: center; gap: 0.5rem;">
+                <span>📋</span> Enter Student Marks & Grade Log
+            </h2>
+            <span class="badge badge-info" style="font-weight: 700; text-transform: uppercase;">Exam: <?= strtoupper(e($examType)) ?></span>
         </div>
 
         <?php if (empty($students)): ?>
-            <p style="color: var(--text-secondary); font-size: 0.875rem;">No active students enrolled in this section.</p>
+            <p style="color: var(--text-secondary); font-size: 0.875rem; margin: 0; padding: 1rem 0;">No active students enrolled in this section.</p>
         <?php else: ?>
             <form method="POST" action="/marks/internal">
                 <?= csrf_field() ?>
@@ -82,34 +95,36 @@
                 <input type="hidden" name="academic_year_id" value="<?= $academicYearId ?>">
                 <input type="hidden" name="exam_type" value="<?= e($examType) ?>">
 
-                <div style="margin-bottom: 1rem; width: 200px;">
-                    <label class="form-label">Max Marks</label>
+                <div style="margin-bottom: 1.25rem; width: 220px;">
+                    <label class="form-label">Maximum Assessment Marks</label>
                     <input type="number" name="max_marks" class="form-control" value="25" min="5" max="100">
                 </div>
 
-                <table style="width: 100%; border-collapse: collapse; font-size: 0.875rem;">
-                    <thead>
-                        <tr style="border-bottom: 1px solid var(--border-color); text-align: left;">
-                            <th style="padding: 0.75rem;">Roll No</th>
-                            <th style="padding: 0.75rem;">Student Name</th>
-                            <th style="padding: 0.75rem;">Marks Obtained</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php foreach ($students as $st): ?>
-                            <tr style="border-bottom: 1px solid var(--border-color);">
-                                <td style="padding: 0.75rem; font-weight: 700; color: #a5b4fc;"><?= e($st['roll_number']) ?></td>
-                                <td style="padding: 0.75rem; font-weight: 600;"><?= e($st['first_name'] . ' ' . $st['last_name']) ?></td>
-                                <td style="padding: 0.75rem;">
-                                    <input type="number" step="0.5" name="marks[<?= $st['id'] ?>]" class="form-control" style="width: 120px;" placeholder="0.0" min="0" max="100">
-                                </td>
+                <div style="overflow-x: auto; width: 100%;">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Roll Number</th>
+                                <th>Student Name</th>
+                                <th style="text-align: right;">Marks Obtained</th>
                             </tr>
-                        <?php endforeach; ?>
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($students as $st): ?>
+                                <tr>
+                                    <td style="font-weight: 800; color: var(--accent-color);"><?= e($st['roll_number']) ?></td>
+                                    <td style="font-weight: 700; color: var(--text-primary);"><?= e($st['first_name'] . ' ' . $st['last_name']) ?></td>
+                                    <td style="text-align: right;">
+                                        <input type="number" step="0.5" name="marks[<?= $st['id'] ?>]" class="form-control" style="width: 140px; display: inline-block; text-align: right; font-weight: 700;" placeholder="0.0" min="0" max="100">
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
 
-                <div style="margin-top: 1.5rem; text-align: right;">
-                    <button type="submit" class="btn-primary" style="width: auto; padding: 0.75rem 2.5rem;">Save Internal Marks</button>
+                <div style="margin-top: 1.5rem; text-align: right; border-top: 1px solid var(--border-color); padding-top: 1.25rem;">
+                    <button type="submit" class="btn-primary" style="width: auto; padding: 0.875rem 3rem; font-weight: 700;">Save Internal Marks</button>
                 </div>
             </form>
         <?php endif; ?>
