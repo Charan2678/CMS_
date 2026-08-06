@@ -32,10 +32,10 @@ class AdmitCardService
         // 2. Calculate Fee Dues
         $feeStmt = db()->prepare('
             SELECT 
-                COALESCE(SUM(sf.net_amount), 0) AS total_fee,
+                COALESCE(SUM(sf.final_amount), 0) AS total_fee,
                 COALESCE(SUM(p.amount_paid), 0) AS total_paid
             FROM student_fees sf
-            LEFT JOIN payments p ON p.student_fee_id = sf.id AND p.status = "success"
+            LEFT JOIN payments p ON p.student_fee_id = sf.id
             WHERE sf.student_id = :student_id
         ');
         $feeStmt->execute([':student_id' => $studentId]);
