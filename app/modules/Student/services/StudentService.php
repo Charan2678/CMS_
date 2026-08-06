@@ -196,13 +196,25 @@ class StudentService
                 }
 
                 foreach ($uploadedFiles['documents']['name'] as $idx => $name) {
-                    if (!empty($name) && $uploadedFiles['documents']['error'][$idx] === UPLOAD_ERR_OK) {
-                        $tmpName = $uploadedFiles['documents']['tmp_name'][$idx];
+                    if (!empty($name)) {
+                        $singleFile = [
+                            'name'     => $name,
+                            'type'     => $uploadedFiles['documents']['type'][$idx] ?? '',
+                            'tmp_name' => $uploadedFiles['documents']['tmp_name'][$idx] ?? '',
+                            'error'    => $uploadedFiles['documents']['error'][$idx] ?? UPLOAD_ERR_NO_FILE,
+                            'size'     => $uploadedFiles['documents']['size'][$idx] ?? 0,
+                        ];
+
+                        $val = validate_upload($singleFile);
+                        if (!$val['ok']) {
+                            continue; // Skip invalid or unsafe upload files
+                        }
+
                         $ext     = pathinfo($name, PATHINFO_EXTENSION);
                         $newName = 'doc_' . $studentId . '_' . time() . '_' . $idx . '.' . $ext;
                         $dest    = $uploadDir . '/' . $newName;
 
-                        if (move_uploaded_file($tmpName, $dest)) {
+                        if (move_uploaded_file($singleFile['tmp_name'], $dest)) {
                             $docStmt = db()->prepare('
                                 INSERT INTO student_documents (
                                     student_id, document_type, document_name, file_path, uploaded_by, verified, created_at
@@ -346,8 +358,9 @@ class StudentService
      */
     public function uploadStudentDocument(int $studentId, string $docType, string $docName, array $file): array
     {
-        if (empty($file['name']) || $file['error'] !== UPLOAD_ERR_OK) {
-            return ['success' => false, 'message' => 'Please select a valid document file to upload.'];
+        $val = validate_upload($file);
+        if (!$val['ok']) {
+            return ['success' => false, 'message' => 'Upload failed: ' . $val['error']];
         }
 
         $targetDir = BASE_PATH . '/public/uploads/students';
@@ -390,17 +403,12 @@ class StudentService
      */
     public function uploadProfilePhoto(int $studentId, array $file): array
     {
-        if (empty($file['name']) || $file['error'] !== UPLOAD_ERR_OK) {
-            return ['success' => false, 'message' => 'Please select a valid image file to upload.'];
+        $val = validate_upload($file);
+        if (!$val['ok']) {
+            return ['success' => false, 'message' => 'Profile photo upload failed: ' . $val['error']];
         }
 
-        $allowedExts = ['jpg', 'jpeg', 'png', 'webp', 'gif'];
         $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
-
-        if (!in_array($ext, $allowedExts, true)) {
-            return ['success' => false, 'message' => 'Invalid image format. Allowed: JPG, PNG, WEBP, GIF.'];
-        }
-
         $targetDir = BASE_PATH . '/public/uploads/profile_photos';
         if (!is_dir($targetDir)) {
             mkdir($targetDir, 0755, true);
