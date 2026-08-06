@@ -2,7 +2,7 @@
     <div class="alert alert-success" style="margin-bottom: 1.5rem;"><?= e($success) ?></div>
 <?php endif; ?>
 
-<div class="card">
+<div class="card" style="width: 100%;">
     <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem;">
         <div>
             <h2 style="font-size: 1.25rem; font-weight: 800; color: var(--text-primary); margin: 0; display: flex; align-items: center; gap: 0.5rem;">
@@ -18,8 +18,8 @@
         </a>
     </div>
 
-    <!-- Filters & Search Bar -->
-    <form method="GET" action="/students" style="margin-bottom: 1.5rem; display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; align-items: end; background: var(--bg-main); padding: 1.25rem; border-radius: 10px; border: 1px solid var(--border-color);">
+    <!-- Filters & Search Bar — Full Width Grid -->
+    <form method="GET" action="/students" style="margin-bottom: 1.5rem; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; align-items: end; background: var(--bg-main); padding: 1.25rem; border-radius: 10px; border: 1px solid var(--border-color); width: 100%;">
         <div>
             <label class="form-label">Search Query</label>
             <input type="text" name="search" class="form-control" placeholder="Name, Roll No, Email..." value="<?= e($filters['search']) ?>">
@@ -60,8 +60,8 @@
         </div>
     </form>
 
-    <!-- Student Table -->
-    <div style="overflow-x: auto;">
+    <!-- Student Table — Full Width -->
+    <div style="overflow-x: auto; width: 100%;">
         <table class="table">
             <thead>
                 <tr>
@@ -71,7 +71,7 @@
                     <th>Course & Sem</th>
                     <th>Section</th>
                     <th>Status</th>
-                    <th>Action</th>
+                    <th style="text-align: right;">Action</th>
                 </tr>
             </thead>
             <tbody>
@@ -81,12 +81,16 @@
                     </tr>
                 <?php else: ?>
                     <?php foreach ($students as $std): ?>
+                        <?php 
+                            $secName = $std['section_name'] ?? 'A';
+                            $cleanSec = (strpos(strtolower($secName), 'section') !== false) ? $secName : 'Section ' . $secName;
+                        ?>
                         <tr>
                             <td style="font-weight: 800; color: var(--accent-color);"><?= e($std['roll_number']) ?></td>
                             <td style="font-weight: 700; color: var(--text-primary);"><?= e($std['first_name'] . ' ' . $std['last_name']) ?></td>
                             <td style="color: var(--text-secondary);"><?= e($std['department_code'] ?? 'N/A') ?></td>
                             <td style="color: var(--text-secondary);"><?= e($std['course_code'] ?? 'N/A') ?> (Sem <?= e($std['semester_number'] ?? '1') ?>)</td>
-                            <td style="font-weight: 600;">Sec <?= e($std['section_name'] ?? 'A') ?></td>
+                            <td style="font-weight: 600;"><?= e($cleanSec) ?></td>
                             <td>
                                 <?php if ($std['status'] === 'active'): ?>
                                     <span class="badge badge-success">Active</span>
@@ -96,8 +100,8 @@
                                     <span class="badge badge-danger"><?= e($std['status']) ?></span>
                                 <?php endif; ?>
                             </td>
-                            <td>
-                                <a href="/students/<?= $std['id'] ?>" class="btn-primary" style="padding: 0.35rem 0.75rem; font-size: 0.75rem; border-radius: 6px; text-decoration: none; display: inline-block;">View 360° Profile &rarr;</a>
+                            <td style="text-align: right;">
+                                <a href="/students/<?= $std['id'] ?>" class="btn-primary" style="padding: 0.35rem 0.875rem; font-size: 0.75rem; border-radius: 6px; text-decoration: none; display: inline-block;">View 360° Profile &rarr;</a>
                             </td>
                         </tr>
                     <?php endforeach; ?>

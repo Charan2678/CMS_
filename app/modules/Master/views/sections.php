@@ -6,7 +6,7 @@
     <div class="alert alert-success" style="margin-bottom: 1.5rem;"><?= e($success) ?></div>
 <?php endif; ?>
 
-<div style="display: grid; grid-template-columns: 1fr 2fr; gap: 1.5rem;">
+<div style="display: grid; grid-template-columns: 1fr 2fr; gap: 1.5rem; width: 100%;">
     <!-- Create Section Panel -->
     <div class="card">
         <h2 style="font-size: 1.125rem; font-weight: 700; color: var(--text-primary); margin-top: 0; margin-bottom: 1.25rem; display: flex; align-items: center; gap: 0.5rem;">
@@ -58,7 +58,7 @@
             <span>📑</span> Academic Sections & Batches Directory
         </h2>
 
-        <div style="overflow-x: auto;">
+        <div style="overflow-x: auto; width: 100%;">
             <table class="table">
                 <thead>
                     <tr>
@@ -76,11 +76,15 @@
                         </tr>
                     <?php else: ?>
                         <?php foreach ($sections as $sec): ?>
+                            <?php 
+                                $secName = $sec['name'] ?? '';
+                                $cleanSec = (strpos(strtolower($secName), 'section') !== false) ? $secName : 'Section ' . $secName;
+                            ?>
                             <tr>
                                 <td style="color: var(--text-secondary);"><?= e($sec['academic_year_name']) ?></td>
                                 <td style="font-weight: 700; color: var(--accent-color);"><?= e($sec['course_code']) ?></td>
                                 <td style="font-weight: 600;">Sem <?= e($sec['semester_number']) ?></td>
-                                <td style="font-weight: 800; color: var(--text-primary);">Section <?= e($sec['name']) ?></td>
+                                <td style="font-weight: 800; color: var(--text-primary);"><?= e($cleanSec) ?></td>
                                 <td>
                                     <span class="badge badge-info"><?= e($sec['max_strength']) ?> Capacity</span>
                                 </td>

@@ -6,11 +6,11 @@
     <div class="alert alert-success" style="margin-bottom: 1.5rem;"><?= e($success) ?></div>
 <?php endif; ?>
 
-<!-- Institutional Header Banner -->
-<div class="card" style="margin-bottom: 2rem; border-top: 4px solid var(--accent-color);">
-    <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
+<!-- Institutional Header Banner — Full Width -->
+<div class="card" style="margin-bottom: 1.5rem; border-top: 4px solid var(--accent-color); width: 100%;">
+    <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1.5rem;">
         <div style="display: flex; align-items: center; gap: 1.25rem;">
-            <div style="width: 64px; height: 64px; border-radius: 12px; background: rgba(2, 132, 199, 0.12); color: var(--accent-color); display: flex; align-items: center; justify-content: center; font-size: 2rem; font-weight: 700; border: 1px solid var(--border-color);">
+            <div style="width: 64px; height: 64px; border-radius: 14px; background: rgba(2, 132, 199, 0.15); color: var(--accent-color); display: flex; align-items: center; justify-content: center; font-size: 2.25rem; font-weight: 700; border: 1px solid var(--border-color);">
                 🏛️
             </div>
             <div>
@@ -18,23 +18,27 @@
                     <?= e($college['name'] ?? 'Kuppam Engineering College') ?>
                     <span class="badge badge-success" style="font-size: 0.75rem;">Verified Campus</span>
                 </h1>
-                <div style="font-size: 0.875rem; color: var(--text-secondary); margin-top: 0.25rem;">
-                    Code: <strong style="color: var(--accent-color);"><?= e($college['code'] ?? 'KEC') ?></strong> &bull; Affiliated to <?= e($college['affiliation_body'] ?? 'JNTUA University') ?>
+                <div style="font-size: 0.875rem; color: var(--text-secondary); margin-top: 0.35rem;">
+                    Code: <strong style="color: var(--accent-color); font-weight: 800;"><?= e($college['code'] ?? 'KEC') ?></strong> &bull; Affiliated to <?= e($college['affiliation_body'] ?? 'JNTUA University') ?>
                 </div>
             </div>
+        </div>
+        <div>
+            <span class="badge badge-info" style="font-size: 0.8125rem; padding: 0.5rem 1rem;">ESTD 2001 &bull; Autonomous</span>
         </div>
     </div>
 </div>
 
-<div class="card">
+<!-- Main Form Card — Full Width 3-Column Grid -->
+<div class="card" style="width: 100%;">
     <h2 style="font-size: 1.125rem; font-weight: 700; color: var(--text-primary); margin-top: 0; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.5rem;">
-        <span>⚙️</span> Manage Institution Master Profile
+        <span>⚙️</span> Institutional Master Profile & Contact Setup
     </h2>
 
     <form method="POST" action="/master/colleges">
         <?= csrf_field() ?>
 
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.25rem; margin-bottom: 1.5rem;">
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; margin-bottom: 1.5rem;">
             <div class="form-group">
                 <label class="form-label" for="name">Official College Name *</label>
                 <input type="text" id="name" name="name" class="form-control" value="<?= e($college['name'] ?? '') ?>" required>
@@ -70,11 +74,6 @@
                 <input type="text" id="affiliation_number" name="affiliation_number" class="form-control" value="<?= e($college['affiliation_number'] ?? '') ?>">
             </div>
 
-            <div class="form-group" style="grid-column: 1 / -1;">
-                <label class="form-label" for="address">Permanent Campus Address</label>
-                <textarea id="address" name="address" class="form-control" rows="3"><?= e($college['address'] ?? '') ?></textarea>
-            </div>
-
             <div class="form-group">
                 <label class="form-label" for="city">City</label>
                 <input type="text" id="city" name="city" class="form-control" value="<?= e($college['city'] ?? '') ?>">
@@ -89,10 +88,15 @@
                 <label class="form-label" for="pincode">Pincode</label>
                 <input type="text" id="pincode" name="pincode" class="form-control" value="<?= e($college['pincode'] ?? '') ?>">
             </div>
+
+            <div class="form-group" style="grid-column: 1 / -1;">
+                <label class="form-label" for="address">Permanent Campus Address</label>
+                <textarea id="address" name="address" class="form-control" rows="3"><?= e($college['address'] ?? '') ?></textarea>
+            </div>
         </div>
 
         <div style="text-align: right; border-top: 1px solid var(--border-color); padding-top: 1.25rem;">
-            <button type="submit" class="btn-primary" style="width: auto; padding: 0.75rem 2.5rem; font-weight: 700;">Save Institutional Profile</button>
+            <button type="submit" class="btn-primary" style="width: auto; padding: 0.75rem 3rem; font-weight: 700;">Save Institutional Profile</button>
         </div>
     </form>
 </div>

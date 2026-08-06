@@ -6,7 +6,7 @@
     <div class="alert alert-success" style="margin-bottom: 1.5rem;"><?= e($success) ?></div>
 <?php endif; ?>
 
-<div style="display: grid; grid-template-columns: 1fr 2fr; gap: 1.5rem;">
+<div style="display: grid; grid-template-columns: 1fr 2fr; gap: 1.5rem; width: 100%;">
     <!-- Create Academic Year Panel -->
     <div class="card">
         <h2 style="font-size: 1.125rem; font-weight: 700; color: var(--text-primary); margin-top: 0; margin-bottom: 1.25rem; display: flex; align-items: center; gap: 0.5rem;">
@@ -46,14 +46,14 @@
             <span>📅</span> Academic Years Management
         </h2>
 
-        <div style="overflow-x: auto;">
+        <div style="overflow-x: auto; width: 100%;">
             <table class="table">
                 <thead>
                     <tr>
                         <th>Academic Session</th>
                         <th>Duration</th>
                         <th>Status</th>
-                        <th>Action</th>
+                        <th style="text-align: right;">Action</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -75,13 +75,13 @@
                                         <span class="badge badge-info" style="opacity: 0.7;">Archived</span>
                                     <?php endif; ?>
                                 </td>
-                                <td>
+                                <td style="text-align: right;">
                                     <?php if ((int)$ay['is_current'] !== 1): ?>
                                         <form method="POST" action="/master/academic-years" style="display: inline;">
                                             <?= csrf_field() ?>
                                             <input type="hidden" name="_action" value="set_current">
                                             <input type="hidden" name="academic_year_id" value="<?= $ay['id'] ?>">
-                                            <button type="submit" class="btn-primary" style="padding: 0.25rem 0.625rem; font-size: 0.75rem; border-radius: 4px;">Set Active</button>
+                                            <button type="submit" class="btn-primary" style="padding: 0.35rem 0.875rem; font-size: 0.75rem; border-radius: 6px;">Set Active</button>
                                         </form>
                                     <?php else: ?>
                                         <span style="font-size: 0.75rem; color: var(--success); font-weight: 700;">Current</span>

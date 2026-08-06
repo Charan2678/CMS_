@@ -1,65 +1,69 @@
-<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem;">
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; width: 100%;">
     <!-- Department Breakdown -->
-    <div class="panel">
-        <div class="panel-header">
-            <h3 class="panel-title">Enrollment by Department</h3>
-        </div>
+    <div class="card">
+        <h3 style="font-size: 1.125rem; font-weight: 700; color: var(--text-primary); margin-top: 0; margin-bottom: 1.25rem; display: flex; align-items: center; gap: 0.5rem;">
+            <span>🏢</span> Student Enrollment by Department
+        </h3>
 
-        <table style="width: 100%; border-collapse: collapse; font-size: 0.875rem;">
-            <thead>
-                <tr style="border-bottom: 1px solid var(--border-color); text-align: left;">
-                    <th style="padding: 0.75rem;">Department Code</th>
-                    <th style="padding: 0.75rem;">Department Name</th>
-                    <th style="padding: 0.75rem; text-align: right;">Enrolled Students</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php if (empty($departmentEnrollments)): ?>
+        <div style="overflow-x: auto; width: 100%;">
+            <table class="table">
+                <thead>
                     <tr>
-                        <td colspan="3" style="padding: 1rem; text-align: center; color: var(--text-secondary);">No department data available.</td>
+                        <th>Department Code</th>
+                        <th>Department Name</th>
+                        <th style="text-align: right;">Enrolled Students</th>
                     </tr>
-                <?php else: ?>
-                    <?php foreach ($departmentEnrollments as $d): ?>
-                        <tr style="border-bottom: 1px solid var(--border-color);">
-                            <td style="padding: 0.75rem; font-weight: 700; color: #a5b4fc;"><?= e($d['department_code']) ?></td>
-                            <td style="padding: 0.75rem;"><?= e($d['department_name']) ?></td>
-                            <td style="padding: 0.75rem; text-align: right; font-weight: 700; color: #86efac;"><?= number_format((int)$d['student_count']) ?></td>
+                </thead>
+                <tbody>
+                    <?php if (empty($departmentEnrollments)): ?>
+                        <tr>
+                            <td colspan="3" style="padding: 1.5rem; text-align: center; color: var(--text-secondary);">No department data available.</td>
                         </tr>
-                    <?php endforeach; ?>
-                <?php endif; ?>
-            </tbody>
-        </table>
+                    <?php else: ?>
+                        <?php foreach ($departmentEnrollments as $d): ?>
+                            <tr>
+                                <td style="font-weight: 800; color: var(--accent-color);"><?= e($d['department_code']) ?></td>
+                                <td style="font-weight: 600; color: var(--text-primary);"><?= e($d['department_name']) ?></td>
+                                <td style="text-align: right; font-weight: 800; color: var(--success);"><?= number_format((int)$d['student_count']) ?> Students</td>
+                            </tr>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
+                </tbody>
+            </table>
+        </div>
     </div>
 
     <!-- Course Breakdown -->
-    <div class="panel">
-        <div class="panel-header">
-            <h3 class="panel-title">Enrollment by Degree Course</h3>
-        </div>
+    <div class="card">
+        <h3 style="font-size: 1.125rem; font-weight: 700; color: var(--text-primary); margin-top: 0; margin-bottom: 1.25rem; display: flex; align-items: center; gap: 0.5rem;">
+            <span>🎓</span> Student Enrollment by Degree Program
+        </h3>
 
-        <table style="width: 100%; border-collapse: collapse; font-size: 0.875rem;">
-            <thead>
-                <tr style="border-bottom: 1px solid var(--border-color); text-align: left;">
-                    <th style="padding: 0.75rem;">Course Code</th>
-                    <th style="padding: 0.75rem;">Course Name</th>
-                    <th style="padding: 0.75rem; text-align: right;">Enrolled Students</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php if (empty($courseEnrollments)): ?>
+        <div style="overflow-x: auto; width: 100%;">
+            <table class="table">
+                <thead>
                     <tr>
-                        <td colspan="3" style="padding: 1rem; text-align: center; color: var(--text-secondary);">No course data available.</td>
+                        <th>Course Code</th>
+                        <th>Course Name</th>
+                        <th style="text-align: right;">Enrolled Students</th>
                     </tr>
-                <?php else: ?>
-                    <?php foreach ($courseEnrollments as $c): ?>
-                        <tr style="border-bottom: 1px solid var(--border-color);">
-                            <td style="padding: 0.75rem; font-weight: 700; color: #a5b4fc;"><?= e($c['course_code']) ?></td>
-                            <td style="padding: 0.75rem;"><?= e($c['course_name']) ?></td>
-                            <td style="padding: 0.75rem; text-align: right; font-weight: 700; color: #86efac;"><?= number_format((int)$c['student_count']) ?></td>
+                </thead>
+                <tbody>
+                    <?php if (empty($courseEnrollments)): ?>
+                        <tr>
+                            <td colspan="3" style="padding: 1.5rem; text-align: center; color: var(--text-secondary);">No course data available.</td>
                         </tr>
-                    <?php endforeach; ?>
-                <?php endif; ?>
-            </tbody>
-        </table>
+                    <?php else: ?>
+                        <?php foreach ($courseEnrollments as $c): ?>
+                            <tr>
+                                <td style="font-weight: 800; color: var(--accent-color);"><?= e($c['course_code']) ?></td>
+                                <td style="font-weight: 600; color: var(--text-primary);"><?= e($c['course_name']) ?></td>
+                                <td style="text-align: right; font-weight: 800; color: var(--success);"><?= number_format((int)$c['student_count']) ?> Students</td>
+                            </tr>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
