@@ -32,17 +32,47 @@ class DashboardController extends Controller
         // System-wide metric counts
         $studentCount = (int) db()->query("SELECT COUNT(*) FROM students WHERE status = 'active'")->fetchColumn();
         $facultyCount = (int) db()->query("SELECT COUNT(*) FROM faculty WHERE status = 'active'")->fetchColumn();
+        $staffCount   = (int) db()->query("SELECT COUNT(*) FROM staff WHERE status = 'active'")->fetchColumn();
         $deptCount    = (int) db()->query("SELECT COUNT(*) FROM departments WHERE status = 1")->fetchColumn();
         $courseCount  = (int) db()->query("SELECT COUNT(*) FROM courses WHERE status = 1")->fetchColumn();
+
+        // Total Financial Collections
+        $totalFeeCollected = (float) db()->query("SELECT COALESCE(SUM(amount_paid), 0) FROM fee_payments")->fetchColumn();
+
+        // Announcements Feed
+        $notificationService = new NotificationService();
+        $announcements       = $notificationService->getAnnouncements(1);
+
+        // Audit Logs (for admin/super_admin)
+        $auditLogs = [];
+        if (in_array($role, ['super_admin', 'admin'])) {
+            $stmt = db()->query("
+                SELECT al.*, u.username 
+                FROM audit_logs al 
+                LEFT JOIN users u ON u.id = al.user_id 
+                ORDER BY al.id DESC 
+                LIMIT 5
+            ");
+            $auditLogs = $stmt ? ($stmt->fetchAll() ?: []) : [];
+        }
+
+        // Department-wise distribution
+        $deptStats = db()->query("
+            SELECT d.name, d.code, COUNT(s.id) AS student_count
+            FROM departments d
+            LEFT JOIN student_academics sa ON sa.department_id = d.id AND sa.is_current = 1
+            LEFT JOIN students s ON s.id = sa.student_id AND s.status = 'active'
+            WHERE d.status = 1
+            GROUP BY d.id
+        ")->fetchAll() ?: [];
 
         // Real-time Student Metrics
         $studentData = [];
         if ($role === 'student' && $userId) {
-            $attendanceService   = new AttendanceService();
-            $feeService          = new FeeService();
-            $resultService       = new ResultService();
-            $notificationService = new NotificationService();
-            $canteenService      = new CanteenService();
+            $attendanceService = new AttendanceService();
+            $feeService        = new FeeService();
+            $resultService     = new ResultService();
+            $canteenService    = new CanteenService();
 
             $studentId = $attendanceService->getStudentIdFromUser($userId);
 
@@ -58,7 +88,6 @@ class DashboardController extends Controller
                 $allResults = [];
             }
 
-            $announcements = $notificationService->getAnnouncements(1);
             $canteenOrders = $canteenService->getUserOrders($userId);
 
             $studentData = [
@@ -73,12 +102,17 @@ class DashboardController extends Controller
         }
 
         $this->render('Dashboard/views/index', [
-            'title'        => 'Overview Dashboard',
-            'studentCount' => $studentCount,
-            'facultyCount' => $facultyCount,
-            'deptCount'    => $deptCount,
-            'courseCount'  => $courseCount,
-            'studentData'  => $studentData,
+            'title'             => 'Overview Dashboard',
+            'studentCount'      => $studentCount,
+            'facultyCount'      => $facultyCount,
+            'staffCount'        => $staffCount,
+            'deptCount'         => $deptCount,
+            'courseCount'       => $courseCount,
+            'totalFeeCollected' => $totalFeeCollected,
+            'announcements'     => $announcements,
+            'auditLogs'         => $auditLogs,
+            'deptStats'         => $deptStats,
+            'studentData'       => $studentData,
         ], 'layout');
     }
 }

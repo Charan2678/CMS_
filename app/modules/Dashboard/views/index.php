@@ -3,9 +3,7 @@ $role = auth_role();
 $sData = $studentData ?? [];
 $att = $sData['attendance'] ?? ['percentage' => 0, 'total_conducted' => 0, 'total_present' => 0, 'total_absent' => 0];
 $fee = $sData['fee'] ?? ['total_payable' => 0, 'total_paid' => 0, 'balance_due' => 0];
-$announcements = $sData['announcements'] ?? [];
-$timetable = $sData['timetable'] ?? [];
-$allResults = $sData['all_results'] ?? [];
+$ancList = $announcements ?? [];
 $canteenOrders = $sData['canteen'] ?? [];
 
 $attPercentage = (float) ($att['percentage'] ?? 0);
@@ -13,43 +11,51 @@ $isShortage = $attPercentage < 75.0;
 $feeBalance = (float) ($fee['balance_due'] ?? 0);
 ?>
 
-<!-- Metric Summary Cards -->
-<div class="grid-metrics" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.25rem; margin-bottom: 1.5rem;">
-    <?php if (in_array($role, ['super_admin', 'admin', 'hod'])): ?>
-        <div class="metric-card">
+<!-- Metric Summary Cards — Full Width Grid -->
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.25rem; margin-bottom: 2rem; width: 100%;">
+    <?php if (in_array($role, ['super_admin', 'admin', 'hod', 'staff', 'accounts_staff'])): ?>
+        <!-- Card 1: Active Enrolled Students -->
+        <div class="metric-card" style="border-left: 4px solid var(--accent-color) !important;">
             <div>
-                <div class="metric-label">Active Students</div>
+                <div class="metric-label">Active Enrolled Students</div>
                 <div class="metric-value"><?= number_format($studentCount ?? 0) ?></div>
+                <div style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.25rem;">Across all semesters</div>
             </div>
-            <div class="metric-icon">👨‍🎓</div>
+            <div class="metric-icon" style="font-size: 2rem;">👨‍🎓</div>
         </div>
 
-        <div class="metric-card">
+        <!-- Card 2: Faculty & Staff -->
+        <div class="metric-card" style="border-left: 4px solid var(--success) !important;">
             <div>
-                <div class="metric-label">Active Faculty</div>
-                <div class="metric-value"><?= number_format($facultyCount ?? 0) ?></div>
+                <div class="metric-label">Active Faculty & Staff</div>
+                <div class="metric-value"><?= number_format(($facultyCount ?? 0) + ($staffCount ?? 0)) ?></div>
+                <div style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.25rem;"><?= number_format($facultyCount ?? 0) ?> Teaching &bull; <?= number_format($staffCount ?? 0) ?> Non-Teaching</div>
             </div>
-            <div class="metric-icon">👨‍🏫</div>
+            <div class="metric-icon" style="font-size: 2rem;">👨‍🏫</div>
         </div>
 
-        <div class="metric-card">
+        <!-- Card 3: Academic Departments -->
+        <div class="metric-card" style="border-left: 4px solid var(--warning) !important;">
             <div>
-                <div class="metric-label">Departments</div>
+                <div class="metric-label">Departments & Courses</div>
                 <div class="metric-value"><?= number_format($deptCount ?? 0) ?></div>
+                <div style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.25rem;"><?= number_format($courseCount ?? 0) ?> Degree Programs</div>
             </div>
-            <div class="metric-icon">🏢</div>
+            <div class="metric-icon" style="font-size: 2rem;">🏢</div>
         </div>
 
-        <div class="metric-card">
+        <!-- Card 4: Fee Collections YTD -->
+        <div class="metric-card" style="border-left: 4px solid #8b5cf6 !important;">
             <div>
-                <div class="metric-label">Active Courses</div>
-                <div class="metric-value"><?= number_format($courseCount ?? 0) ?></div>
+                <div class="metric-label">Fee Collections YTD</div>
+                <div class="metric-value" style="color: var(--success); font-size: 1.5rem;">₹<?= number_format($totalFeeCollected ?? 0, 2) ?></div>
+                <div style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.25rem;">Total Fee Revenue</div>
             </div>
-            <div class="metric-icon">🎓</div>
+            <div class="metric-icon" style="font-size: 2rem;">💳</div>
         </div>
 
     <?php elseif ($role === 'student'): ?>
-        <!-- Real-Time Attendance Card with Red Shortage / Green Safe Indicator -->
+        <!-- Real-Time Attendance Card -->
         <div class="metric-card" style="border-left: 4px solid <?= $isShortage ? 'var(--danger)' : 'var(--success)' ?> !important;">
             <div>
                 <div class="metric-label">Overall Attendance</div>
@@ -58,20 +64,16 @@ $feeBalance = (float) ($fee['balance_due'] ?? 0);
                 </div>
                 <div style="margin-top: 0.35rem;">
                     <?php if ($isShortage): ?>
-                        <span class="badge badge-danger">
-                            ⚠️ Shortage Alert (&lt;75%)
-                        </span>
+                        <span class="badge badge-danger">⚠️ Shortage Alert (&lt;75%)</span>
                     <?php else: ?>
-                        <span class="badge badge-success">
-                            ✅ Safe Standing (&ge;75%)
-                        </span>
+                        <span class="badge badge-success">✅ Safe Standing (&ge;75%)</span>
                     <?php endif; ?>
                 </div>
             </div>
             <div class="metric-icon" style="font-size: 2rem;"><?= $isShortage ? '🚨' : '🛡️' ?></div>
         </div>
 
-        <!-- Real-Time Fee Clearance / Dues Card -->
+        <!-- Real-Time Fee Clearance Card -->
         <div class="metric-card" style="border-left: 4px solid <?= $feeBalance > 0 ? 'var(--warning)' : 'var(--success)' ?> !important;">
             <div>
                 <div class="metric-label">Fee Dues & Clearance</div>
@@ -80,13 +82,9 @@ $feeBalance = (float) ($fee['balance_due'] ?? 0);
                 </div>
                 <div style="margin-top: 0.35rem;">
                     <?php if ($feeBalance > 0): ?>
-                        <span class="badge badge-warning">
-                            💳 Dues Pending
-                        </span>
+                        <span class="badge badge-warning">💳 Dues Pending</span>
                     <?php else: ?>
-                        <span class="badge badge-success">
-                            ✨ Fully Cleared
-                        </span>
+                        <span class="badge badge-success">✨ Fully Cleared</span>
                     <?php endif; ?>
                 </div>
             </div>
@@ -94,23 +92,21 @@ $feeBalance = (float) ($fee['balance_due'] ?? 0);
         </div>
 
         <!-- Active Semester & CGPA Card -->
-        <div class="metric-card">
+        <div class="metric-card" style="border-left: 4px solid var(--accent-color) !important;">
             <div>
                 <div class="metric-label">Academic Standing</div>
                 <div class="metric-value" style="font-size: 1.5rem;">
                     Sem 5 <span style="font-size: 0.9375rem; color: var(--text-secondary);">(CGPA 8.45)</span>
                 </div>
                 <div style="margin-top: 0.35rem;">
-                    <span class="badge badge-info">
-                        🎓 B.Tech CSE
-                    </span>
+                    <span class="badge badge-info">🎓 B.Tech CSE</span>
                 </div>
             </div>
             <div class="metric-icon" style="font-size: 2rem;">🏆</div>
         </div>
 
         <!-- Active Canteen Token Status -->
-        <div class="metric-card">
+        <div class="metric-card" style="border-left: 4px solid var(--warning) !important;">
             <div>
                 <div class="metric-label">Canteen Active Token</div>
                 <?php if (!empty($canteenOrders)): ?>
@@ -136,7 +132,7 @@ $feeBalance = (float) ($fee['balance_due'] ?? 0);
 </div>
 
 <?php if ($role === 'student'): ?>
-<!-- Real-Time Student Dashboard Grid -->
+<!-- Student Dashboard Main Grid -->
 <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem; margin-bottom: 2rem;">
     <!-- Active Announcements Board -->
     <div class="card">
@@ -147,11 +143,11 @@ $feeBalance = (float) ($fee['balance_due'] ?? 0);
             <a href="/announcements" style="font-size: 0.8125rem; color: var(--accent-color); text-decoration: none; font-weight: 600;">View All &rarr;</a>
         </div>
 
-        <?php if (empty($announcements)): ?>
+        <?php if (empty($ancList)): ?>
             <p style="color: var(--text-secondary); font-size: 0.875rem; margin: 0;">No active campus announcements currently.</p>
         <?php else: ?>
             <div style="display: flex; flex-direction: column; gap: 1rem;">
-                <?php foreach (array_slice($announcements, 0, 3) as $anc): ?>
+                <?php foreach (array_slice($ancList, 0, 3) as $anc): ?>
                     <div style="background: var(--bg-main); padding: 1rem 1.25rem; border-radius: 8px; border: 1px solid var(--border-color);">
                         <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.35rem;">
                             <h3 style="font-size: 0.9375rem; font-weight: 700; color: var(--text-primary); margin: 0;"><?= e($anc['title']) ?></h3>
@@ -206,70 +202,130 @@ $feeBalance = (float) ($fee['balance_due'] ?? 0);
         </div>
     </div>
 </div>
+
 <?php else: ?>
 
-<!-- Quick Action Shortcuts for Non-Students -->
-<div class="panel">
-    <div class="panel-header">
-        <h2 class="panel-title">
-            <?php if ($role === 'faculty'): ?>
-                Faculty Portal Shortcuts
-            <?php elseif ($role === 'staff'): ?>
-                Staff Operations Portal
+<!-- Executive Admin & Staff Command Dashboard Grid -->
+<div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem; margin-bottom: 2rem;">
+    <!-- Left Column: Operations & Department Stats -->
+    <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+        <!-- Quick Action Shortcuts -->
+        <div class="card">
+            <h2 style="font-size: 1.125rem; font-weight: 700; color: var(--text-primary); margin-top: 0; margin-bottom: 1.25rem; display: flex; align-items: center; gap: 0.5rem;">
+                <span>⚡</span> Operational Shortcuts & Quick Actions
+            </h2>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem;">
+                <?php if (in_array($role, ['super_admin', 'admin', 'hod'])): ?>
+                    <a href="/students/admission" style="background: rgba(2, 132, 199, 0.1); border: 1px solid var(--border-color); padding: 1rem; border-radius: 0.5rem; text-decoration: none; display: flex; align-items: center; gap: 0.75rem; color: var(--text-primary); font-weight: 600; font-size: 0.875rem;">
+                        <span style="font-size: 1.25rem;">➕</span> Admit Student
+                    </a>
+                    <a href="/attendance" style="background: rgba(16, 185, 129, 0.1); border: 1px solid var(--border-color); padding: 1rem; border-radius: 0.5rem; text-decoration: none; display: flex; align-items: center; gap: 0.75rem; color: var(--text-primary); font-weight: 600; font-size: 0.875rem;">
+                        <span style="font-size: 1.25rem;">✅</span> Attendance Roster
+                    </a>
+                    <a href="/fee/payments" style="background: rgba(245, 158, 11, 0.1); border: 1px solid var(--border-color); padding: 1rem; border-radius: 0.5rem; text-decoration: none; display: flex; align-items: center; gap: 0.75rem; color: var(--text-primary); font-weight: 600; font-size: 0.875rem;">
+                        <span style="font-size: 1.25rem;">💳</span> Collect Fees
+                    </a>
+                    <a href="/results" style="background: rgba(168, 85, 247, 0.1); border: 1px solid var(--border-color); padding: 1rem; border-radius: 0.5rem; text-decoration: none; display: flex; align-items: center; gap: 0.75rem; color: var(--text-primary); font-weight: 600; font-size: 0.875rem;">
+                        <span style="font-size: 1.25rem;">🏆</span> Results Engine
+                    </a>
+                    <a href="/announcements" style="background: rgba(59, 130, 246, 0.1); border: 1px solid var(--border-color); padding: 1rem; border-radius: 0.5rem; text-decoration: none; display: flex; align-items: center; gap: 0.75rem; color: var(--text-primary); font-weight: 600; font-size: 0.875rem;">
+                        <span style="font-size: 1.25rem;">📢</span> Announcements
+                    </a>
+                    <a href="/audit-logs" style="background: rgba(236, 72, 153, 0.1); border: 1px solid var(--border-color); padding: 1rem; border-radius: 0.5rem; text-decoration: none; display: flex; align-items: center; gap: 0.75rem; color: var(--text-primary); font-weight: 600; font-size: 0.875rem;">
+                        <span style="font-size: 1.25rem;">📜</span> Audit Logs
+                    </a>
+                <?php endif; ?>
+            </div>
+        </div>
+
+        <!-- Departmental Student Distribution Card -->
+        <div class="card">
+            <h2 style="font-size: 1.125rem; font-weight: 700; color: var(--text-primary); margin-top: 0; margin-bottom: 1.25rem; display: flex; align-items: center; gap: 0.5rem;">
+                <span>🏢</span> Departmental Student Strength
+            </h2>
+
+            <?php if (empty($deptStats)): ?>
+                <p style="color: var(--text-secondary); font-size: 0.875rem;">No department statistics available.</p>
             <?php else: ?>
-                Admin Quick Actions & Portal Shortcuts
+                <div style="overflow-x: auto;">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Department Code</th>
+                                <th>Department Name</th>
+                                <th style="text-align: right;">Enrolled Students</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($deptStats as $ds): ?>
+                                <tr>
+                                    <td style="font-weight: 700; color: var(--accent-color);"><?= e($ds['code']) ?></td>
+                                    <td style="font-weight: 600; color: var(--text-primary);"><?= e($ds['name']) ?></td>
+                                    <td style="text-align: right; font-weight: 700; color: var(--text-primary);"><?= number_format((int)$ds['student_count']) ?> Students</td>
+                                </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
             <?php endif; ?>
-        </h2>
+        </div>
     </div>
 
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem;">
-        <?php if (in_array($role, ['super_admin', 'admin', 'hod'])): ?>
-            <a href="/students/admission" style="background: rgba(2, 132, 199, 0.1); border: 1px solid var(--border-color); padding: 1rem; border-radius: 0.5rem; text-decoration: none; display: flex; align-items: center; gap: 0.75rem; color: var(--text-primary); font-weight: 600; font-size: 0.875rem;">
-                <span style="font-size: 1.25rem;">➕</span> Admit Student
-            </a>
-            <a href="/attendance" style="background: rgba(16, 185, 129, 0.1); border: 1px solid var(--border-color); padding: 1rem; border-radius: 0.5rem; text-decoration: none; display: flex; align-items: center; gap: 0.75rem; color: var(--text-primary); font-weight: 600; font-size: 0.875rem;">
-                <span style="font-size: 1.25rem;">✅</span> Mark Attendance
-            </a>
-            <a href="/fee/payments" style="background: rgba(245, 158, 11, 0.1); border: 1px solid var(--border-color); padding: 1rem; border-radius: 0.5rem; text-decoration: none; display: flex; align-items: center; gap: 0.75rem; color: var(--text-primary); font-weight: 600; font-size: 0.875rem;">
-                <span style="font-size: 1.25rem;">💳</span> Collect Fees
-            </a>
-            <a href="/results" style="background: rgba(168, 85, 247, 0.1); border: 1px solid var(--border-color); padding: 1rem; border-radius: 0.5rem; text-decoration: none; display: flex; align-items: center; gap: 0.75rem; color: var(--text-primary); font-weight: 600; font-size: 0.875rem;">
-                <span style="font-size: 1.25rem;">🏆</span> Results Engine
-            </a>
-            <a href="/announcements" style="background: rgba(59, 130, 246, 0.1); border: 1px solid var(--border-color); padding: 1rem; border-radius: 0.5rem; text-decoration: none; display: flex; align-items: center; gap: 0.75rem; color: var(--text-primary); font-weight: 600; font-size: 0.875rem;">
-                <span style="font-size: 1.25rem;">📢</span> Announcements
-            </a>
+    <!-- Right Column: Announcements Feed & Audit Log Stream -->
+    <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+        <!-- Live Announcements Board -->
+        <div class="card">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem;">
+                <h2 style="font-size: 1.125rem; font-weight: 700; color: var(--text-primary); margin: 0; display: flex; align-items: center; gap: 0.5rem;">
+                    <span>📢</span> Campus Live Announcements
+                </h2>
+                <a href="/announcements" style="font-size: 0.8125rem; color: var(--accent-color); text-decoration: none; font-weight: 600;">View All &rarr;</a>
+            </div>
 
-        <?php elseif ($role === 'faculty'): ?>
-            <a href="/attendance" style="background: rgba(16, 185, 129, 0.1); border: 1px solid var(--border-color); padding: 1rem; border-radius: 0.5rem; text-decoration: none; display: flex; align-items: center; gap: 0.75rem; color: var(--text-primary); font-weight: 600; font-size: 0.875rem;">
-                <span style="font-size: 1.25rem;">✅</span> Mark Attendance
-            </a>
-            <a href="/marks/internal" style="background: rgba(2, 132, 199, 0.1); border: 1px solid var(--border-color); padding: 1rem; border-radius: 0.5rem; text-decoration: none; display: flex; align-items: center; gap: 0.75rem; color: var(--text-primary); font-weight: 600; font-size: 0.875rem;">
-                <span style="font-size: 1.25rem;">📝</span> Enter Internal Marks
-            </a>
-            <a href="/timetable" style="background: rgba(168, 85, 247, 0.1); border: 1px solid var(--border-color); padding: 1rem; border-radius: 0.5rem; text-decoration: none; display: flex; align-items: center; gap: 0.75rem; color: var(--text-primary); font-weight: 600; font-size: 0.875rem;">
-                <span style="font-size: 1.25rem;">🗓️</span> Class Timetable
-            </a>
-            <a href="/announcements" style="background: rgba(59, 130, 246, 0.1); border: 1px solid var(--border-color); padding: 1rem; border-radius: 0.5rem; text-decoration: none; display: flex; align-items: center; gap: 0.75rem; color: var(--text-primary); font-weight: 600; font-size: 0.875rem;">
-                <span style="font-size: 1.25rem;">📢</span> View Announcements
-            </a>
+            <?php if (empty($ancList)): ?>
+                <p style="color: var(--text-secondary); font-size: 0.875rem; margin: 0;">No active campus announcements currently.</p>
+            <?php else: ?>
+                <div style="display: flex; flex-direction: column; gap: 1rem;">
+                    <?php foreach (array_slice($ancList, 0, 3) as $anc): ?>
+                        <div style="background: var(--bg-main); padding: 0.875rem 1rem; border-radius: 8px; border: 1px solid var(--border-color);">
+                            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.25rem;">
+                                <h3 style="font-size: 0.875rem; font-weight: 700; color: var(--text-primary); margin: 0;"><?= e($anc['title']) ?></h3>
+                                <span class="badge badge-info" style="font-size: 0.6875rem; text-transform: uppercase;">
+                                    <?= e($anc['target_role'] ?? 'Everyone') ?>
+                                </span>
+                            </div>
+                            <p style="color: var(--text-secondary); font-size: 0.75rem; line-height: 1.4; margin: 0;">
+                                <?= e(mb_strimwidth($anc['content'], 0, 100, '...')) ?>
+                            </p>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+            <?php endif; ?>
+        </div>
 
-        <?php elseif ($role === 'staff'): ?>
-            <a href="/fee/payments" style="background: rgba(245, 158, 11, 0.1); border: 1px solid var(--border-color); padding: 1rem; border-radius: 0.5rem; text-decoration: none; display: flex; align-items: center; gap: 0.75rem; color: var(--text-primary); font-weight: 600; font-size: 0.875rem;">
-                <span style="font-size: 1.25rem;">💳</span> Fee Payments
-            </a>
-            <a href="/accounts" style="background: rgba(16, 185, 129, 0.1); border: 1px solid var(--border-color); padding: 1rem; border-radius: 0.5rem; text-decoration: none; display: flex; align-items: center; gap: 0.75rem; color: var(--text-primary); font-weight: 600; font-size: 0.875rem;">
-                <span style="font-size: 1.25rem;">💵</span> Accounts & Payroll
-            </a>
-            <a href="/library" style="background: rgba(2, 132, 199, 0.1); border: 1px solid var(--border-color); padding: 1rem; border-radius: 0.5rem; text-decoration: none; display: flex; align-items: center; gap: 0.75rem; color: var(--text-primary); font-weight: 600; font-size: 0.875rem;">
-                <span style="font-size: 1.25rem;">📖</span> Library Catalog
-            </a>
-            <a href="/hostel" style="background: rgba(168, 85, 247, 0.1); border: 1px solid var(--border-color); padding: 1rem; border-radius: 0.5rem; text-decoration: none; display: flex; align-items: center; gap: 0.75rem; color: var(--text-primary); font-weight: 600; font-size: 0.875rem;">
-                <span style="font-size: 1.25rem;">🏢</span> Hostel Management
-            </a>
-            <a href="/transport" style="background: rgba(59, 130, 246, 0.1); border: 1px solid var(--border-color); padding: 1rem; border-radius: 0.5rem; text-decoration: none; display: flex; align-items: center; gap: 0.75rem; color: var(--text-primary); font-weight: 600; font-size: 0.875rem;">
-                <span style="font-size: 1.25rem;">🚌</span> Transport Routes
-            </a>
+        <!-- Recent Audit Log Activity Stream -->
+        <?php if (!empty($auditLogs)): ?>
+        <div class="card">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem;">
+                <h2 style="font-size: 1.125rem; font-weight: 700; color: var(--text-primary); margin: 0; display: flex; align-items: center; gap: 0.5rem;">
+                    <span>📜</span> Recent System Activity
+                </h2>
+                <a href="/audit-logs" style="font-size: 0.8125rem; color: var(--accent-color); text-decoration: none; font-weight: 600;">Logs &rarr;</a>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                <?php foreach ($auditLogs as $log): ?>
+                    <div style="background: var(--bg-main); padding: 0.75rem 0.875rem; border-radius: 6px; border: 1px solid var(--border-color); font-size: 0.75rem;">
+                        <div style="display: flex; justify-content: space-between; font-weight: 700; color: var(--text-primary);">
+                            <span><?= e($log['username'] ?? 'System') ?></span>
+                            <span style="color: var(--text-secondary); font-weight: 400;"><?= date('H:i:s', strtotime($log['created_at'])) ?></span>
+                        </div>
+                        <div style="color: var(--text-secondary); margin-top: 0.15rem;"><?= e($log['action']) ?> &bull; <?= e($log['entity_type'] ?? '') ?></div>
+                    </div>
+                <?php endforeach; ?>
+            </div>
+        </div>
         <?php endif; ?>
     </div>
 </div>
