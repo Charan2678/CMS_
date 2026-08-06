@@ -389,3 +389,18 @@ function validate_upload(array $file): array
 
     return ['ok' => true, 'error' => null];
 }
+
+// ─── Mail Dispatch Helper ────────────────────────────────────
+
+/**
+ * Send an HTML email notification.
+ *
+ * @param string $to Recipient email address
+ * @param string $subject Email subject
+ * @param string $body HTML content body
+ * @return bool
+ */
+function send_mail(string $to, string $subject, string $body): bool
+{
+    return \App\Core\Mailer::send($to, $subject, $body);
+}

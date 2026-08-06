@@ -13,50 +13,67 @@ class StudentService
     /**
      * Get paginated/filtered list of students.
      */
-    public function getAllStudents(array $filters = [], int $collegeId = 1): array
+    public function getAllStudents(int $collegeId = 1, array $filters = [], int $page = 1, int $perPage = 25): array
     {
+        $whereSql = ' WHERE s.college_id = :college_id';
+        $params   = [':college_id' => $collegeId];
+
+        if (!empty($filters['department_id'])) {
+            $whereSql .= ' AND sa.department_id = :dept_id';
+            $params[':dept_id'] = (int) $filters['department_id'];
+        }
+
+        if (!empty($filters['course_id'])) {
+            $whereSql .= ' AND sa.course_id = :course_id';
+            $params[':course_id'] = (int) $filters['course_id'];
+        }
+
+        if (!empty($filters['status'])) {
+            $whereSql .= ' AND s.status = :status';
+            $params[':status'] = $filters['status'];
+        }
+
+        if (!empty($filters['search'])) {
+            $whereSql .= ' AND (s.first_name LIKE :q OR s.last_name LIKE :q OR s.roll_number LIKE :q OR s.admission_number LIKE :q OR s.email LIKE :q)';
+            $params[':q'] = '%' . $filters['search'] . '%';
+        }
+
+        // 1. Get Total Count
+        $countSql = '
+            SELECT COUNT(DISTINCT s.id) 
+            FROM students s
+            LEFT JOIN student_academics sa ON sa.student_id = s.id AND sa.is_current = 1
+        ' . $whereSql;
+        $cntStmt = db()->prepare($countSql);
+        $cntStmt->execute($params);
+        $total = (int) $cntStmt->fetchColumn();
+
+        // 2. Fetch Paginated Records
+        $page     = max(1, $page);
+        $perPage  = max(1, min(100, $perPage));
+        $offset   = ($page - 1) * $perPage;
+
         $sql = '
-            SELECT s.*, sa.academic_year_id, sa.department_id, sa.course_id, sa.semester_id, sa.section_id,
-                   d.name AS department_name, d.code AS department_code,
-                   c.name AS course_name, c.code AS course_code,
-                   sem.number AS semester_number,
-                   sec.name AS section_name
+            SELECT s.*, d.name AS department_name, c.name AS course_name, sem.number AS semester_number, sec.name AS section_name
             FROM students s
             LEFT JOIN student_academics sa ON sa.student_id = s.id AND sa.is_current = 1
             LEFT JOIN departments d ON d.id = sa.department_id
             LEFT JOIN courses c ON c.id = sa.course_id
             LEFT JOIN semesters sem ON sem.id = sa.semester_id
             LEFT JOIN sections sec ON sec.id = sa.section_id
-            WHERE s.college_id = :college_id
-        ';
-
-        $params = [':college_id' => $collegeId];
-
-        if (!empty($filters['department_id'])) {
-            $sql .= ' AND sa.department_id = :dept_id';
-            $params[':dept_id'] = (int) $filters['department_id'];
-        }
-
-        if (!empty($filters['course_id'])) {
-            $sql .= ' AND sa.course_id = :course_id';
-            $params[':course_id'] = (int) $filters['course_id'];
-        }
-
-        if (!empty($filters['status'])) {
-            $sql .= ' AND s.status = :status';
-            $params[':status'] = $filters['status'];
-        }
-
-        if (!empty($filters['search'])) {
-            $sql .= ' AND (s.first_name LIKE :q OR s.last_name LIKE :q OR s.roll_number LIKE :q OR s.admission_number LIKE :q OR s.email LIKE :q)';
-            $params[':q'] = '%' . $filters['search'] . '%';
-        }
-
-        $sql .= ' ORDER BY s.id DESC';
+        ' . $whereSql . ' ORDER BY s.id DESC LIMIT ' . $perPage . ' OFFSET ' . $offset;
 
         $stmt = db()->prepare($sql);
         $stmt->execute($params);
-        return $stmt->fetchAll() ?: [];
+        $rows = $stmt->fetchAll() ?: [];
+
+        return [
+            'data'        => $rows,
+            'total'       => $total,
+            'page'        => $page,
+            'per_page'    => $perPage,
+            'total_pages' => (int) ceil($total / $perPage),
+        ];
     }
 
     /**
@@ -262,9 +279,12 @@ class StudentService
 
             db()->commit();
 
+            // Auto-dispatch credentials email to student's personal email
+            $this->sendCredentialsEmail($studentId);
+
             return [
                 'success'    => true,
-                'message'    => 'Student admitted successfully! Account credentials generated (Username: ' . $data['roll_number'] . ', Default Password: Student123!).',
+                'message'    => 'Student admitted successfully! Account credentials generated and sent to personal email (Username: ' . $data['roll_number'] . ', Default Password: Student123!).',
                 'student_id' => $studentId
             ];
 
@@ -275,6 +295,36 @@ class StudentService
                 'message' => 'Admission failed: ' . $e->getMessage()
             ];
         }
+    }
+
+    /**
+     * Dispatch Login Credentials Email to Student's Personal Email.
+     */
+    public function sendCredentialsEmail(int $studentId): bool
+    {
+        $student = $this->getStudentById($studentId);
+        if (!$student || empty($student['email'])) {
+            return false;
+        }
+
+        $rollNumber = $student['roll_number'];
+        $name       = $student['first_name'] . ' ' . $student['last_name'];
+        $to         = $student['email'];
+        $subject    = "Welcome to Kuppam Engineering College — ERP Login Credentials";
+        $loginUrl   = env('APP_URL', 'http://localhost:8000/login');
+
+        $body = "
+            <h2 style='color:#0284c7;'>Welcome to Kuppam Engineering College, {$name}!</h2>
+            <p>Your student ERP portal account has been successfully generated. Below are your official login credentials to access your attendance, fees, timetable, and exam hall tickets:</p>
+            <div style='background:#f8fafc; border:1px solid #cbd5e1; padding:15px 20px; border-radius:6px; margin:20px 0;'>
+                <p style='margin:5px 0;'><strong>Portal Login URL:</strong> <a href='{$loginUrl}' style='color:#0284c7;'>{$loginUrl}</a></p>
+                <p style='margin:5px 0;'><strong>Username (Roll Number):</strong> <code style='background:#e2e8f0; padding:2px 6px; border-radius:4px;'>{$rollNumber}</code></p>
+                <p style='margin:5px 0;'><strong>Default Password:</strong> <code style='background:#e2e8f0; padding:2px 6px; border-radius:4px;'>Student123!</code></p>
+            </div>
+            <p style='color:#dc2626; font-size:13px;'><strong>Security Notice:</strong> You will be prompted to set a new custom password upon your first login.</p>
+        ";
+
+        return send_mail($to, $subject, $body);
     }
 
     /**

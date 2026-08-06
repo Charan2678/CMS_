@@ -109,4 +109,24 @@
             </tbody>
         </table>
     </div>
+
+    <!-- Pagination Controls Bar -->
+    <?php if (!empty($pagination) && ($pagination['total_pages'] ?? 1) > 1): ?>
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 1.5rem; border-top: 1px solid var(--border-color); padding-top: 1rem;">
+            <div style="font-size: 0.875rem; color: var(--text-secondary);">
+                Showing <strong><?= (($pagination['page'] - 1) * $pagination['per_page']) + 1 ?></strong> to <strong><?= min($pagination['total'], $pagination['page'] * $pagination['per_page']) ?></strong> of <strong><?= $pagination['total'] ?></strong> students
+            </div>
+            <div style="display: flex; gap: 0.5rem;">
+                <?php if ($pagination['page'] > 1): ?>
+                    <a href="?page=<?= $pagination['page'] - 1 ?>&<?= http_build_query(array_filter($filters)) ?>" class="btn btn-secondary btn-sm">« Previous</a>
+                <?php endif; ?>
+
+                <span class="btn btn-sm btn-primary" style="pointer-events: none;">Page <?= $pagination['page'] ?> of <?= $pagination['total_pages'] ?></span>
+
+                <?php if ($pagination['page'] < $pagination['total_pages']): ?>
+                    <a href="?page=<?= $pagination['page'] + 1 ?>&<?= http_build_query(array_filter($filters)) ?>" class="btn btn-secondary btn-sm">Next »</a>
+                <?php endif; ?>
+            </div>
+        </div>
+    <?php endif; ?>
 </div>

@@ -1117,6 +1117,29 @@ CREATE TABLE `audit_logs` (
   COMMENT='Immutable. Never update or delete rows from this table.';
 
 
+
+-- ============================================================
+-- BLOCK 22 — EXAM HALL TICKETS & ELIGIBILITY
+-- Tables: hall_tickets
+-- ============================================================
+
+CREATE TABLE `hall_tickets` (
+    `id`                 INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    `student_id`         INT UNSIGNED NOT NULL,
+    `academic_year_id`   INT UNSIGNED NOT NULL,
+    `semester_id`        INT UNSIGNED NOT NULL,
+    `hall_ticket_number` VARCHAR(50) NOT NULL,
+    `status`             ENUM('eligible','blocked_attendance','blocked_dues','condoned') NOT NULL DEFAULT 'eligible',
+    `attendance_pct`     DECIMAL(5,2) NOT NULL DEFAULT 0.00,
+    `pending_dues`       DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+    `condoned_by`        INT UNSIGNED DEFAULT NULL,
+    `condonation_reason` TEXT DEFAULT NULL,
+    `generated_at`       DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE KEY `uq_ht_student_sem` (`student_id`, `academic_year_id`, `semester_id`),
+    CONSTRAINT `fk_ht_student` FOREIGN KEY (`student_id`) REFERENCES `students` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
 -- ============================================================
 SET FOREIGN_KEY_CHECKS = 1;
 -- ============================================================

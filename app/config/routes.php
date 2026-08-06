@@ -65,8 +65,11 @@ Router::get('/timetable',      [ResultController::class, 'timetable']);
 Router::post('/timetable',     [ResultController::class, 'timetable']);
 Router::get('/marks/internal', [ResultController::class, 'internalMarks']);
 Router::post('/marks/internal',[ResultController::class, 'internalMarks']);
-Router::get('/results',        [ResultController::class, 'results']);
-Router::post('/results',       [ResultController::class, 'results']);
+Router::get('/results',            [ResultController::class, 'results']);
+Router::post('/results',           [ResultController::class, 'results']);
+Router::get('/admit-card',         [ResultController::class, 'admitCard']);
+Router::get('/admit-cards/manage',  [ResultController::class, 'admitCardManage']);
+Router::post('/admit-cards/manage', [ResultController::class, 'admitCardManage']);
 
 // ─── Staff Routes ───────────────────────────────────────────
 Router::get('/staff',        [StaffController::class, 'index']);
@@ -90,6 +93,8 @@ Router::post('/profile',            [StudentController::class, 'myProfile']);
 Router::get('/students',            [StudentController::class, 'index']);
 Router::get('/students/admission',  [StudentController::class, 'admission']);
 Router::post('/students/admission', [StudentController::class, 'admission']);
+Router::get('/students/{id}/send-credentials', [StudentController::class, 'sendCredentials']);
+Router::post('/students/{id}/send-credentials', [StudentController::class, 'sendCredentials']);
 Router::get('/students/{id}',       [StudentController::class, 'show']);
 
 // ─── Dashboard Route ─────────────────────────────────────────

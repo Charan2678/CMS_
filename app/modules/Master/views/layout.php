@@ -52,6 +52,7 @@ $svg = [
                 <div class="nav-section-title">MY ACADEMICS</div>
                 <a href="/attendance" class="nav-item <?= request_uri() === '/attendance' ? 'active' : '' ?>"><?= $svg['attendance'] ?> My Attendance</a>
                 <a href="/results" class="nav-item <?= request_uri() === '/results' ? 'active' : '' ?>"><?= $svg['results'] ?> Semester Results</a>
+                <a href="/admit-card" class="nav-item <?= request_uri() === '/admit-card' ? 'active' : '' ?>">🎫 Exam Hall Ticket</a>
                 <a href="/timetable" class="nav-item <?= request_uri() === '/timetable' ? 'active' : '' ?>"><?= $svg['timetable'] ?> Class Timetable</a>
 
                 <div class="nav-section-title">MY FINANCE & SERVICES</div>
@@ -137,6 +138,7 @@ $svg = [
                 <a href="/timetable" class="nav-item"><?= $svg['timetable'] ?> Class Timetable</a>
                 <a href="/marks/internal" class="nav-item"><?= $svg['results'] ?> Internal CIA Marks</a>
                 <a href="/results" class="nav-item"><?= $svg['results'] ?> Semester Results</a>
+                <a href="/admit-cards/manage" class="nav-item">🎫 Exam Hall Tickets</a>
 
                 <div class="nav-section-title">FINANCE & FEES</div>
                 <a href="/fee/categories" class="nav-item"><?= $svg['receipt'] ?> Fee Categories</a>
