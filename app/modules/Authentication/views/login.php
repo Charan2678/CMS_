@@ -14,13 +14,13 @@
         <!-- Left Side: 5-Second Carousel Slider -->
         <div class="login-slider-section">
             <div class="slide-track" id="slideTrack">
-                <div class="slide-item active" style="background-image: url('/assets/images/slides/slide1.png?v=4');">
+                <div class="slide-item active" style="background-image: url('/assets/images/slides/slide1.png?v=5');">
                     <div class="slide-overlay"></div>
                 </div>
-                <div class="slide-item" style="background-image: url('/assets/images/slides/slide2.png?v=4');">
+                <div class="slide-item" style="background-image: url('/assets/images/slides/slide2.png?v=5');">
                     <div class="slide-overlay"></div>
                 </div>
-                <div class="slide-item" style="background-image: url('/assets/images/slides/slide3.png?v=4');">
+                <div class="slide-item" style="background-image: url('/assets/images/slides/slide3.png?v=5');">
                     <div class="slide-overlay"></div>
                 </div>
             </div>
