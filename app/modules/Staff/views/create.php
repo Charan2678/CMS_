@@ -51,7 +51,7 @@
                 <select id="designation_id" name="designation_id" class="form-control" required>
                     <option value="">-- Select Designation --</option>
                     <?php foreach ($designations as $des): ?>
-                        <option value="<?= $des['id'] ?>"><?= e($des['name']) ?></option>
+                        <option value="<?= $des['id'] ?>" data-dept="<?= e($des['department_type']) ?>"><?= e($des['name']) ?></option>
                     <?php endforeach; ?>
                 </select>
             </div>
@@ -77,3 +77,37 @@
         </div>
     </form>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const deptSelect = document.getElementById('department_type');
+    const desigSelect = document.getElementById('designation_id');
+    const allOptions = Array.from(desigSelect.options);
+
+    function filterDesignations() {
+        const selectedDept = deptSelect.value;
+        const currentVal = desigSelect.value;
+
+        desigSelect.innerHTML = '';
+
+        const defaultOpt = document.createElement('option');
+        defaultOpt.value = '';
+        defaultOpt.textContent = '-- Select Designation --';
+        desigSelect.appendChild(defaultOpt);
+
+        allOptions.forEach(opt => {
+            if (opt.value && opt.dataset.dept === selectedDept) {
+                const newOpt = opt.cloneNode(true);
+                desigSelect.appendChild(newOpt);
+            }
+        });
+
+        if (Array.from(desigSelect.options).some(o => o.value === currentVal)) {
+            desigSelect.value = currentVal;
+        }
+    }
+
+    deptSelect.addEventListener('change', filterDesignations);
+    filterDesignations();
+});
+</script>
