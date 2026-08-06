@@ -1,0 +1,35 @@
+# ============================================================
+# public/.htaccess — Front Controller Pattern
+# ============================================================
+# All requests that are not real files or directories
+# are routed to index.php
+# ============================================================
+
+Options -Indexes
+ServerSignature Off
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /CMS/public/
+
+    # Allow real files and directories to be served directly
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+
+    # Route everything else to index.php
+    RewriteRule ^ index.php [QSA,L]
+</IfModule>
+
+# Block access to sensitive file types
+<FilesMatch "\.(env|json|lock|md|sql|log|sh|bat|ps1)$">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+# Security headers
+<IfModule mod_headers.c>
+    Header always set X-Content-Type-Options "nosniff"
+    Header always set X-Frame-Options "SAMEORIGIN"
+    Header always set X-XSS-Protection "1; mode=block"
+    Header always set Referrer-Policy "strict-origin-when-cross-origin"
+</IfModule>

@@ -1,0 +1,26 @@
+{
+    "name": "cms/college-management-system",
+    "description": "Production-grade College Management System",
+    "type": "project",
+    "license": "proprietary",
+    "require": {
+        "php": ">=8.1"
+    },
+    "require-dev": {},
+    "autoload": {
+        "psr-4": {
+            "App\\Core\\": "app/core/",
+            "App\\Modules\\": "app/modules/",
+            "App\\Config\\": "app/config/"
+        },
+        "files": [
+            "app/core/helpers.php"
+        ]
+    },
+    "scripts": {
+        "start": "php -S localhost:8000 -t public"
+    },
+    "config": {
+        "optimize-autoloader": true
+    }
+}

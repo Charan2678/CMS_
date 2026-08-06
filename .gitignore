@@ -1,0 +1,35 @@
+# ============================================================
+# College Management System — .gitignore
+# ============================================================
+
+# Environment
+.env
+
+# Dependencies
+/vendor/
+
+# Storage (runtime data — never commit)
+/storage/logs/*
+/storage/uploads/*
+!/storage/logs/.gitkeep
+!/storage/uploads/.gitkeep
+!/storage/uploads/students/.gitkeep
+!/storage/uploads/faculty/.gitkeep
+!/storage/uploads/documents/.gitkeep
+!/storage/uploads/receipts/.gitkeep
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# PHP
+*.log
+
+# Build scripts (not needed in repo)
+create_structure.ps1

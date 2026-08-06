@@ -1,0 +1,14 @@
+# ============================================================
+# Root .htaccess — Redirect all traffic to public/
+# ============================================================
+# This file ensures only public/ is the web root.
+# Direct access to app/, database/, storage/ is blocked.
+# ============================================================
+
+Options -Indexes
+
+RewriteEngine On
+
+# If the request is not already pointing to public/
+RewriteCond %{REQUEST_URI} !^/public/
+RewriteRule ^(.*)$ public/$1 [L,QSA]
