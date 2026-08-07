@@ -6,7 +6,7 @@
     <div class="alert alert-success" style="margin-bottom: 1.5rem;"><?= e($success) ?></div>
 <?php endif; ?>
 
-<div style="display: grid; grid-template-columns: 1fr 2fr; gap: 1.5rem;">
+<div class="page-split">
     <!-- Create Course Panel -->
     <div class="card">
         <h2 style="font-size: 1.125rem; font-weight: 700; color: var(--text-primary); margin-top: 0; margin-bottom: 1.25rem; display: flex; align-items: center; gap: 0.5rem;">
@@ -46,7 +46,7 @@
                 </select>
             </div>
 
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.25rem;">
+            <div class="form-grid-2" style="margin-bottom: 1.25rem;">
                 <div class="form-group">
                     <label class="form-label" for="duration_years">Duration (Years) *</label>
                     <input type="number" id="duration_years" name="duration_years" class="form-control" min="1" max="6" value="4" required>

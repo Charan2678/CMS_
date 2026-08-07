@@ -6,7 +6,7 @@
     <div class="alert alert-success" style="margin-bottom: 1.5rem;"><?= e($success) ?></div>
 <?php endif; ?>
 
-<div style="display: grid; grid-template-columns: 1fr 2fr; gap: 1.5rem; width: 100%;">
+<div class="page-split">
     <!-- Create Section Panel -->
     <div class="card">
         <h2 style="font-size: 1.125rem; font-weight: 700; color: var(--text-primary); margin-top: 0; margin-bottom: 1.25rem; display: flex; align-items: center; gap: 0.5rem;">

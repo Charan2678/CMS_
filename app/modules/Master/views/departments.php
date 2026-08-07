@@ -21,7 +21,7 @@
     </div>
 </div>
 
-<div style="display: grid; grid-template-columns: 380px 1fr; gap: 1.75rem; width: 100%;">
+<div class="page-split">
     <!-- Form Card -->
     <div class="card" style="height: fit-content;">
         <h2 style="font-size: 1.125rem; font-weight: 800; color: var(--text-primary); margin-top: 0; margin-bottom: 1.25rem; display: flex; align-items: center; gap: 0.5rem;">

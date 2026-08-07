@@ -19,7 +19,7 @@
     </div>
 
     <!-- Filters & Search Bar — Full Width Grid -->
-    <form method="GET" action="/students" style="margin-bottom: 1.5rem; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; align-items: end; background: var(--bg-main); padding: 1.25rem; border-radius: 10px; border: 1px solid var(--border-color); width: 100%;">
+    <form method="GET" action="/students" class="filter-bar">
         <div>
             <label class="form-label">Search Query</label>
             <input type="text" name="search" class="form-control" placeholder="Name, Roll No, Email..." value="<?= e($filters['search']) ?>">

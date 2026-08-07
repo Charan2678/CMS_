@@ -21,7 +21,7 @@
     </div>
 
     <!-- Filters -->
-    <form method="GET" action="/faculty" style="margin-bottom: 1.5rem; display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; align-items: end; background: var(--bg-main); padding: 1.25rem; border-radius: 10px; border: 1px solid var(--border-color);">
+    <form method="GET" action="/faculty" class="filter-bar">
         <div>
             <label class="form-label">Search Query</label>
             <input type="text" name="search" class="form-control" placeholder="Name, Employee ID, Email..." value="<?= e($filters['search']) ?>">
