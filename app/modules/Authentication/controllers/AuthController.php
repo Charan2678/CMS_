@@ -25,8 +25,10 @@ class AuthController extends Controller
             $this->redirect('/dashboard');
         }
 
-        $error   = null;
-        $success = flash_get('success');
+        $error      = null;
+        $success    = flash_get('success');
+        $roleType   = $this->input('role_type', 'student');
+        $loginIdVal = $this->input('login_id', '');
 
         if ($this->isPost()) {
             $csrfToken = $this->input('_csrf_token');
@@ -41,7 +43,7 @@ class AuthController extends Controller
                 if (empty($loginId) || empty($password)) {
                     $error = 'Please provide both username/email and password.';
                 } else {
-                    $res = $this->authService->login($loginId, $password, $ipAddress, $userAgent);
+                    $res = $this->authService->login($loginId, $password, $roleType, $ipAddress, $userAgent);
                     if ($res['success']) {
                         if ($_SESSION['must_change_password']) {
                             $this->redirect('/change-password');
@@ -55,9 +57,11 @@ class AuthController extends Controller
         }
 
         $this->render('Authentication/views/login', [
-            'error'   => $error,
-            'success' => $success,
-            'title'   => 'CMS Login'
+            'error'      => $error,
+            'success'    => $success,
+            'roleType'   => $roleType,
+            'loginIdVal' => $loginIdVal,
+            'title'      => 'CMS Login'
         ], null);
     }
 

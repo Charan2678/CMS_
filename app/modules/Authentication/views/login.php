@@ -14,13 +14,13 @@
         <!-- Left Side: 5-Second Carousel Slider -->
         <div class="login-slider-section">
             <div class="slide-track" id="slideTrack">
-                <div class="slide-item active" style="background-image: url('/assets/images/slides/slide1.png?v=5');">
+                <div class="slide-item active" style="background-image: url('/assets/images/slides/slide1.png?v=hd');">
                     <div class="slide-overlay"></div>
                 </div>
-                <div class="slide-item" style="background-image: url('/assets/images/slides/slide2.png?v=5');">
+                <div class="slide-item" style="background-image: url('/assets/images/slides/slide2.png?v=hd');">
                     <div class="slide-overlay"></div>
                 </div>
-                <div class="slide-item" style="background-image: url('/assets/images/slides/slide3.png?v=5');">
+                <div class="slide-item" style="background-image: url('/assets/images/slides/slide3.png?v=hd');">
                     <div class="slide-overlay"></div>
                 </div>
             </div>
@@ -61,13 +61,13 @@
                     <label class="role-label"><span class="req-star">*</span>Role</label>
                     <div class="role-options">
                         <label class="role-option">
-                            <input type="radio" name="role_type" value="staff"> Staff
+                            <input type="radio" name="role_type" value="staff" <?= ($roleType ?? 'student') === 'staff' ? 'checked' : '' ?>> Staff
                         </label>
                         <label class="role-option">
-                            <input type="radio" name="role_type" value="student" checked> Student
+                            <input type="radio" name="role_type" value="student" <?= ($roleType ?? 'student') === 'student' ? 'checked' : '' ?>> Student
                         </label>
                         <label class="role-option">
-                            <input type="radio" name="role_type" value="admin"> Admin
+                            <input type="radio" name="role_type" value="admin" <?= ($roleType ?? 'student') === 'admin' ? 'checked' : '' ?>> Admin
                         </label>
                     </div>
                 </div>
@@ -77,7 +77,7 @@
                     <label class="field-label" for="login_id">
                         <span class="req-star">*</span>Username
                     </label>
-                    <input type="text" id="login_id" name="login_id" class="form-input" required autofocus placeholder="Enter Roll Number / Employee ID">
+                    <input type="text" id="login_id" name="login_id" class="form-input" required autofocus placeholder="Enter Roll Number / Employee ID" value="<?= e($loginIdVal ?? '') ?>">
                 </div>
 
                 <!-- Password Field -->

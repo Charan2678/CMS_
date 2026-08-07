@@ -14,7 +14,7 @@ class AuthService
      * Authenticate a user by username or email.
      * Returns an array with ['success' => bool, 'message' => string, 'user' => array|null]
      */
-    public function login(string $loginId, string $password, string $ipAddress, string $userAgent): array
+    public function login(string $loginId, string $password, ?string $roleType = null, string $ipAddress = '127.0.0.1', string $userAgent = 'Unknown'): array
     {
         // 1. Check lockout
         if (Security::isLockedOut($loginId, $ipAddress)) {
@@ -45,7 +45,31 @@ class AuthService
             ];
         }
 
-        // 3. Check active state
+        // 3. Verify selected role matches user's actual role
+        if (!empty($roleType)) {
+            $userRoleCode = strtolower((string) ($user['role_code'] ?? ''));
+            $targetRoleType = strtolower($roleType);
+
+            $isValidRole = false;
+            if ($targetRoleType === 'admin') {
+                $isValidRole = in_array($userRoleCode, ['admin', 'super_admin'], true);
+            } elseif ($targetRoleType === 'student') {
+                $isValidRole = ($userRoleCode === 'student');
+            } elseif ($targetRoleType === 'staff') {
+                $isValidRole = in_array($userRoleCode, ['staff', 'faculty', 'hod'], true);
+            }
+
+            if (!$isValidRole) {
+                Security::recordLoginAttempt((int) $user['id'], $ipAddress, $userAgent, 'failed');
+                return [
+                    'success' => false,
+                    'message' => 'Invalid role selected for this account. Please select the correct role (Admin, Student, or Staff).',
+                    'user'    => null
+                ];
+            }
+        }
+
+        // 4. Check active state
         if ((int) $user['is_active'] !== 1) {
             Security::recordLoginAttempt((int) $user['id'], $ipAddress, $userAgent, 'failed');
             return [
@@ -55,7 +79,7 @@ class AuthService
             ];
         }
 
-        // 4. Verify password
+        // 5. Verify password
         if (!Security::verifyPassword($password, $user['password_hash'])) {
             Security::recordLoginAttempt((int) $user['id'], $ipAddress, $userAgent, 'failed');
             return [
@@ -65,7 +89,7 @@ class AuthService
             ];
         }
 
-        // 5. Successful login
+        // 6. Successful login
         Security::recordLoginAttempt((int) $user['id'], $ipAddress, $userAgent, 'success');
 
         // Update last_login

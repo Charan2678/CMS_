@@ -260,8 +260,11 @@ class MasterController extends Controller
             foreach ($sems as $s) {
                 $allSemesters[] = [
                     'id'          => $s['id'],
+                    'course_id'   => $c['id'],
+                    'number'      => $s['number'],
                     'display'     => "{$c['code']} - Semester {$s['number']}",
-                    'course_name' => $c['name']
+                    'course_name' => $c['name'],
+                    'course_code' => $c['code']
                 ];
             }
         }
@@ -269,6 +272,7 @@ class MasterController extends Controller
         $this->render('Master/views/sections', [
             'title'         => 'Sections',
             'sections'      => $sections,
+            'courses'       => $courses,
             'academicYears' => $academicYears,
             'semesters'     => $allSemesters,
             'error'         => $error,
@@ -324,8 +328,12 @@ class MasterController extends Controller
             $sems = $this->masterService->getSemestersByCourse((int)$c['id']);
             foreach ($sems as $s) {
                 $allSemesters[] = [
-                    'id'      => $s['id'],
-                    'display' => "{$c['code']} - Semester {$s['number']}"
+                    'id'          => $s['id'],
+                    'course_id'   => $c['id'],
+                    'number'      => $s['number'],
+                    'display'     => "{$c['code']} - Semester {$s['number']}",
+                    'course_name' => $c['name'],
+                    'course_code' => $c['code']
                 ];
             }
         }
@@ -333,6 +341,7 @@ class MasterController extends Controller
         $this->render('Master/views/subjects', [
             'title'     => 'Subjects',
             'subjects'  => $subjects,
+            'courses'   => $courses,
             'semesters' => $allSemesters,
             'error'     => $error,
             'success'   => $success,

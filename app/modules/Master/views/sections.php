@@ -28,13 +28,24 @@
                 </select>
             </div>
 
+            <!-- Course Dropdown -->
             <div class="form-group" style="margin-bottom: 1rem;">
-                <label class="form-label" for="semester_id">Course & Semester *</label>
-                <select id="semester_id" name="semester_id" class="form-control" required>
-                    <option value="">-- Select Semester --</option>
-                    <?php foreach ($semesters as $s): ?>
-                        <option value="<?= $s['id'] ?>"><?= e($s['display']) ?></option>
+                <label class="form-label" for="course_id">Course *</label>
+                <select id="course_id" name="course_id" class="form-control" required onchange="filterSemestersByCourse()">
+                    <option value="">-- Select Course --</option>
+                    <?php foreach ($courses as $c): ?>
+                        <option value="<?= $c['id'] ?>">
+                            <?= e($c['code']) ?> — <?= e($c['name']) ?>
+                        </option>
                     <?php endforeach; ?>
+                </select>
+            </div>
+
+            <!-- Dynamic Semester Dropdown -->
+            <div class="form-group" style="margin-bottom: 1rem;">
+                <label class="form-label" for="semester_id">Semester *</label>
+                <select id="semester_id" name="semester_id" class="form-control" required disabled>
+                    <option value="">-- Select Course First --</option>
                 </select>
             </div>
 
@@ -96,3 +107,36 @@
         </div>
     </div>
 </div>
+
+<script>
+    const allSemestersData = <?= json_encode($semesters) ?>;
+
+    function filterSemestersByCourse() {
+        const courseId = document.getElementById('course_id').value;
+        const semSelect = document.getElementById('semester_id');
+
+        semSelect.innerHTML = '<option value="">-- Select Semester --</option>';
+
+        if (!courseId) {
+            semSelect.disabled = true;
+            semSelect.options[0].text = '-- Select Course First --';
+            return;
+        }
+
+        const filteredSems = allSemestersData.filter(s => String(s.course_id) === String(courseId));
+
+        if (filteredSems.length === 0) {
+            semSelect.disabled = true;
+            semSelect.options[0].text = 'No Semesters Found for Selected Course';
+            return;
+        }
+
+        semSelect.disabled = false;
+        filteredSems.forEach(s => {
+            const opt = document.createElement('option');
+            opt.value = s.id;
+            opt.textContent = `Sem ${s.number}`;
+            semSelect.appendChild(opt);
+        });
+    }
+</script>
