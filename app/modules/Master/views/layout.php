@@ -30,6 +30,9 @@ $svg = [
 <body>
 
 <div class="app-layout">
+    <!-- Mobile Sidebar Overlay -->
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+
     <!-- Sidebar -->
     <aside class="sidebar">
         <div class="sidebar-header">
@@ -165,6 +168,10 @@ $svg = [
     <!-- Main Wrapper -->
     <div class="main-wrapper">
         <header class="top-header">
+            <!-- Hamburger (mobile) -->
+            <button class="hamburger-btn" id="hamburgerBtn" onclick="toggleSidebar()" aria-label="Toggle navigation">
+                <span></span><span></span><span></span>
+            </button>
             <div class="header-title"><?= e($title ?? 'Dashboard') ?></div>
             <div class="user-profile" style="display: flex; align-items: center; gap: 1rem;">
                 <!-- System Theme Switcher -->
@@ -220,6 +227,43 @@ $svg = [
     </div>
 
     <script>
+        /* ── Mobile Sidebar Toggle ── */
+        function toggleSidebar() {
+            const sidebar  = document.querySelector('.sidebar');
+            const overlay  = document.getElementById('sidebarOverlay');
+            const btn      = document.getElementById('hamburgerBtn');
+            const isOpen   = sidebar.classList.contains('open');
+            if (isOpen) {
+                closeSidebar();
+            } else {
+                sidebar.classList.add('open');
+                overlay.classList.add('visible');
+                btn.classList.add('open');
+                document.body.style.overflow = 'hidden';
+            }
+        }
+
+        function closeSidebar() {
+            const sidebar  = document.querySelector('.sidebar');
+            const overlay  = document.getElementById('sidebarOverlay');
+            const btn      = document.getElementById('hamburgerBtn');
+            sidebar.classList.remove('open');
+            overlay.classList.remove('visible');
+            btn.classList.remove('open');
+            document.body.style.overflow = '';
+        }
+
+        /* Close sidebar when a nav link is tapped on mobile */
+        document.querySelectorAll('.nav-item').forEach(function(link) {
+            link.addEventListener('click', function() {
+                if (window.innerWidth <= 768) closeSidebar();
+            });
+        });
+
+        /* Close sidebar on window resize to desktop */
+        window.addEventListener('resize', function() {
+            if (window.innerWidth > 768) closeSidebar();
+        });
         function toggleProfileDropdown() {
             const menu = document.getElementById('profileDropdownMenu');
             if (menu) {
