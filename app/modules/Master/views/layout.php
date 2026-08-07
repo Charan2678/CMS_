@@ -25,7 +25,7 @@ $svg = [
     <title><?= e($title ?? 'Management ERP') ?> — Kuppam Engineering College</title>
     <link rel="icon" type="image/png" href="/assets/images/favicon.png">
     <link rel="shortcut icon" href="/favicon.ico">
-    <link rel="stylesheet" href="/assets/css/app.css">
+    <link rel="stylesheet" href="/assets/css/app.css?v=<?= time() ?>">
 </head>
 <body>
 
