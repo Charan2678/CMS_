@@ -72,7 +72,7 @@ class FacultyController extends Controller
         }
 
         $departments  = $this->masterService->getDepartments(1);
-        $designations = $this->facultyService->getDesignations(1);
+        $designations = $this->facultyService->getDesignations(1, 'faculty');
 
         $this->render('Faculty/views/create', [
             'title'        => 'Faculty Onboarding',

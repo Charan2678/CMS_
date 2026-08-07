@@ -10,6 +10,7 @@ use App\Modules\Attendance\services\AttendanceService;
 use App\Modules\Faculty\services\FacultyService;
 use App\Modules\Master\services\MasterService;
 use App\Modules\Result\services\ResultService;
+use App\Modules\Result\services\AdmitCardService;
 
 class ResultController extends Controller
 {
@@ -17,6 +18,7 @@ class ResultController extends Controller
     private MasterService $masterService;
     private FacultyService $facultyService;
     private AttendanceService $attendanceService;
+    private AdmitCardService $admitCardService;
 
     public function __construct()
     {
@@ -24,6 +26,7 @@ class ResultController extends Controller
         $this->masterService     = new MasterService();
         $this->facultyService    = new FacultyService();
         $this->attendanceService = new AttendanceService();
+        $this->admitCardService  = new AdmitCardService();
     }
 
     /**
@@ -271,6 +274,117 @@ class ResultController extends Controller
         $this->render('Result/views/student_results', [
             'title'     => 'My Semester Results',
             'semesters' => $semesters,
+        ], 'layout');
+    }
+
+    /**
+     * Official Exam Hall Ticket / Admit Card View (Student Portal & Admin Preview).
+     */
+    public function admitCard(): void
+    {
+        $userId    = auth_id();
+        $studentId = (int) query('student_id', '0');
+
+        if (auth_role() === 'student') {
+            $studentId = $userId ? $this->attendanceService->getStudentIdFromUser($userId) : 0;
+        } else {
+            Permission::enforce('result.publish');
+        }
+
+        if (!$studentId) {
+            flash('error', 'Student record not found.');
+            $this->redirect('/dashboard');
+        }
+
+        // Get current academic placement
+        $placementStmt = db()->prepare('
+            SELECT sa.*, s.roll_number 
+            FROM student_academics sa 
+            JOIN students s ON s.id = sa.student_id
+            WHERE sa.student_id = :student_id AND sa.is_current = 1 
+            LIMIT 1
+        ');
+        $placementStmt->execute([':student_id' => $studentId]);
+        $placement = $placementStmt->fetch();
+
+        if (!$placement) {
+            $this->render('Result/views/admit_card', [
+                'title' => 'Official Exam Hall Ticket / Admit Card',
+                'data'  => ['success' => false, 'message' => 'No active academic enrollment found for current semester.']
+            ], 'layout');
+            return;
+        }
+
+        $academicYearId = (int) $placement['academic_year_id'];
+        $semesterId     = (int) $placement['semester_id'];
+
+        $data = $this->admitCardService->getOrGenerateHallTicket($studentId, $academicYearId, $semesterId);
+
+        $this->render('Result/views/admit_card', [
+            'title' => 'Official Exam Hall Ticket / Admit Card',
+            'data'  => $data,
+        ], 'layout');
+    }
+
+    /**
+     * Admin / Exam Cell Admit Card & Eligibility Management Dashboard.
+     */
+    public function admitCardManage(): void
+    {
+        Permission::enforce('result.publish');
+
+        $error   = null;
+        $success = null;
+
+        if ($this->isPost()) {
+            if (!csrf_verify($this->input('_csrf_token'))) {
+                $error = 'Security token invalid.';
+            } else {
+                $studentId      = (int) $this->input('student_id');
+                $academicYearId = (int) $this->input('academic_year_id');
+                $semesterId     = (int) $this->input('semester_id');
+                $reason         = trim($this->input('condonation_reason', 'Condoned by HOD/Principal for official duties.'));
+
+                if ($this->admitCardService->condoneShortage($studentId, $academicYearId, $semesterId, auth_id() ?? 1, $reason)) {
+                    $success = 'Attendance shortage condoned successfully! Hall ticket status set to Eligible.';
+                } else {
+                    $error = 'Failed to record attendance condonation.';
+                }
+            }
+        }
+
+        $sectionId      = (int) query('section_id', $this->input('section_id', '0'));
+        $academicYearId = (int) query('academic_year_id', $this->input('academic_year_id', '0'));
+
+        $sections      = $this->masterService->getSections();
+        $academicYears = $this->masterService->getAcademicYears(1);
+        $report        = [];
+
+        if ($sectionId > 0 && $academicYearId > 0) {
+            $students = $this->attendanceService->getStudentsForSection($sectionId);
+            foreach ($students as $st) {
+                $placementStmt = db()->prepare('SELECT semester_id FROM student_academics WHERE student_id = :id AND is_current = 1 LIMIT 1');
+                $placementStmt->execute([':id' => $st['id']]);
+                $semId = (int) ($placementStmt->fetchColumn() ?: 1);
+
+                $eligibility = $this->admitCardService->checkEligibility((int)$st['id'], $academicYearId, $semId);
+                $report[] = [
+                    'student'     => $st,
+                    'eligibility' => $eligibility,
+                    'semester_id' => $semId,
+                ];
+            }
+        }
+
+        $this->render('Result/views/admit_card_manage', [
+            'title'          => 'Exam Eligibility & Hall Ticket Management',
+            'sections'       => $sections,
+            'academicYears'  => $academicYears,
+            'sectionId'      => $sectionId,
+            'academicYearId' => $academicYearId,
+            'report'         => $report,
+            'error'          => $error,
+            'success'        => $success,
         ], 'layout');
     }
 }

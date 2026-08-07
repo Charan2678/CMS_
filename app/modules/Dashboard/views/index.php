@@ -133,7 +133,7 @@ $feeBalance = (float) ($fee['balance_due'] ?? 0);
 
 <?php if ($role === 'student'): ?>
 <!-- Student Dashboard Main Grid -->
-<div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem; margin-bottom: 2rem;">
+<div class="dashboard-grid-2">
     <!-- Active Announcements Board -->
     <div class="card">
         <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem;">
@@ -206,7 +206,7 @@ $feeBalance = (float) ($fee['balance_due'] ?? 0);
 <?php else: ?>
 
 <!-- Executive Admin & Staff Command Dashboard Grid -->
-<div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem; margin-bottom: 2rem;">
+<div class="dashboard-grid-2">
     <!-- Left Column: Operations & Department Stats -->
     <div style="display: flex; flex-direction: column; gap: 1.5rem;">
         <!-- Quick Action Shortcuts -->

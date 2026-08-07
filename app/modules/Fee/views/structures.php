@@ -1,22 +1,22 @@
 <?php if (!empty($error)): ?>
-    <div class="alert alert-danger"><?= e($error) ?></div>
+    <div class="alert alert-danger" style="margin-bottom: 1.5rem;"><?= e($error) ?></div>
 <?php endif; ?>
 
 <?php if (!empty($success)): ?>
-    <div class="alert alert-success"><?= e($success) ?></div>
+    <div class="alert alert-success" style="margin-bottom: 1.5rem;"><?= e($success) ?></div>
 <?php endif; ?>
 
 <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 1.5rem;">
-    <!-- Form Panel -->
-    <div class="panel">
-        <div class="panel-header">
-            <h2 class="panel-title">Add Fee Structure</h2>
-        </div>
+    <!-- Create Fee Structure Panel -->
+    <div class="card">
+        <h2 style="font-size: 1.125rem; font-weight: 700; color: var(--text-primary); margin-top: 0; margin-bottom: 1.25rem; display: flex; align-items: center; gap: 0.5rem;">
+            <span>➕</span> Define Fee Structure
+        </h2>
 
         <form method="POST" action="/fee/structures">
             <?= csrf_field() ?>
 
-            <div class="form-group">
+            <div class="form-group" style="margin-bottom: 1rem;">
                 <label class="form-label" for="academic_year_id">Academic Year *</label>
                 <select id="academic_year_id" name="academic_year_id" class="form-control" required>
                     <option value="">-- Select Academic Year --</option>
@@ -28,7 +28,7 @@
                 </select>
             </div>
 
-            <div class="form-group">
+            <div class="form-group" style="margin-bottom: 1rem;">
                 <label class="form-label" for="course_id">Course *</label>
                 <select id="course_id" name="course_id" class="form-control" required>
                     <option value="">-- Select Course --</option>
@@ -38,7 +38,7 @@
                 </select>
             </div>
 
-            <div class="form-group">
+            <div class="form-group" style="margin-bottom: 1rem;">
                 <label class="form-label" for="semester_id">Semester *</label>
                 <select id="semester_id" name="semester_id" class="form-control" required>
                     <option value="">-- Select Semester --</option>
@@ -48,7 +48,7 @@
                 </select>
             </div>
 
-            <div class="form-group">
+            <div class="form-group" style="margin-bottom: 1rem;">
                 <label class="form-label" for="fee_category_id">Fee Category *</label>
                 <select id="fee_category_id" name="fee_category_id" class="form-control" required>
                     <option value="">-- Select Fee Category --</option>
@@ -58,53 +58,57 @@
                 </select>
             </div>
 
-            <div class="form-group">
-                <label class="form-label" for="amount">Fee Amount (₹) *</label>
-                <input type="number" step="0.01" id="amount" name="amount" class="form-control" required placeholder="e.g. 45000.00">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.25rem;">
+                <div class="form-group">
+                    <label class="form-label" for="amount">Fee Amount (₹) *</label>
+                    <input type="number" step="0.01" id="amount" name="amount" class="form-control" required placeholder="e.g. 45000.00">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="due_date">Due Date *</label>
+                    <input type="date" id="due_date" name="due_date" class="form-control" required>
+                </div>
             </div>
 
-            <div class="form-group">
-                <label class="form-label" for="due_date">Due Date *</label>
-                <input type="date" id="due_date" name="due_date" class="form-control" required>
-            </div>
-
-            <button type="submit" class="btn-primary">Save Fee Structure</button>
+            <button type="submit" class="btn-primary" style="width: 100%;">Save Fee Structure</button>
         </form>
     </div>
 
-    <!-- Table Panel -->
-    <div class="panel">
-        <div class="panel-header">
-            <h2 class="panel-title">Configured Fee Structures</h2>
-        </div>
+    <!-- Fee Structures List Panel -->
+    <div class="card">
+        <h2 style="font-size: 1.125rem; font-weight: 700; color: var(--text-primary); margin-top: 0; margin-bottom: 1.25rem; display: flex; align-items: center; gap: 0.5rem;">
+            <span>⚙️</span> Configured Fee Schedules Directory
+        </h2>
 
-        <table style="width: 100%; border-collapse: collapse; font-size: 0.875rem;">
-            <thead>
-                <tr style="border-bottom: 1px solid var(--border-color); text-align: left;">
-                    <th style="padding: 0.75rem;">Year</th>
-                    <th style="padding: 0.75rem;">Course / Sem</th>
-                    <th style="padding: 0.75rem;">Category</th>
-                    <th style="padding: 0.75rem;">Amount</th>
-                    <th style="padding: 0.75rem;">Due Date</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php if (empty($structures)): ?>
+        <div style="overflow-x: auto;">
+            <table class="table">
+                <thead>
                     <tr>
-                        <td colspan="5" style="padding: 1rem; text-align: center; color: var(--text-secondary);">No fee structures configured yet.</td>
+                        <th>Academic Year</th>
+                        <th>Course / Sem</th>
+                        <th>Category</th>
+                        <th>Amount</th>
+                        <th>Due Date</th>
                     </tr>
-                <?php else: ?>
-                    <?php foreach ($structures as $fs): ?>
-                        <tr style="border-bottom: 1px solid var(--border-color);">
-                            <td style="padding: 0.75rem; color: var(--text-secondary);"><?= e($fs['academic_year_name']) ?></td>
-                            <td style="padding: 0.75rem; font-weight: 600; color: #a5b4fc;"><?= e($fs['course_code']) ?> (Sem <?= e($fs['semester_number']) ?>)</td>
-                            <td style="padding: 0.75rem; font-weight: 500;"><?= e($fs['category_name']) ?></td>
-                            <td style="padding: 0.75rem; font-weight: 700; color: #86efac;">₹<?= number_format((float)$fs['amount'], 2) ?></td>
-                            <td style="padding: 0.75rem; color: var(--text-secondary);"><?= e($fs['due_date']) ?></td>
+                </thead>
+                <tbody>
+                    <?php if (empty($structures)): ?>
+                        <tr>
+                            <td colspan="5" style="text-align: center; color: var(--text-secondary); padding: 1.5rem;">No fee structures configured yet.</td>
                         </tr>
-                    <?php endforeach; ?>
-                <?php endif; ?>
-            </tbody>
-        </table>
+                    <?php else: ?>
+                        <?php foreach ($structures as $fs): ?>
+                            <tr>
+                                <td style="color: var(--text-secondary);"><?= e($fs['academic_year_name']) ?></td>
+                                <td style="font-weight: 700; color: var(--accent-color);"><?= e($fs['course_code']) ?> (Sem <?= e($fs['semester_number']) ?>)</td>
+                                <td style="font-weight: 600; color: var(--text-primary);"><?= e($fs['category_name']) ?></td>
+                                <td style="font-weight: 800; color: var(--success);">₹<?= number_format((float)$fs['amount'], 2) ?></td>
+                                <td style="color: var(--text-secondary);"><?= date('d M Y', strtotime($fs['due_date'])) ?></td>
+                            </tr>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>

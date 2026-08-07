@@ -1,21 +1,29 @@
 <?php if (!empty($success)): ?>
-    <div class="alert alert-success"><?= e($success) ?></div>
+    <div class="alert alert-success" style="margin-bottom: 1.5rem;"><?= e($success) ?></div>
 <?php endif; ?>
 
-<div class="panel">
-    <div class="panel-header">
-        <h2 class="panel-title">Faculty Directory</h2>
+<div class="card">
+    <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem;">
         <div>
-            <a href="/faculty/designations" class="btn-primary" style="text-decoration: none; width: auto; padding: 0.5rem 1rem; background: var(--bg-surface); border: 1px solid var(--border-color); margin-right: 0.5rem;">Designations</a>
-            <a href="/faculty/assign-subject" class="btn-primary" style="text-decoration: none; width: auto; padding: 0.5rem 1rem; background: var(--bg-surface); border: 1px solid var(--border-color); margin-right: 0.5rem;">Assign Subjects</a>
-            <a href="/faculty/create" class="btn-primary" style="text-decoration: none; width: auto; padding: 0.5rem 1.25rem;">+ Onboard Faculty</a>
+            <h2 style="font-size: 1.25rem; font-weight: 800; color: var(--text-primary); margin: 0; display: flex; align-items: center; gap: 0.5rem;">
+                <span>👨‍🏫</span> Faculty Members Directory
+            </h2>
+            <div style="font-size: 0.8125rem; color: var(--text-secondary); margin-top: 0.25rem;">
+                Academic teaching staff, designations, and department workloads
+            </div>
+        </div>
+
+        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+            <a href="/faculty/designations" class="btn-primary" style="text-decoration: none; padding: 0.5rem 1rem; background: var(--bg-main); border: 1px solid var(--border-color); color: var(--text-primary);">Designations</a>
+            <a href="/faculty/assign-subject" class="btn-primary" style="text-decoration: none; padding: 0.5rem 1rem; background: var(--bg-main); border: 1px solid var(--border-color); color: var(--text-primary);">Assign Subjects</a>
+            <a href="/faculty/create" class="btn-primary" style="text-decoration: none; padding: 0.5rem 1.25rem; font-weight: 700;">+ Onboard Faculty</a>
         </div>
     </div>
 
     <!-- Filters -->
-    <form method="GET" action="/faculty" style="margin-bottom: 1.5rem; display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; align-items: end;">
+    <form method="GET" action="/faculty" class="filter-bar">
         <div>
-            <label class="form-label">Search</label>
+            <label class="form-label">Search Query</label>
             <input type="text" name="search" class="form-control" placeholder="Name, Employee ID, Email..." value="<?= e($filters['search']) ?>">
         </div>
 
@@ -39,45 +47,47 @@
         </div>
 
         <div>
-            <button type="submit" class="btn-primary" style="width: 100%; margin-top: 0;">Filter</button>
+            <button type="submit" class="btn-primary" style="width: 100%; margin-top: 0;">Apply Filters</button>
         </div>
     </form>
 
     <!-- Faculty Table -->
-    <table style="width: 100%; border-collapse: collapse; font-size: 0.875rem;">
-        <thead>
-            <tr style="border-bottom: 1px solid var(--border-color); text-align: left;">
-                <th style="padding: 0.75rem;">Emp ID</th>
-                <th style="padding: 0.75rem;">Faculty Name</th>
-                <th style="padding: 0.75rem;">Designation</th>
-                <th style="padding: 0.75rem;">Department</th>
-                <th style="padding: 0.75rem;">Qualification</th>
-                <th style="padding: 0.75rem;">Status</th>
-                <th style="padding: 0.75rem;">Action</th>
-            </tr>
-        </thead>
-        <tbody>
-            <?php if (empty($facultyList)): ?>
+    <div style="overflow-x: auto;">
+        <table class="table">
+            <thead>
                 <tr>
-                    <td colspan="7" style="padding: 1.5rem; text-align: center; color: var(--text-secondary);">No faculty members found.</td>
+                    <th>Emp ID</th>
+                    <th>Faculty Name</th>
+                    <th>Designation</th>
+                    <th>Department</th>
+                    <th>Qualification</th>
+                    <th>Status</th>
+                    <th>Action</th>
                 </tr>
-            <?php else: ?>
-                <?php foreach ($facultyList as $fac): ?>
-                    <tr style="border-bottom: 1px solid var(--border-color);">
-                        <td style="padding: 0.75rem; font-weight: 700; color: #a5b4fc;"><?= e($fac['employee_id']) ?></td>
-                        <td style="padding: 0.75rem; font-weight: 600;"><?= e($fac['first_name'] . ' ' . $fac['last_name']) ?></td>
-                        <td style="padding: 0.75rem; color: var(--text-secondary);"><?= e($fac['designation_name']) ?></td>
-                        <td style="padding: 0.75rem; color: var(--text-secondary);"><?= e($fac['department_code']) ?></td>
-                        <td style="padding: 0.75rem; color: var(--text-secondary);"><?= e($fac['qualification'] ?? 'N/A') ?></td>
-                        <td style="padding: 0.75rem;">
-                            <span class="badge badge-success">Active</span>
-                        </td>
-                        <td style="padding: 0.75rem;">
-                            <a href="/faculty/<?= $fac['id'] ?>" style="color: #a5b4fc; text-decoration: none; font-weight: 500;">View Profile →</a>
-                        </td>
+            </thead>
+            <tbody>
+                <?php if (empty($facultyList)): ?>
+                    <tr>
+                        <td colspan="7" style="padding: 1.5rem; text-align: center; color: var(--text-secondary);">No faculty members found.</td>
                     </tr>
-                <?php endforeach; ?>
-            <?php endif; ?>
-        </tbody>
-    </table>
+                <?php else: ?>
+                    <?php foreach ($facultyList as $fac): ?>
+                        <tr>
+                            <td style="font-weight: 800; color: var(--accent-color);"><?= e($fac['employee_id']) ?></td>
+                            <td style="font-weight: 700; color: var(--text-primary);"><?= e($fac['first_name'] . ' ' . $fac['last_name']) ?></td>
+                            <td style="color: var(--text-secondary);"><?= e($fac['designation_name']) ?></td>
+                            <td style="color: var(--text-secondary); font-weight: 600;"><?= e($fac['department_code']) ?></td>
+                            <td style="color: var(--text-secondary);"><?= e($fac['qualification'] ?? 'N/A') ?></td>
+                            <td>
+                                <span class="badge badge-success">Active</span>
+                            </td>
+                            <td>
+                                <a href="/faculty/<?= $fac['id'] ?>" class="btn-primary" style="padding: 0.35rem 0.75rem; font-size: 0.75rem; border-radius: 6px; text-decoration: none; display: inline-block;">View Profile &rarr;</a>
+                            </td>
+                        </tr>
+                    <?php endforeach; ?>
+                <?php endif; ?>
+            </tbody>
+        </table>
+    </div>
 </div>

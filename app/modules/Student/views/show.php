@@ -26,6 +26,12 @@
                 <span style="color: var(--text-secondary); display: block;">Portal Account:</span>
                 <?php if (!empty($student['user_account_id'])): ?>
                     <span class="badge badge-info">Username: <?= e($student['username']) ?></span>
+                    <form action="/students/<?= $student['id'] ?>/send-credentials" method="POST" style="margin-top: 0.75rem;">
+                        <?= csrf_field() ?>
+                        <button type="submit" class="btn btn-sm btn-primary" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 0.35rem;">
+                            <span>📧</span> Send Credentials Email
+                        </button>
+                    </form>
                 <?php else: ?>
                     <span class="badge badge-warning">No Login Account</span>
                 <?php endif; ?>

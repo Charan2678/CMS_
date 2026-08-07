@@ -311,3 +311,96 @@ function audit_log(string $action, string $module, ?array $oldValues = null, ?ar
         // Fail silently for audit logging to not disrupt main transaction flow
     }
 }
+
+// ─── File Upload Validation ──────────────────────────────────
+
+/**
+ * Reusable file upload validator.
+ * Validates error codes, max size, server-side MIME type via finfo, allowed extensions, and path safety.
+ *
+ * @param array $file Single $_FILES element, e.g. $_FILES['document']
+ * @return array ['ok' => bool, 'error' => ?string]
+ */
+function validate_upload(array $file): array
+{
+    // 1. Reject if error code is present
+    if (!isset($file['error']) || $file['error'] !== UPLOAD_ERR_OK) {
+        return ['ok' => false, 'error' => 'File upload failed or no file provided.'];
+    }
+
+    // 2. Reject if file size exceeds maximum limit
+    $maxSize = (int) env('UPLOAD_MAX_SIZE', 5242880);
+    if (($file['size'] ?? 0) > $maxSize) {
+        $maxMb = round($maxSize / (1024 * 1024), 2);
+        return ['ok' => false, 'error' => "File size exceeds maximum allowed limit of {$maxMb}MB."];
+    }
+
+    // 3. Reject path traversal, null bytes, or missing/disallowed extensions
+    $filename = $file['name'] ?? '';
+    if (str_contains($filename, '..') || str_contains($filename, "\0")) {
+        return ['ok' => false, 'error' => 'Invalid file name. Path traversal detected.'];
+    }
+
+    $allowedTypesEnv = env('UPLOAD_ALLOWED_TYPES', 'jpg,jpeg,png,pdf,doc,docx,webp,gif');
+    $allowedExts     = array_map('trim', explode(',', strtolower((string) $allowedTypesEnv)));
+
+    $ext = pathinfo($filename, PATHINFO_EXTENSION);
+    if (empty($ext) || !in_array(strtolower($ext), $allowedExts, true)) {
+        return ['ok' => false, 'error' => 'File must have a valid allowed extension.'];
+    }
+
+    // 4. Inspect real server-side MIME type via finfo
+    if (empty($file['tmp_name']) || !file_exists($file['tmp_name'])) {
+        return ['ok' => false, 'error' => 'Uploaded temporary file does not exist.'];
+    }
+
+    $finfoHandle = @finfo_open(FILEINFO_MIME_TYPE);
+    $detectedMime = $finfoHandle ? @finfo_file($finfoHandle, $file['tmp_name']) : false;
+    if ($finfoHandle) {
+        @finfo_close($finfoHandle);
+    }
+
+    if (!$detectedMime) {
+        return ['ok' => false, 'error' => 'Could not determine file MIME type.'];
+    }
+
+    // 5. Map allowed extensions to explicit MIME whitelist
+    $mimeMap = [
+        'jpg'  => 'image/jpeg',
+        'jpeg' => 'image/jpeg',
+        'png'  => 'image/png',
+        'pdf'  => 'application/pdf',
+        'doc'  => 'application/msword',
+        'docx' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        'webp' => 'image/webp',
+        'gif'  => 'image/gif',
+    ];
+
+    $allowedMimes = [];
+    foreach ($allowedExts as $extName) {
+        if (isset($mimeMap[$extName])) {
+            $allowedMimes[] = $mimeMap[$extName];
+        }
+    }
+
+    if (!in_array($detectedMime, $allowedMimes, true)) {
+        return ['ok' => false, 'error' => "Invalid file type '{$detectedMime}'. Allowed types: " . implode(', ', $allowedExts)];
+    }
+
+    return ['ok' => true, 'error' => null];
+}
+
+// ─── Mail Dispatch Helper ────────────────────────────────────
+
+/**
+ * Send an HTML email notification.
+ *
+ * @param string $to Recipient email address
+ * @param string $subject Email subject
+ * @param string $body HTML content body
+ * @return bool
+ */
+function send_mail(string $to, string $subject, string $body): bool
+{
+    return \App\Core\Mailer::send($to, $subject, $body);
+}

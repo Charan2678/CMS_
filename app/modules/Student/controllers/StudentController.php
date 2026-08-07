@@ -34,13 +34,15 @@ class StudentController extends Controller
             'search'        => query('search', ''),
         ];
 
-        $students    = $this->studentService->getAllStudents($filters);
+        $page = (int) query('page', '1');
+        $resultData  = $this->studentService->getAllStudents(1, $filters, $page, 25);
         $departments = $this->masterService->getDepartments(1);
         $courses     = $this->masterService->getCourses(1);
 
         $this->render('Student/views/index', [
             'title'       => 'Student Directory',
-            'students'    => $students,
+            'students'    => $resultData['data'],
+            'pagination'  => $resultData,
             'departments' => $departments,
             'courses'     => $courses,
             'filters'     => $filters,
@@ -125,6 +127,23 @@ class StudentController extends Controller
             'title'   => "Student Profile: {$student['first_name']} {$student['last_name']}",
             'student' => $student,
         ], 'layout');
+    }
+
+    /**
+     * Send or resend credentials email to student's personal email.
+     */
+    public function sendCredentials(string $id): void
+    {
+        Permission::enforce('student.edit');
+
+        $studentId = (int) $id;
+        if ($this->studentService->sendCredentialsEmail($studentId)) {
+            flash('success', 'Login credentials and welcome email dispatched successfully to student email!');
+        } else {
+            flash('error', 'Failed to send credentials. Please ensure the student has a valid email address.');
+        }
+
+        $this->redirect('/students/' . $studentId);
     }
 
     /**

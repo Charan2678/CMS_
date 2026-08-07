@@ -1,19 +1,26 @@
 <?php if (!empty($error)): ?>
-    <div class="alert alert-danger"><?= e($error) ?></div>
+    <div class="alert alert-danger" style="margin-bottom: 1.5rem;"><?= e($error) ?></div>
 <?php endif; ?>
 
-<div class="panel">
-    <div class="panel-header">
-        <h2 class="panel-title">Student Admission Pipeline</h2>
-        <span class="badge badge-info">Single Workflow Execution</span>
+<div class="card" style="width: 100%;">
+    <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem;">
+        <div>
+            <h2 style="font-size: 1.25rem; font-weight: 800; color: var(--text-primary); margin: 0; display: flex; align-items: center; gap: 0.5rem;">
+                <span>➕</span> Student Admission Pipeline
+            </h2>
+            <div style="font-size: 0.8125rem; color: var(--text-secondary); margin-top: 0.25rem;">
+                Provision new student record, academic placement, documents, and portal login
+            </div>
+        </div>
+        <span class="badge badge-info" style="font-size: 0.75rem;">Single Workflow Execution</span>
     </div>
 
     <form method="POST" action="/students/admission" enctype="multipart/form-data">
         <?= csrf_field() ?>
 
         <!-- Section 1: Personal Information -->
-        <h3 style="font-size: 1rem; color: #a5b4fc; margin-bottom: 1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem;">
-            1. Personal Information
+        <h3 style="font-size: 1rem; font-weight: 700; color: var(--accent-color); margin-bottom: 1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem;">
+            1. Personal & Contact Details
         </h3>
 
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.25rem; margin-bottom: 2rem;">
@@ -63,13 +70,13 @@
         </div>
 
         <!-- Section 2: Guardian Details -->
-        <h3 style="font-size: 1rem; color: #a5b4fc; margin-bottom: 1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem;">
-            2. Guardian Details
+        <h3 style="font-size: 1rem; font-weight: 700; color: var(--accent-color); margin-bottom: 1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem;">
+            2. Parent & Guardian Details
         </h3>
 
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.25rem; margin-bottom: 2rem;">
             <div class="form-group">
-                <label class="form-label" for="guardian_name">Guardian Name *</label>
+                <label class="form-label" for="guardian_name">Guardian Full Name *</label>
                 <input type="text" id="guardian_name" name="guardian_name" class="form-control" required placeholder="Father / Mother / Guardian Name">
             </div>
 
@@ -94,7 +101,7 @@
         </div>
 
         <!-- Section 3: Academic Placement -->
-        <h3 style="font-size: 1rem; color: #a5b4fc; margin-bottom: 1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem;">
+        <h3 style="font-size: 1rem; font-weight: 700; color: var(--accent-color); margin-bottom: 1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem;">
             3. Academic Placement
         </h3>
 
@@ -104,7 +111,7 @@
                 <select id="academic_year_id" name="academic_year_id" class="form-control" required>
                     <?php foreach ($academicYears as $ay): ?>
                         <option value="<?= $ay['id'] ?>" <?= (int)$ay['is_current'] === 1 ? 'selected' : '' ?>>
-                            <?= e($ay['name']) ?> <?= (int)$ay['is_current'] === 1 ? '(Current)' : '' ?>
+                            <?= e($ay['name']) ?> <?= (int)$ay['is_current'] === 1 ? '(Active Session)' : '' ?>
                         </option>
                     <?php endforeach; ?>
                 </select>
@@ -145,43 +152,47 @@
                 <select id="section_id" name="section_id" class="form-control" required>
                     <option value="">-- Select Section --</option>
                     <?php foreach ($sections as $sec): ?>
-                        <option value="<?= $sec['id'] ?>"><?= e($sec['course_code']) ?> - Sem <?= e($sec['semester_number']) ?> (Sec <?= e($sec['name']) ?>)</option>
+                        <?php 
+                            $secName = $sec['name'] ?? '';
+                            $cleanSec = (strpos(strtolower($secName), 'section') !== false) ? $secName : 'Section ' . $secName;
+                        ?>
+                        <option value="<?= $sec['id'] ?>"><?= e($sec['course_code']) ?> - Sem <?= e($sec['semester_number']) ?> (<?= e($cleanSec) ?>)</option>
                     <?php endforeach; ?>
                 </select>
             </div>
         </div>
 
         <!-- Section 4: Document Upload -->
-        <h3 style="font-size: 1rem; color: #a5b4fc; margin-bottom: 1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem;">
+        <h3 style="font-size: 1rem; font-weight: 700; color: var(--accent-color); margin-bottom: 1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem;">
             4. Document Attachments
         </h3>
 
         <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 1.25rem; margin-bottom: 2rem;">
             <div class="form-group">
-                <label class="form-label">Document 1 Type</label>
+                <label class="form-label">Document Category</label>
                 <select name="document_types[]" class="form-control">
-                    <option value="aadhar">Aadhar Card</option>
+                    <option value="aadhar">Aadhaar Card / Govt ID</option>
                     <option value="birth_cert">Birth Certificate</option>
                     <option value="tc">Transfer Certificate (TC)</option>
                     <option value="marksheet">Marksheet</option>
                 </select>
             </div>
             <div class="form-group">
-                <label class="form-label">Upload File</label>
+                <label class="form-label">Upload File (PDF, JPG, PNG)</label>
                 <input type="file" name="documents[]" class="form-control">
             </div>
         </div>
 
         <!-- System Action Note -->
-        <div style="background: rgba(99, 102, 241, 0.1); border: 1px solid rgba(99, 102, 241, 0.3); padding: 1rem; border-radius: 0.5rem; margin-bottom: 2rem;">
-            <strong style="color: #a5b4fc;">⚡ Automated System Action:</strong>
-            <p style="font-size: 0.8125rem; color: var(--text-secondary); margin-top: 0.25rem;">
-                Submitting this form will automatically generate the student record, assign current academic placement, attach uploaded documents, and provision an Admin-managed login user account (Username: Roll No, Default Password: <code>Student123!</code>).
+        <div style="background: rgba(2, 132, 199, 0.1); border: 1px solid var(--border-color); padding: 1.25rem; border-radius: 8px; margin-bottom: 2rem;">
+            <strong style="color: var(--accent-color); font-size: 0.9375rem;">⚡ Automated System Provisioning:</strong>
+            <p style="font-size: 0.8125rem; color: var(--text-secondary); margin: 0.25rem 0 0 0; line-height: 1.4;">
+                Submitting this form will automatically generate the student record, assign academic placement, attach uploaded documents, and provision an Admin-managed login account (Username: Roll No, Default Password: <code>Student123!</code>).
             </p>
         </div>
 
-        <div style="text-align: right;">
-            <button type="submit" class="btn-primary" style="width: auto; padding: 0.875rem 2.5rem;">Execute Student Admission</button>
+        <div style="text-align: right; border-top: 1px solid var(--border-color); padding-top: 1.25rem;">
+            <button type="submit" class="btn-primary" style="width: auto; padding: 0.875rem 3rem; font-weight: 700;">Execute Student Admission</button>
         </div>
     </form>
 </div>

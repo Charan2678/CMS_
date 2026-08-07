@@ -29,76 +29,123 @@ class DashboardController extends Controller
         $role   = auth_role();
         $userId = auth_id();
 
-        // System-wide metric counts
-        $studentCount = (int) db()->query("SELECT COUNT(*) FROM students WHERE status = 'active'")->fetchColumn();
-        $facultyCount = (int) db()->query("SELECT COUNT(*) FROM faculty WHERE status = 'active'")->fetchColumn();
-        $staffCount   = (int) db()->query("SELECT COUNT(*) FROM staff WHERE status = 'active'")->fetchColumn();
-        $deptCount    = (int) db()->query("SELECT COUNT(*) FROM departments WHERE status = 1")->fetchColumn();
-        $courseCount  = (int) db()->query("SELECT COUNT(*) FROM courses WHERE status = 1")->fetchColumn();
+        // System-wide metric counts with error-resilient fallbacks
+        try {
+            $studentCount = (int) db()->query("SELECT COUNT(*) FROM students WHERE status = 'active'")->fetchColumn();
+        } catch (\Throwable $e) {
+            $studentCount = 0;
+        }
 
-        // Total Financial Collections
-        $totalFeeCollected = (float) db()->query("SELECT COALESCE(SUM(amount_paid), 0) FROM fee_payments")->fetchColumn();
+        try {
+            $facultyCount = (int) db()->query("SELECT COUNT(*) FROM faculty WHERE status = 'active'")->fetchColumn();
+        } catch (\Throwable $e) {
+            $facultyCount = 0;
+        }
+
+        try {
+            $staffCount = (int) db()->query("SELECT COUNT(*) FROM staff WHERE status = 'active'")->fetchColumn();
+        } catch (\Throwable $e) {
+            $staffCount = 0;
+        }
+
+        try {
+            $deptCount = (int) db()->query("SELECT COUNT(*) FROM departments WHERE status = 1")->fetchColumn();
+        } catch (\Throwable $e) {
+            $deptCount = 0;
+        }
+
+        try {
+            $courseCount = (int) db()->query("SELECT COUNT(*) FROM courses WHERE status = 1")->fetchColumn();
+        } catch (\Throwable $e) {
+            $courseCount = 0;
+        }
+
+        // Total Financial Collections (queries `payments` table)
+        try {
+            $totalFeeCollected = (float) (db()->query("SELECT COALESCE(SUM(amount_paid), 0) FROM payments")->fetchColumn() ?: 0);
+        } catch (\Throwable $e) {
+            $totalFeeCollected = 0.00;
+        }
 
         // Announcements Feed
-        $notificationService = new NotificationService();
-        $announcements       = $notificationService->getAnnouncements(1);
+        $announcements = [];
+        try {
+            $notificationService = new NotificationService();
+            $announcements       = $notificationService->getAnnouncements(1);
+        } catch (\Throwable $e) {
+            $announcements = [];
+        }
 
         // Audit Logs (for admin/super_admin)
         $auditLogs = [];
         if (in_array($role, ['super_admin', 'admin'])) {
-            $stmt = db()->query("
-                SELECT al.*, u.username 
-                FROM audit_logs al 
-                LEFT JOIN users u ON u.id = al.user_id 
-                ORDER BY al.id DESC 
-                LIMIT 5
-            ");
-            $auditLogs = $stmt ? ($stmt->fetchAll() ?: []) : [];
+            try {
+                $stmt = db()->query("
+                    SELECT al.*, u.username 
+                    FROM audit_logs al 
+                    LEFT JOIN users u ON u.id = al.user_id 
+                    ORDER BY al.id DESC 
+                    LIMIT 5
+                ");
+                $auditLogs = $stmt ? ($stmt->fetchAll() ?: []) : [];
+            } catch (\Throwable $e) {
+                $auditLogs = [];
+            }
         }
 
         // Department-wise distribution
-        $deptStats = db()->query("
-            SELECT d.name, d.code, COUNT(s.id) AS student_count
-            FROM departments d
-            LEFT JOIN student_academics sa ON sa.department_id = d.id AND sa.is_current = 1
-            LEFT JOIN students s ON s.id = sa.student_id AND s.status = 'active'
-            WHERE d.status = 1
-            GROUP BY d.id
-        ")->fetchAll() ?: [];
+        $deptStats = [];
+        try {
+            $stmt = db()->query("
+                SELECT d.name, d.code, COUNT(s.id) AS student_count
+                FROM departments d
+                LEFT JOIN student_academics sa ON sa.department_id = d.id AND sa.is_current = 1
+                LEFT JOIN students s ON s.id = sa.student_id AND s.status = 'active'
+                WHERE d.status = 1
+                GROUP BY d.id
+            ");
+            $deptStats = $stmt ? ($stmt->fetchAll() ?: []) : [];
+        } catch (\Throwable $e) {
+            $deptStats = [];
+        }
 
         // Real-time Student Metrics
         $studentData = [];
         if ($role === 'student' && $userId) {
-            $attendanceService = new AttendanceService();
-            $feeService        = new FeeService();
-            $resultService     = new ResultService();
-            $canteenService    = new CanteenService();
+            try {
+                $attendanceService = new AttendanceService();
+                $feeService        = new FeeService();
+                $resultService     = new ResultService();
+                $canteenService    = new CanteenService();
 
-            $studentId = $attendanceService->getStudentIdFromUser($userId);
+                $studentId = $attendanceService->getStudentIdFromUser($userId);
 
-            if ($studentId) {
-                $attSummary = $attendanceService->getStudentSummary($studentId);
-                $feeSummary = $feeService->getFeesForStudent($studentId);
-                $timetable  = $resultService->getStudentTimetable($studentId);
-                $allResults = $resultService->getStudentAllSemesterResults($studentId);
-            } else {
-                $attSummary = ['percentage' => 0, 'total_conducted' => 0, 'total_present' => 0, 'total_absent' => 0];
-                $feeSummary = ['total_payable' => 0, 'total_paid' => 0, 'balance_due' => 0];
-                $timetable  = [];
-                $allResults = [];
+                if ($studentId) {
+                    $attSummary = $attendanceService->getStudentSummary($studentId);
+                    $feeSummary = $feeService->getFeesForStudent($studentId);
+                    $timetable  = $resultService->getStudentTimetable($studentId);
+                    $allResults = $resultService->getStudentAllSemesterResults($studentId);
+                } else {
+                    $attSummary = ['percentage' => 0, 'total_conducted' => 0, 'total_present' => 0, 'total_absent' => 0];
+                    $feeSummary = ['total_payable' => 0, 'total_paid' => 0, 'balance_due' => 0];
+                    $timetable  = [];
+                    $allResults = [];
+                }
+
+                $canteenOrders = $canteenService->getUserOrders($userId);
+
+                $studentData = [
+                    'student_id'    => $studentId,
+                    'attendance'    => $attSummary,
+                    'fee'           => $feeSummary,
+                    'timetable'     => $timetable,
+                    'all_results'   => $allResults,
+                    'announcements' => $announcements,
+                    'canteen'       => $canteenOrders,
+                ];
+            } catch (\Throwable $e) {
+                $studentData = [];
             }
-
-            $canteenOrders = $canteenService->getUserOrders($userId);
-
-            $studentData = [
-                'student_id'    => $studentId,
-                'attendance'    => $attSummary,
-                'fee'           => $feeSummary,
-                'timetable'     => $timetable,
-                'all_results'   => $allResults,
-                'announcements' => $announcements,
-                'canteen'       => $canteenOrders,
-            ];
         }
 
         $this->render('Dashboard/views/index', [

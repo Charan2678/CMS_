@@ -18,7 +18,13 @@ declare(strict_types=1);
  * ============================================================
  */
 
-declare(strict_types=1);
+// Support for PHP CLI built-in web server static files
+if (php_sapi_name() === 'cli-server') {
+    $url = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+    if ($url !== '/' && file_exists(__DIR__ . $url) && !is_dir(__DIR__ . $url)) {
+        return false;
+    }
+}
 
 // ─── Path Constants ──────────────────────────────────────────
 define('BASE_PATH',    dirname(__DIR__));
