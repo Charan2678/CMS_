@@ -556,8 +556,8 @@ textarea:focus {
     background: var(--bg-surface) !important;
 }
 
-/* Select chevron */
-select {
+/* Select chevron - higher specificity to override .form-control background */
+select.form-control, select {
     background-color: var(--input-bg) !important;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='9' viewBox='0 0 14 9'%3E%3Cpath d='M1 1l6 6 6-6' stroke='%2364748b' stroke-width='1.8' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") !important;
     background-repeat: no-repeat !important;
@@ -565,6 +565,9 @@ select {
     background-size: 13px 8px !important;
     padding-right: 2.5rem !important;
     cursor: pointer;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
 }
 
 select option {
@@ -759,6 +762,15 @@ button[type="submit"]:active {
    Used on: sections, subjects, courses, departments,
             academic_years pages
    ============================================================ */
+.page-split, .dashboard-grid-2, .dashboard-grid-equal, .form-grid-2 {
+    /* Prevent grid blowout from long text inside cards/inputs */
+    min-width: 0;
+}
+
+.page-split > *, .dashboard-grid-2 > *, .dashboard-grid-equal > *, .form-grid-2 > * {
+    min-width: 0;
+}
+
 .page-split {
     display: grid;
     grid-template-columns: 340px 1fr;
@@ -1023,8 +1035,8 @@ button[type="submit"]:active {
         padding: 0.875rem;
     }
 
-    /* Inner form grids → single column */
-    .form-grid-2 { grid-template-columns: 1fr; }
+    /* Inner form grids → stay 2 cols for short fields like numbers/credits */
+    .form-grid-2 { grid-template-columns: 1fr 1fr; gap: 0.5rem; }
 
     .metric-card { padding: 1rem; }
     .metric-value { font-size: 1.5rem; }
