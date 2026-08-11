@@ -11,6 +11,30 @@ $isShortage = $attPercentage < 75.0;
 $feeBalance = (float) ($fee['balance_due'] ?? 0);
 ?>
 
+<?php if ($role === 'parent'): ?>
+    <?php $ward = $sData['ward_info'] ?? null; ?>
+    <div style="background: linear-gradient(135deg, rgba(37, 99, 235, 0.15) 0%, rgba(14, 165, 233, 0.1) 100%); border: 1px solid rgba(37, 99, 235, 0.3); border-radius: 12px; padding: 1.25rem 1.5rem; margin-bottom: 1.5rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
+        <div style="display: flex; align-items: center; gap: 1rem;">
+            <div style="width: 52px; height: 52px; border-radius: 50%; background: var(--accent-color); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: 700;">
+                👨‍👩‍👧
+            </div>
+            <div>
+                <div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--accent-color); font-weight: 700;">Parent &amp; Guardian Portal</div>
+                <h2 style="margin: 0.15rem 0 0 0; font-size: 1.25rem; font-weight: 700; color: var(--text-primary);">
+                    Monitoring Ward: <?= e($ward ? trim($ward['first_name'] . ' ' . $ward['last_name']) : ($_SESSION['ward_name'] ?? 'Enrolled Student')) ?>
+                </h2>
+                <div style="font-size: 0.8125rem; color: var(--text-secondary); margin-top: 0.25rem;">
+                    Roll Number: <strong style="color: var(--text-primary);"><?= e($ward['roll_number'] ?? ($_SESSION['ward_roll_number'] ?? 'N/A')) ?></strong> &bull; 
+                    Course: <strong style="color: var(--text-primary);"><?= e($ward['course_name'] ?? 'B.Tech CSE') ?> (Sem <?= e($ward['semester_number'] ?? '1') ?><?= !empty($ward['section_name']) ? ' - ' . e($ward['section_name']) : '' ?>)</strong>
+                </div>
+            </div>
+        </div>
+        <div>
+            <span class="badge badge-success" style="font-size: 0.875rem; padding: 0.5rem 1rem;">🎓 Active Student Standing</span>
+        </div>
+    </div>
+<?php endif; ?>
+
 <!-- Metric Summary Cards — Full Width Grid -->
 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.25rem; margin-bottom: 2rem; width: 100%;">
     <?php if (in_array($role, ['super_admin', 'admin', 'hod', 'staff', 'accounts_staff'])): ?>
@@ -54,11 +78,11 @@ $feeBalance = (float) ($fee['balance_due'] ?? 0);
             <div class="metric-icon" style="font-size: 2rem;">💳</div>
         </div>
 
-    <?php elseif ($role === 'student'): ?>
+    <?php elseif (in_array($role, ['student', 'parent'])): ?>
         <!-- Real-Time Attendance Card -->
         <div class="metric-card" style="border-left: 4px solid <?= $isShortage ? 'var(--danger)' : 'var(--success)' ?> !important;">
             <div>
-                <div class="metric-label">Overall Attendance</div>
+                <div class="metric-label"><?= $role === 'parent' ? "Ward's Attendance" : 'Overall Attendance' ?></div>
                 <div class="metric-value" style="color: <?= $isShortage ? 'var(--danger)' : 'var(--success)' ?>;">
                     <?= number_format($attPercentage, 1) ?>%
                 </div>
@@ -76,7 +100,7 @@ $feeBalance = (float) ($fee['balance_due'] ?? 0);
         <!-- Real-Time Fee Clearance Card -->
         <div class="metric-card" style="border-left: 4px solid <?= $feeBalance > 0 ? 'var(--warning)' : 'var(--success)' ?> !important;">
             <div>
-                <div class="metric-label">Fee Dues & Clearance</div>
+                <div class="metric-label"><?= $role === 'parent' ? "Ward's Fee Dues" : 'Fee Dues & Clearance' ?></div>
                 <div class="metric-value" style="color: <?= $feeBalance > 0 ? 'var(--warning)' : 'var(--success)' ?>;">
                     <?= $feeBalance > 0 ? '₹' . number_format($feeBalance, 2) . ' Due' : 'Paid (No Dues)' ?>
                 </div>
@@ -91,54 +115,44 @@ $feeBalance = (float) ($fee['balance_due'] ?? 0);
             <div class="metric-icon" style="font-size: 2rem;">💳</div>
         </div>
 
-        <!-- Active Semester & CGPA Card -->
+        <!-- Active Semester Card -->
         <div class="metric-card" style="border-left: 4px solid var(--accent-color) !important;">
             <div>
-                <div class="metric-label">Academic Standing</div>
-                <div class="metric-value" style="font-size: 1.5rem;">
-                    Sem 5 <span style="font-size: 0.9375rem; color: var(--text-secondary);">(CGPA 8.45)</span>
+                <div class="metric-label">Academic Placement</div>
+                <div class="metric-value" style="font-size: 1.35rem;">
+                    <?= e($sData['ward_info']['course_name'] ?? 'B.Tech CSE') ?>
                 </div>
                 <div style="margin-top: 0.35rem;">
-                    <span class="badge badge-info">🎓 B.Tech CSE</span>
+                    <span class="badge badge-info">🎓 Semester <?= e($sData['ward_info']['semester_number'] ?? '1') ?></span>
                 </div>
             </div>
             <div class="metric-icon" style="font-size: 2rem;">🏆</div>
         </div>
 
-        <!-- Active Canteen Token Status -->
+        <!-- College Notices / Active Status -->
         <div class="metric-card" style="border-left: 4px solid var(--warning) !important;">
             <div>
-                <div class="metric-label">Canteen Active Token</div>
-                <?php if (!empty($canteenOrders)): ?>
-                    <?php $latestOrder = $canteenOrders[0]; ?>
-                    <div class="metric-value" style="font-size: 1rem; font-family: monospace; color: var(--accent-color);">
-                        <?= e($latestOrder['order_number']) ?>
-                    </div>
-                    <div style="margin-top: 0.35rem;">
-                        <span class="badge badge-info" style="text-transform: uppercase;">
-                            🍳 <?= e($latestOrder['order_status']) ?> (<?= e($latestOrder['item_name']) ?>)
-                        </span>
-                    </div>
-                <?php else: ?>
-                    <div class="metric-value" style="font-size: 1rem; color: var(--text-secondary);">No Active Order</div>
-                    <div style="margin-top: 0.35rem;">
-                        <a href="/canteen" style="font-size: 0.75rem; color: var(--accent-color); text-decoration: none; font-weight: 600;">Order Canteen Food &rarr;</a>
-                    </div>
-                <?php endif; ?>
+                <div class="metric-label">Campus Announcements</div>
+                <div class="metric-value" style="font-size: 1.35rem; color: var(--warning);">
+                    <?= count($ancList) ?> Active
+                </div>
+                <div style="margin-top: 0.35rem;">
+                    <a href="/announcements" style="font-size: 0.75rem; color: var(--accent-color); text-decoration: none; font-weight: 600;">View Circulars &rarr;</a>
+                </div>
             </div>
-            <div class="metric-icon" style="font-size: 2rem;">☕</div>
+            <div class="metric-icon" style="font-size: 2rem;">📢</div>
         </div>
     <?php endif; ?>
 </div>
 
-<?php if ($role === 'student'): ?>
-<!-- Student Dashboard Main Grid -->
+<?php if (in_array($role, ['student', 'parent'])): ?>
+<!-- Student & Parent Dashboard Main Grid -->
 <div class="dashboard-grid-2">
     <!-- Active Announcements Board -->
     <div class="card">
         <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem;">
             <h2 style="font-size: 1.125rem; font-weight: 700; color: var(--text-primary); margin: 0; display: flex; align-items: center; gap: 0.5rem;">
-                <span>📢</span> Campus Live Announcements & Circulars
+                <span>📢</span> Campus Live Announcements &amp; Circulars
             </h2>
             <a href="/announcements" style="font-size: 0.8125rem; color: var(--accent-color); text-decoration: none; font-weight: 600;">View All &rarr;</a>
         </div>

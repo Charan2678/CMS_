@@ -31,10 +31,21 @@
                         <h2 style="font-size: 1.35rem; font-weight: 700; color: var(--text-primary); margin: 0.25rem 0 0;"><?= e($sem['semester_name']) ?> — <?= e($sem['academic_year_name']) ?></h2>
                     </div>
 
-                    <div style="display: flex; align-items: center; gap: 1.5rem;">
+                    <div style="display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap;">
+                        <div style="text-align: right; background: rgba(37,99,235,0.08); padding: 0.4rem 0.875rem; border-radius: 8px; border: 1px solid rgba(37,99,235,0.2);">
+                            <div style="font-size: 0.7rem; text-transform: uppercase; font-weight: 700; color: var(--accent-color);">Semester SGPA</div>
+                            <div style="font-size: 1.35rem; font-weight: 800; color: var(--accent-color);"><?= number_format((float)($sem['sgpa'] ?? 0), 2) ?> <span style="font-size: 0.75rem; color: var(--text-secondary);">/ 10.0</span></div>
+                        </div>
+
+                        <div style="text-align: right; background: rgba(16,185,129,0.08); padding: 0.4rem 0.875rem; border-radius: 8px; border: 1px solid rgba(16,185,129,0.2);">
+                            <div style="font-size: 0.7rem; text-transform: uppercase; font-weight: 700; color: var(--success);">Cumulative CGPA</div>
+                            <div style="font-size: 1.35rem; font-weight: 800; color: var(--success);"><?= number_format((float)($sem['cgpa'] ?? 0), 2) ?> <span style="font-size: 0.75rem; color: var(--text-secondary);">/ 10.0</span></div>
+                        </div>
+
                         <div style="text-align: right;">
                             <div style="font-size: 0.75rem; color: var(--text-secondary);">Total Marks / Grade</div>
-                            <div style="font-size: 1.25rem; font-weight: 700; color: var(--text-primary);"><?= number_format($sem['total_marks'], 1) ?> <span style="font-size: 0.875rem; color: var(--accent-color);">(<?= e($sem['grade']) ?>)</span></div>
+                            <div style="font-size: 1.15rem; font-weight: 700; color: var(--text-primary);"><?= number_format($sem['total_marks'], 1) ?> <span style="font-size: 0.875rem; color: var(--accent-color);">(<?= e($sem['grade']) ?>)</span></div>
+                            <div style="font-size: 0.7rem; color: var(--text-secondary);">Earned Credits: <?= number_format((float)($sem['earned_credits'] ?? 0), 1) ?> / <?= number_format((float)($sem['sem_credits'] ?? 0), 1) ?></div>
                         </div>
 
                         <div>

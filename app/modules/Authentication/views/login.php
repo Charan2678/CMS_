@@ -67,6 +67,9 @@
                             <input type="radio" name="role_type" value="student" <?= ($roleType ?? 'student') === 'student' ? 'checked' : '' ?>> Student
                         </label>
                         <label class="role-option">
+                            <input type="radio" name="role_type" value="parent" <?= ($roleType ?? 'student') === 'parent' ? 'checked' : '' ?>> Parent
+                        </label>
+                        <label class="role-option">
                             <input type="radio" name="role_type" value="admin" <?= ($roleType ?? 'student') === 'admin' ? 'checked' : '' ?>> Admin
                         </label>
                     </div>
@@ -75,9 +78,9 @@
                 <!-- Username Field -->
                 <div class="form-group">
                     <label class="field-label" for="login_id">
-                        <span class="req-star">*</span>Username
+                        <span class="req-star">*</span>Username / Mobile
                     </label>
-                    <input type="text" id="login_id" name="login_id" class="form-input" required autofocus placeholder="Enter Roll Number / Employee ID" value="<?= e($loginIdVal ?? '') ?>">
+                    <input type="text" id="login_id" name="login_id" class="form-input" required autofocus placeholder="Enter Roll Number / Mobile / ID" value="<?= e($loginIdVal ?? '') ?>">
                 </div>
 
                 <!-- Password Field -->

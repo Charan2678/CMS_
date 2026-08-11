@@ -147,6 +147,25 @@ class StudentController extends Controller
     }
 
     /**
+     * Provision or reset parent login account and dispatch credentials.
+     */
+    public function provisionParent(string $id): void
+    {
+        Permission::enforce('student.edit');
+
+        $studentId = (int) $id;
+        $res = $this->studentService->provisionParentAccount($studentId);
+
+        if ($res['success']) {
+            flash('success', $res['message']);
+        } else {
+            flash('error', $res['message']);
+        }
+
+        $this->redirect('/students/' . $studentId);
+    }
+
+    /**
      * Interactive My Profile self-service portal for logged in student.
      */
     public function myProfile(): void
@@ -223,9 +242,11 @@ class StudentController extends Controller
         }
 
         $student = $this->studentService->getStudentProfile($studentId);
+        $isParent = auth_role() === 'parent';
+        $title = $isParent ? 'Child Profile: ' . trim(($student['first_name'] ?? '') . ' ' . ($student['last_name'] ?? '')) : 'My Profile & Document Center';
 
         $this->render('Student/views/profile', [
-            'title'   => 'My Profile & Document Center',
+            'title'   => $title,
             'student' => $student,
             'error'   => $error,
             'success' => $success,

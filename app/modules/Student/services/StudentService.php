@@ -11,6 +11,14 @@ use PDO;
 class StudentService
 {
     /**
+     * Get students alias.
+     */
+    public function getStudents(int $collegeId = 1, int $page = 1, int $perPage = 100): array
+    {
+        return $this->getAllStudents($collegeId, [], $page, $perPage);
+    }
+
+    /**
      * Get paginated/filtered list of students.
      */
     public function getAllStudents(int $collegeId = 1, array $filters = [], int $page = 1, int $perPage = 25): array
@@ -74,6 +82,16 @@ class StudentService
             'per_page'    => $perPage,
             'total_pages' => (int) ceil($total / $perPage),
         ];
+    }
+
+    /**
+     * Get Student record by ID.
+     */
+    public function getStudentById(int $studentId): ?array
+    {
+        $stmt = db()->prepare('SELECT * FROM students WHERE id = :id LIMIT 1');
+        $stmt->execute([':id' => $studentId]);
+        return $stmt->fetch() ?: null;
     }
 
     /**
@@ -185,7 +203,9 @@ class StudentService
                 ':section_id'       => (int) $data['section_id'],
             ]);
 
-            // 3. Insert Guardian Info
+            // 3. Insert Guardian Info & Auto-Provision Parent User Account
+            $guardianId = null;
+            $parentTempPassword = null;
             if (!empty($data['guardian_name'])) {
                 $gStmt = db()->prepare('
                     INSERT INTO guardians (
@@ -202,6 +222,29 @@ class StudentService
                     ':email'        => $data['guardian_email'] ?? null,
                     ':occupation'   => $data['guardian_occupation'] ?? null,
                     ':annual_income'=> !empty($data['guardian_income']) ? (float)$data['guardian_income'] : null,
+                ]);
+                $guardianId = (int) db()->lastInsertId();
+
+                // Auto-create Parent User Account
+                $parentUsername = !empty($data['guardian_mobile']) ? preg_replace('/[^0-9]/', '', (string)$data['guardian_mobile']) : 'parent_' . strtolower($data['roll_number']);
+                $parentEmail    = !empty($data['guardian_email']) ? $data['guardian_email'] : 'parent.' . strtolower($data['roll_number']) . '@kuppam.edu.in';
+                $parentTempPassword = 'P' . substr(bin2hex(random_bytes(4)), 0, 7) . '!';
+                $parentPassHash = Security::hashPassword($parentTempPassword);
+
+                $puStmt = db()->prepare('
+                    INSERT INTO users (
+                        college_id, username, email, password_hash, role_id, linked_type, linked_id, is_active, must_change_password, created_by, created_at
+                    ) VALUES (
+                        :college_id, :username, :email, :password_hash, 11, "parent", :linked_id, 1, 1, :created_by, NOW()
+                    )
+                ');
+                $puStmt->execute([
+                    ':college_id'    => $data['college_id'] ?? 1,
+                    ':username'      => $parentUsername,
+                    ':email'         => $parentEmail,
+                    ':password_hash' => $parentPassHash,
+                    ':linked_id'     => $guardianId,
+                    ':created_by'    => auth_id() ?? 1,
                 ]);
             }
 
@@ -251,13 +294,13 @@ class StudentService
                 }
             }
 
-            // 5. System Action: Create Student User Login Account
-            // Find Student Role ID (role code = 'student')
+            // 5. System Action: Create Student User Login Account with Random Secure Temporary Password
             $rStmt = db()->prepare('SELECT id FROM roles WHERE code = "student" LIMIT 1');
             $rStmt->execute();
-            $studentRoleId = (int) ($rStmt->fetchColumn() ?: 6);
+            $studentRoleId = (int) ($rStmt->fetchColumn() ?: 10);
 
-            $defaultPasswordHash = Security::hashPassword('Student123!');
+            $studentTempPassword = 'S' . substr(bin2hex(random_bytes(4)), 0, 7) . '!';
+            $defaultPasswordHash = Security::hashPassword($studentTempPassword);
 
             $uStmt = db()->prepare('
                 INSERT INTO users (
@@ -279,12 +322,15 @@ class StudentService
 
             db()->commit();
 
-            // Auto-dispatch credentials email to student's personal email
-            $this->sendCredentialsEmail($studentId);
+            // Auto-dispatch credentials email to student and parent
+            $this->sendCredentialsEmail($studentId, $studentTempPassword);
+            if ($guardianId && $parentTempPassword) {
+                $this->sendParentCredentialsEmail($guardianId, $parentTempPassword);
+            }
 
             return [
                 'success'    => true,
-                'message'    => 'Student admitted successfully! Account credentials generated and sent to personal email (Username: ' . $data['roll_number'] . ', Default Password: Student123!).',
+                'message'    => 'Student admitted successfully! Login accounts created for Student (Password: ' . $studentTempPassword . ') and Parent (Password: ' . ($parentTempPassword ?? 'N/A') . '). Credentials dispatched via email.',
                 'student_id' => $studentId
             ];
 
@@ -300,7 +346,7 @@ class StudentService
     /**
      * Dispatch Login Credentials Email to Student's Personal Email.
      */
-    public function sendCredentialsEmail(int $studentId): bool
+    public function sendCredentialsEmail(int $studentId, ?string $tempPassword = null): bool
     {
         $student = $this->getStudentById($studentId);
         if (!$student || empty($student['email'])) {
@@ -312,19 +358,122 @@ class StudentService
         $to         = $student['email'];
         $subject    = "Welcome to Kuppam Engineering College — ERP Login Credentials";
         $loginUrl   = env('APP_URL', 'http://localhost:8000/login');
+        $passToDisplay = $tempPassword ?? 'Student123!';
 
         $body = "
             <h2 style='color:#0284c7;'>Welcome to Kuppam Engineering College, {$name}!</h2>
-            <p>Your student ERP portal account has been successfully generated. Below are your official login credentials to access your attendance, fees, timetable, and exam hall tickets:</p>
+            <p>Your student ERP portal account has been successfully generated. Below are your official login credentials to access your attendance, fees, timetable, results, and exam hall tickets:</p>
             <div style='background:#f8fafc; border:1px solid #cbd5e1; padding:15px 20px; border-radius:6px; margin:20px 0;'>
                 <p style='margin:5px 0;'><strong>Portal Login URL:</strong> <a href='{$loginUrl}' style='color:#0284c7;'>{$loginUrl}</a></p>
+                <p style='margin:5px 0;'><strong>Role Type:</strong> <span style='background:#e2e8f0; padding:2px 6px; border-radius:4px;'>Student</span></p>
                 <p style='margin:5px 0;'><strong>Username (Roll Number):</strong> <code style='background:#e2e8f0; padding:2px 6px; border-radius:4px;'>{$rollNumber}</code></p>
-                <p style='margin:5px 0;'><strong>Default Password:</strong> <code style='background:#e2e8f0; padding:2px 6px; border-radius:4px;'>Student123!</code></p>
+                <p style='margin:5px 0;'><strong>Temporary Password:</strong> <code style='background:#e2e8f0; padding:2px 6px; border-radius:4px;'>{$passToDisplay}</code></p>
             </div>
             <p style='color:#dc2626; font-size:13px;'><strong>Security Notice:</strong> You will be prompted to set a new custom password upon your first login.</p>
         ";
 
         return send_mail($to, $subject, $body);
+    }
+
+    /**
+     * Dispatch Login Credentials Email to Parent/Guardian.
+     */
+    public function sendParentCredentialsEmail(int $guardianId, ?string $tempPassword = null): bool
+    {
+        $stmt = db()->prepare('
+            SELECT g.*, s.roll_number, s.first_name AS s_first, s.last_name AS s_last
+            FROM guardians g
+            JOIN students s ON s.id = g.student_id
+            WHERE g.id = :gid LIMIT 1
+        ');
+        $stmt->execute([':gid' => $guardianId]);
+        $guardian = $stmt->fetch();
+
+        if (!$guardian || empty($guardian['email'])) {
+            return false;
+        }
+
+        $parentName = $guardian['name'];
+        $wardName   = $guardian['s_first'] . ' ' . $guardian['s_last'];
+        $wardRoll   = $guardian['roll_number'];
+        $username   = !empty($guardian['mobile']) ? preg_replace('/[^0-9]/', '', (string)$guardian['mobile']) : 'parent_' . strtolower($wardRoll);
+        $to         = $guardian['email'];
+        $subject    = "Kuppam Engineering College — Parent & Guardian Portal Credentials";
+        $loginUrl   = env('APP_URL', 'http://localhost:8000/login');
+        $passToDisplay = $tempPassword ?? 'Parent123!';
+
+        $body = "
+            <h2 style='color:#0284c7;'>Dear {$parentName},</h2>
+            <p>Welcome to the Kuppam Engineering College Parent &amp; Guardian Portal. You can monitor your ward <strong>{$wardName} ({$wardRoll})</strong>'s daily attendance, published semester marks, fee dues, and class timetables in real time:</p>
+            <div style='background:#f8fafc; border:1px solid #cbd5e1; padding:15px 20px; border-radius:6px; margin:20px 0;'>
+                <p style='margin:5px 0;'><strong>Portal Login URL:</strong> <a href='{$loginUrl}' style='color:#0284c7;'>{$loginUrl}</a></p>
+                <p style='margin:5px 0;'><strong>Role Type:</strong> <span style='background:#e2e8f0; padding:2px 6px; border-radius:4px;'>Parent</span></p>
+                <p style='margin:5px 0;'><strong>Login ID (Mobile Number):</strong> <code style='background:#e2e8f0; padding:2px 6px; border-radius:4px;'>{$username}</code></p>
+                <p style='margin:5px 0;'><strong>Temporary Password:</strong> <code style='background:#e2e8f0; padding:2px 6px; border-radius:4px;'>{$passToDisplay}</code></p>
+            </div>
+            <p style='color:#dc2626; font-size:13px;'><strong>Security Notice:</strong> Please change your temporary password upon logging into the portal.</p>
+        ";
+
+        return send_mail($to, $subject, $body);
+    }
+
+    /**
+     * Manually Provision or Reset Parent Login for a Student.
+     */
+    public function provisionParentAccount(int $studentId): array
+    {
+        $student = $this->getStudentById($studentId);
+        if (!$student) {
+            return ['success' => false, 'message' => 'Student not found.'];
+        }
+
+        $gStmt = db()->prepare('SELECT * FROM guardians WHERE student_id = :sid AND is_primary = 1 LIMIT 1');
+        $gStmt->execute([':sid' => $studentId]);
+        $guardian = $gStmt->fetch();
+
+        if (!$guardian) {
+            return ['success' => false, 'message' => 'No guardian details found for this student. Please add a guardian record first.'];
+        }
+
+        $guardianId = (int) $guardian['id'];
+        $parentUsername = !empty($guardian['mobile']) ? preg_replace('/[^0-9]/', '', (string)$guardian['mobile']) : 'parent_' . strtolower($student['roll_number']);
+        $parentEmail = !empty($guardian['email']) ? $guardian['email'] : 'parent.' . strtolower($student['roll_number']) . '@kuppam.edu.in';
+        $tempPass = 'P' . substr(bin2hex(random_bytes(4)), 0, 7) . '!';
+        $passHash = Security::hashPassword($tempPass);
+
+        // Check if user account already exists
+        $uStmt = db()->prepare('SELECT id FROM users WHERE linked_type = "parent" AND linked_id = :gid LIMIT 1');
+        $uStmt->execute([':gid' => $guardianId]);
+        $existingUserId = $uStmt->fetchColumn();
+
+        if ($existingUserId) {
+            $upStmt = db()->prepare('UPDATE users SET username = :username, password_hash = :hash, must_change_password = 1 WHERE id = :uid');
+            $upStmt->execute([':username' => $parentUsername, ':hash' => $passHash, ':uid' => $existingUserId]);
+        } else {
+            $inStmt = db()->prepare('
+                INSERT INTO users (
+                    college_id, username, email, password_hash, role_id, linked_type, linked_id, is_active, must_change_password, created_by, created_at
+                ) VALUES (
+                    1, :username, :email, :password_hash, 11, "parent", :linked_id, 1, 1, :created_by, NOW()
+                )
+            ');
+            $inStmt->execute([
+                ':username'      => $parentUsername,
+                ':email'         => $parentEmail,
+                ':password_hash' => $passHash,
+                ':linked_id'     => $guardianId,
+                ':created_by'    => auth_id() ?? 1,
+            ]);
+        }
+
+        $this->sendParentCredentialsEmail($guardianId, $tempPass);
+
+        return [
+            'success'  => true,
+            'message'  => 'Parent login generated successfully! Login ID: ' . $parentUsername . ', Temporary Password: ' . $tempPass . '. Credentials dispatched to email: ' . $parentEmail,
+            'username' => $parentUsername,
+            'password' => $tempPass,
+        ];
     }
 
     /**
@@ -379,7 +528,7 @@ class StudentService
                 SET name = :name, relationship = :rel, mobile = :mobile, email = :email, occupation = :occupation
                 WHERE id = :gid
             ');
-            return $stmt->execute([
+            $ok = $stmt->execute([
                 ':name'       => $data['guardian_name'],
                 ':rel'        => $data['guardian_relationship'] ?? 'father',
                 ':mobile'     => $data['guardian_mobile'] ?? null,
@@ -387,12 +536,16 @@ class StudentService
                 ':occupation' => $data['guardian_occupation'] ?? null,
                 ':gid'        => $existingId
             ]);
+            if ($ok) {
+                $this->provisionParentAccount($studentId);
+            }
+            return $ok;
         } else {
             $stmt = db()->prepare('
                 INSERT INTO guardians (student_id, relationship, name, mobile, email, occupation, is_primary, created_at)
                 VALUES (:student_id, :rel, :name, :mobile, :email, :occupation, 1, NOW())
             ');
-            return $stmt->execute([
+            $ok = $stmt->execute([
                 ':student_id' => $studentId,
                 ':rel'        => $data['guardian_relationship'] ?? 'father',
                 ':name'       => $data['guardian_name'],
@@ -400,6 +553,10 @@ class StudentService
                 ':email'      => $data['guardian_email'] ?? null,
                 ':occupation' => $data['guardian_occupation'] ?? null,
             ]);
+            if ($ok) {
+                $this->provisionParentAccount($studentId);
+            }
+            return $ok;
         }
     }
 

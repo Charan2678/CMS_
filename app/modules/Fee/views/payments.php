@@ -6,6 +6,58 @@
     <div class="alert alert-success" style="margin-bottom: 1.5rem;"><?= e($success) ?></div>
 <?php endif; ?>
 
+<?php if (!empty($pendingVerifications)): ?>
+<div class="card" style="margin-bottom: 2rem; border-top: 4px solid #f59e0b; background: rgba(245, 158, 11, 0.03);">
+    <h2 style="font-size: 1.125rem; font-weight: 700; color: var(--text-primary); margin-top: 0; margin-bottom: 1.25rem; display: flex; align-items: center; justify-content: space-between;">
+        <span style="display: flex; align-items: center; gap: 0.5rem;"><span>📱</span> Pending UPI / QR Verifications (<?= count($pendingVerifications) ?> Requests)</span>
+        <span class="badge badge-warning">Action Required</span>
+    </h2>
+
+    <div style="overflow-x: auto;">
+        <table class="table" style="width: 100%; border-collapse: collapse; font-size: 0.8125rem;">
+            <thead>
+                <tr style="border-bottom: 2px solid var(--border-color); text-align: left; background: var(--bg-main);">
+                    <th style="padding: 0.65rem 0.75rem;">Transaction Ref</th>
+                    <th style="padding: 0.65rem 0.75rem;">Student</th>
+                    <th style="padding: 0.65rem 0.75rem;">Fee Type</th>
+                    <th style="padding: 0.65rem 0.75rem;">Amount</th>
+                    <th style="padding: 0.65rem 0.75rem;">Bank UTR / Ref No</th>
+                    <th style="padding: 0.65rem 0.75rem;">Submitted At</th>
+                    <th style="padding: 0.65rem 0.75rem; text-align: center;">Counter Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php foreach ($pendingVerifications as $pv): ?>
+                    <tr style="border-bottom: 1px solid var(--border-color);">
+                        <td style="padding: 0.75rem; font-family: monospace; font-weight: 700; color: var(--accent-color);"><?= e($pv['transaction_reference']) ?></td>
+                        <td style="padding: 0.75rem;">
+                            <div style="font-weight: 700; color: var(--text-primary);"><?= e($pv['first_name'] . ' ' . $pv['last_name']) ?></div>
+                            <div style="font-size: 0.7rem; color: var(--text-secondary);"><?= e($pv['roll_number']) ?></div>
+                        </td>
+                        <td style="padding: 0.75rem;"><span class="badge badge-info" style="text-transform: uppercase;"><?= e($pv['fee_type']) ?></span></td>
+                        <td style="padding: 0.75rem; font-weight: 800; color: var(--success); font-size: 0.9375rem;">₹<?= number_format((float)$pv['amount'], 2) ?></td>
+                        <td style="padding: 0.75rem;">
+                            <code style="background: rgba(245, 158, 11, 0.15); color: #d97706; padding: 3px 8px; border-radius: 4px; font-weight: 700;"><?= e($pv['utr_reference']) ?></code>
+                        </td>
+                        <td style="padding: 0.75rem; color: var(--text-secondary); white-space: nowrap;"><?= date('d M, h:i A', strtotime($pv['created_at'])) ?></td>
+                        <td style="padding: 0.75rem; text-align: center;">
+                            <form method="POST" action="/fee/payments" style="display: inline;">
+                                <?= csrf_field() ?>
+                                <input type="hidden" name="_action" value="verify_utr">
+                                <input type="hidden" name="transaction_id" value="<?= $pv['id'] ?>">
+                                <button type="submit" class="btn btn-sm btn-success" style="padding: 0.35rem 0.75rem; font-weight: 700; font-size: 0.75rem;">
+                                    ✅ Confirm &amp; Post Receipt
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
+    </div>
+</div>
+<?php endif; ?>
+
 <div class="card">
     <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem;">
         <div>

@@ -7,17 +7,20 @@ namespace App\Modules\Fee\controllers;
 use App\Core\Controller;
 use App\Core\Permission;
 use App\Modules\Fee\services\FeeService;
+use App\Modules\Fee\services\PaymentGatewayService;
 use App\Modules\Master\services\MasterService;
 
 class FeeController extends Controller
 {
     private FeeService $feeService;
     private MasterService $masterService;
+    private PaymentGatewayService $gatewayService;
 
     public function __construct()
     {
-        $this->feeService    = new FeeService();
-        $this->masterService = new MasterService();
+        $this->feeService     = new FeeService();
+        $this->masterService  = new MasterService();
+        $this->gatewayService = new PaymentGatewayService();
     }
 
     /**
@@ -171,14 +174,11 @@ class FeeController extends Controller
     }
 
     /**
-     * Payments Processing.
-     */
-    /**
-     * Payments Processing / Student Fee Receipts.
+     * Payments Processing / Student Fee Receipts & Verification Ledger.
      */
     public function payments(): void
     {
-        if (auth_role() === 'student') {
+        if (in_array(auth_role(), ['student', 'parent'], true)) {
             $this->studentFees();
             return;
         }
@@ -192,21 +192,33 @@ class FeeController extends Controller
             if (!csrf_verify($this->input('_csrf_token'))) {
                 $error = 'Invalid security token.';
             } else {
-                $studentFeeId  = (int) $this->input('student_fee_id');
-                $amountPaid    = (float) $this->input('amount_paid');
-                $paymentMethod = $this->input('payment_method', 'cash');
-                $transactionId = $this->input('transaction_id') ?: null;
-                $remarks       = $this->input('remarks') ?: null;
+                $action = $this->input('_action', 'manual_payment');
 
-                if (empty($studentFeeId) || $amountPaid <= 0) {
-                    $error = 'Valid Student Fee selection and amount paid are required.';
-                } else {
-                    $res = $this->feeService->recordPayment($studentFeeId, $amountPaid, $paymentMethod, $transactionId, $remarks);
+                if ($action === 'verify_utr') {
+                    $txId = (int) $this->input('transaction_id');
+                    $res = $this->gatewayService->captureAndPostPayment($txId, (int) auth_id());
                     if ($res['success']) {
-                        flash('success', $res['message']);
-                        $this->redirect('/fee/receipt/' . $res['receipt_id']);
+                        $success = $res['message'];
                     } else {
                         $error = $res['message'];
+                    }
+                } else {
+                    $studentFeeId  = (int) $this->input('student_fee_id');
+                    $amountPaid    = (float) $this->input('amount_paid');
+                    $paymentMethod = $this->input('payment_method', 'cash');
+                    $transactionId = $this->input('transaction_id') ?: null;
+                    $remarks       = $this->input('remarks') ?: null;
+
+                    if (empty($studentFeeId) || $amountPaid <= 0) {
+                        $error = 'Valid Student Fee selection and amount paid are required.';
+                    } else {
+                        $res = $this->feeService->recordPayment($studentFeeId, $amountPaid, $paymentMethod, $transactionId, $remarks);
+                        if ($res['success']) {
+                            flash('success', $res['message']);
+                            $this->redirect('/fee/receipt/' . $res['receipt_id']);
+                        } else {
+                            $error = $res['message'];
+                        }
                     }
                 }
             }
@@ -217,15 +229,133 @@ class FeeController extends Controller
             'search' => query('search', ''),
         ];
 
-        $studentFees = $this->feeService->getStudentFees(1, $filters);
+        $studentFees          = $this->feeService->getStudentFees(1, $filters);
+        $pendingVerifications = $this->gatewayService->getPendingVerifications();
 
         $this->render('Fee/views/payments', [
-            'title'       => 'Payment Collection & Fee Ledger',
-            'studentFees' => $studentFees,
-            'filters'     => $filters,
-            'error'       => $error,
-            'success'     => $success,
+            'title'                => 'Payment Collection & Fee Ledger',
+            'studentFees'          => $studentFees,
+            'pendingVerifications' => $pendingVerifications,
+            'filters'              => $filters,
+            'error'                => $error,
+            'success'              => $success,
         ], 'layout');
+    }
+
+    /**
+     * Interactive Multi-QR & Online Checkout Screen for Student/Parent.
+     */
+    public function pay(string $id): void
+    {
+        $studentFeeId = (int) $id;
+        $sfStmt = db()->prepare('
+            SELECT sf.*, fc.name AS category_name, c.code AS course_code, sem.number AS semester_number,
+                   fs.due_date, ay.name AS academic_year_name, s.roll_number, s.first_name, s.last_name, s.email,
+                   COALESCE((SELECT SUM(amount_paid) FROM payments WHERE student_fee_id = sf.id), 0.00) AS total_paid
+            FROM student_fees sf
+            JOIN fee_structures fs ON fs.id = sf.fee_structure_id
+            JOIN fee_categories fc ON fc.id = fs.fee_category_id
+            JOIN courses c ON c.id = fs.course_id
+            JOIN semesters sem ON sem.id = fs.semester_id
+            JOIN academic_years ay ON ay.id = sf.academic_year_id
+            JOIN students s ON s.id = sf.student_id
+            WHERE sf.id = :id LIMIT 1
+        ');
+        $sfStmt->execute([':id' => $studentFeeId]);
+        $fee = $sfStmt->fetch();
+
+        if (!$fee) {
+            http_response_code(404);
+            $this->render('Master/views/404', [], null);
+            return;
+        }
+
+        $dueBalance = max(0.00, (float)$fee['final_amount'] - (float)$fee['total_paid']);
+
+        // Determine fee category type
+        $catName = strtolower($fee['category_name']);
+        $feeType = 'academic';
+        if (str_contains($catName, 'hostel') || str_contains($catName, 'mess')) {
+            $feeType = 'hostel';
+        } elseif (str_contains($catName, 'bus') || str_contains($catName, 'transport')) {
+            $feeType = 'transport';
+        }
+
+        $upiDetails = $this->gatewayService->getUpiDetailsForFeeType($feeType);
+        $upiUri     = $this->gatewayService->generateUpiUri($feeType, $dueBalance, "FEE-{$studentFeeId}", $fee['roll_number']);
+
+        $this->render('Fee/views/pay', [
+            'title'       => 'Secure Online Fee Payment',
+            'fee'         => $fee,
+            'dueBalance'  => $dueBalance,
+            'feeType'     => $feeType,
+            'upiDetails'  => $upiDetails,
+            'upiUri'      => $upiUri,
+        ], 'layout');
+    }
+
+    /**
+     * Submit Bank UTR reference after QR Scan.
+     */
+    public function submitUtr(): void
+    {
+        if (!$this->isPost() || !csrf_verify($this->input('_csrf_token'))) {
+            flash('error', 'Invalid security token.');
+            $this->redirect('/fee/payments');
+        }
+
+        $studentFeeId = (int) $this->input('student_fee_id');
+        $studentId    = (int) $this->input('student_id');
+        $feeType      = $this->input('fee_type', 'academic');
+        $amount       = (float) $this->input('amount');
+        $utrNumber    = $this->input('utr_number');
+
+        $txRes = $this->gatewayService->createTransaction($studentId, $studentFeeId, $feeType, $amount, 'upi_qr', 'upi');
+        if (!$txRes['success']) {
+            flash('error', $txRes['message']);
+            $this->redirect('/fee/pay/' . $studentFeeId);
+        }
+
+        $subRes = $this->gatewayService->submitUtrReference($txRes['transaction_id'], $utrNumber);
+        if ($subRes['success']) {
+            flash('success', $subRes['message']);
+        } else {
+            flash('error', $subRes['message']);
+        }
+
+        $this->redirect('/fee/payments');
+    }
+
+    /**
+     * Instant Netbanking / Gateway Payment Simulator.
+     */
+    public function instantPay(): void
+    {
+        if (!$this->isPost() || !csrf_verify($this->input('_csrf_token'))) {
+            flash('error', 'Invalid security token.');
+            $this->redirect('/fee/payments');
+        }
+
+        $studentFeeId = (int) $this->input('student_fee_id');
+        $studentId    = (int) $this->input('student_id');
+        $feeType      = $this->input('fee_type', 'academic');
+        $amount       = (float) $this->input('amount');
+        $method       = $this->input('payment_method', 'netbanking');
+
+        $txRes = $this->gatewayService->createTransaction($studentId, $studentFeeId, $feeType, $amount, 'gateway', $method);
+        if (!$txRes['success']) {
+            flash('error', $txRes['message']);
+            $this->redirect('/fee/pay/' . $studentFeeId);
+        }
+
+        $capRes = $this->gatewayService->captureAndPostPayment($txRes['transaction_id'], (int) auth_id());
+        if ($capRes['success']) {
+            flash('success', $capRes['message']);
+        } else {
+            flash('error', $capRes['message']);
+        }
+
+        $this->redirect('/fee/payments');
     }
 
     /**

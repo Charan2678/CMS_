@@ -109,9 +109,9 @@ class DashboardController extends Controller
             $deptStats = [];
         }
 
-        // Real-time Student Metrics
+        // Real-time Student & Parent Ward Metrics
         $studentData = [];
-        if ($role === 'student' && $userId) {
+        if (in_array($role, ['student', 'parent'], true) && $userId) {
             try {
                 $attendanceService = new AttendanceService();
                 $feeService        = new FeeService();
@@ -119,12 +119,28 @@ class DashboardController extends Controller
                 $canteenService    = new CanteenService();
 
                 $studentId = $attendanceService->getStudentIdFromUser($userId);
+                $wardInfo  = null;
 
                 if ($studentId) {
                     $attSummary = $attendanceService->getStudentSummary($studentId);
                     $feeSummary = $feeService->getFeesForStudent($studentId);
                     $timetable  = $resultService->getStudentTimetable($studentId);
                     $allResults = $resultService->getStudentAllSemesterResults($studentId);
+
+                    // Fetch ward academic details
+                    $sStmt = db()->prepare('
+                        SELECT s.first_name, s.last_name, s.roll_number, s.email, s.mobile,
+                               d.name AS department_name, c.name AS course_name, sem.number AS semester_number, sec.name AS section_name
+                        FROM students s
+                        LEFT JOIN student_academics sa ON sa.student_id = s.id AND sa.is_current = 1
+                        LEFT JOIN departments d ON d.id = sa.department_id
+                        LEFT JOIN courses c ON c.id = sa.course_id
+                        LEFT JOIN semesters sem ON sem.id = sa.semester_id
+                        LEFT JOIN sections sec ON sec.id = sa.section_id
+                        WHERE s.id = :sid LIMIT 1
+                    ');
+                    $sStmt->execute([':sid' => $studentId]);
+                    $wardInfo = $sStmt->fetch() ?: null;
                 } else {
                     $attSummary = ['percentage' => 0, 'total_conducted' => 0, 'total_present' => 0, 'total_absent' => 0];
                     $feeSummary = ['total_payable' => 0, 'total_paid' => 0, 'balance_due' => 0];
@@ -136,6 +152,7 @@ class DashboardController extends Controller
 
                 $studentData = [
                     'student_id'    => $studentId,
+                    'ward_info'     => $wardInfo,
                     'attendance'    => $attSummary,
                     'fee'           => $feeSummary,
                     'timetable'     => $timetable,

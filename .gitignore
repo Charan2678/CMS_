@@ -32,5 +32,6 @@ Thumbs.db
 *.log
 .phpunit.cache/
 
-# Build scripts (not needed in repo)
+# Build scripts & scratch
 create_structure.ps1
+/scratch/

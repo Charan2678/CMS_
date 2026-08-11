@@ -11,6 +11,7 @@ use App\Modules\Dashboard\controllers\DashboardController;
 use App\Modules\Faculty\controllers\FacultyController;
 use App\Modules\Fee\controllers\FeeController;
 use App\Modules\Hostel\controllers\HostelController;
+use App\Modules\Leave\controllers\LeaveController;
 use App\Modules\Library\controllers\LibraryController;
 use App\Modules\Master\controllers\MasterController;
 use App\Modules\Reports\controllers\ReportController;
@@ -26,6 +27,14 @@ use App\Modules\Transport\controllers\TransportController;
  * ============================================================
  */
 
+// ─── Leave & Hostel Outpass Routes ───────────────────────────
+Router::get('/leave/apply',            [LeaveController::class, 'apply']);
+Router::post('/leave/apply',           [LeaveController::class, 'apply']);
+Router::get('/leave/review',           [LeaveController::class, 'review']);
+Router::post('/leave/review',          [LeaveController::class, 'review']);
+Router::get('/leave/outpasses',        [LeaveController::class, 'outpasses']);
+Router::post('/leave/outpass-checkin', [LeaveController::class, 'outpasses']);
+
 // ─── Facilities & Operations Routes ─────────────────────────
 Router::get('/library',    [LibraryController::class, 'index']);
 Router::post('/library',   [LibraryController::class, 'index']);
@@ -38,16 +47,19 @@ Router::post('/canteen',   [CanteenController::class, 'index']);
 Router::get('/accounts',   [AccountsController::class, 'index']);
 
 // ─── Notifications & Audit Routes ────────────────────────────
-Router::get('/announcements',  [NotificationController::class, 'announcements']);
-Router::post('/announcements', [NotificationController::class, 'announcements']);
-Router::get('/audit-logs',     [NotificationController::class, 'auditLogs']);
+Router::get('/announcements',                 [NotificationController::class, 'announcements']);
+Router::post('/announcements',                [NotificationController::class, 'announcements']);
+Router::get('/audit-logs',                    [NotificationController::class, 'auditLogs']);
+Router::get('/api/notifications/unread',      [NotificationController::class, 'getUnread']);
+Router::post('/notifications/mark-read/{id}', [NotificationController::class, 'markRead']);
+Router::post('/notifications/mark-all-read',  [NotificationController::class, 'markAllRead']);
 
 // ─── Reports Routes ──────────────────────────────────────────
 Router::get('/reports/academic',   [ReportController::class, 'academic']);
 Router::get('/reports/financial',  [ReportController::class, 'financial']);
 Router::get('/reports/attendance', [ReportController::class, 'attendance']);
 
-// ─── Fee Routes ──────────────────────────────────────────────
+// ─── Fee & Payment Gateway Routes ────────────────────────────
 Router::get('/fee/categories',   [FeeController::class, 'categories']);
 Router::post('/fee/categories',  [FeeController::class, 'categories']);
 Router::get('/fee/structures',   [FeeController::class, 'structures']);
@@ -56,6 +68,9 @@ Router::get('/fee/assign',       [FeeController::class, 'assign']);
 Router::post('/fee/assign',      [FeeController::class, 'assign']);
 Router::get('/fee/payments',     [FeeController::class, 'payments']);
 Router::post('/fee/payments',    [FeeController::class, 'payments']);
+Router::get('/fee/pay/{id}',     [FeeController::class, 'pay']);
+Router::post('/fee/submit-utr',  [FeeController::class, 'submitUtr']);
+Router::post('/fee/instant-pay', [FeeController::class, 'instantPay']);
 Router::get('/fee/receipt/{id}', [FeeController::class, 'receipt']);
 
 // ─── Academic Module Routes ──────────────────────────────────
@@ -88,14 +103,15 @@ Router::post('/faculty/designations',   [FacultyController::class, 'designations
 Router::get('/faculty/{id}',            [FacultyController::class, 'show']);
 
 // ─── Student Routes ──────────────────────────────────────────
-Router::get('/profile',             [StudentController::class, 'myProfile']);
-Router::post('/profile',            [StudentController::class, 'myProfile']);
-Router::get('/students',            [StudentController::class, 'index']);
-Router::get('/students/admission',  [StudentController::class, 'admission']);
-Router::post('/students/admission', [StudentController::class, 'admission']);
-Router::get('/students/{id}/send-credentials', [StudentController::class, 'sendCredentials']);
+Router::get('/profile',                          [StudentController::class, 'myProfile']);
+Router::post('/profile',                         [StudentController::class, 'myProfile']);
+Router::get('/students',                         [StudentController::class, 'index']);
+Router::get('/students/admission',               [StudentController::class, 'admission']);
+Router::post('/students/admission',              [StudentController::class, 'admission']);
+Router::get('/students/{id}/send-credentials',  [StudentController::class, 'sendCredentials']);
 Router::post('/students/{id}/send-credentials', [StudentController::class, 'sendCredentials']);
-Router::get('/students/{id}',       [StudentController::class, 'show']);
+Router::post('/students/{id}/provision-parent',  [StudentController::class, 'provisionParent']);
+Router::get('/students/{id}',                    [StudentController::class, 'show']);
 
 // ─── Dashboard Route ─────────────────────────────────────────
 Router::get('/dashboard',       [DashboardController::class, 'index']);

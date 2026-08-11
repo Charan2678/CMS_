@@ -187,6 +187,8 @@
                                     <span class="badge badge-danger">Absent</span>
                                 <?php elseif ($log['status'] === 'late'): ?>
                                     <span class="badge badge-warning">Late</span>
+                                <?php elseif ($log['status'] === 'on_leave'): ?>
+                                    <span class="badge badge-info" style="background: rgba(147, 51, 234, 0.15); color: #a855f7; border: 1px solid rgba(147, 51, 234, 0.3);">On Leave</span>
                                 <?php else: ?>
                                     <span class="badge badge-info"><?= ucfirst($log['status']) ?></span>
                                 <?php endif; ?>
