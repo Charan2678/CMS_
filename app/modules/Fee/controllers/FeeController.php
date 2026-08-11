@@ -461,7 +461,10 @@ class FeeController extends Controller
      */
     public function receipt(string $id): void
     {
-        Permission::enforce('fee.receipt');
+        if (!is_authenticated()) {
+            $this->redirect('/login');
+            return;
+        }
 
         $receiptId = (int) $id;
         $receipt   = $this->feeService->getReceiptDetails($receiptId);
@@ -470,6 +473,21 @@ class FeeController extends Controller
             http_response_code(404);
             $this->render('Master/views/404', [], null);
             return;
+        }
+
+        // Access check: Student/Parent viewing their own receipt or staff with permission
+        $user = auth_user();
+        if ($user && $user['linked_type'] === 'student') {
+            if ((int)$receipt['student_id'] !== (int)$user['linked_id'] && !Permission::has('fee.receipt')) {
+                Permission::enforce('fee.receipt');
+            }
+        } elseif ($user && $user['linked_type'] === 'parent') {
+            $wardId = session('active_ward_id') ?? 1;
+            if ((int)$receipt['student_id'] !== (int)$wardId && !Permission::has('fee.receipt')) {
+                Permission::enforce('fee.receipt');
+            }
+        } else {
+            Permission::enforce('fee.receipt');
         }
 
         $this->render('Fee/views/receipt', [
