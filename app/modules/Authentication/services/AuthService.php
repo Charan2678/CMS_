@@ -55,6 +55,8 @@ class AuthService
                 $isValidRole = in_array($userRoleCode, ['admin', 'super_admin'], true);
             } elseif ($targetRoleType === 'student') {
                 $isValidRole = ($userRoleCode === 'student');
+            } elseif ($targetRoleType === 'parent') {
+                $isValidRole = ($userRoleCode === 'parent');
             } elseif ($targetRoleType === 'staff') {
                 $isValidRole = in_array($userRoleCode, ['staff', 'faculty', 'hod'], true);
             }
@@ -63,7 +65,7 @@ class AuthService
                 Security::recordLoginAttempt((int) $user['id'], $ipAddress, $userAgent, 'failed');
                 return [
                     'success' => false,
-                    'message' => 'Invalid role selected for this account. Please select the correct role (Admin, Student, or Staff).',
+                    'message' => 'Invalid role selected for this account. Please select the correct role (Admin, Student, Parent, or Staff).',
                     'user'    => null
                 ];
             }
@@ -108,6 +110,31 @@ class AuthService
         $_SESSION['linked_type']          = $user['linked_type'];
         $_SESSION['linked_id']            = (int) $user['linked_id'];
         $_SESSION['must_change_password'] = (int) $user['must_change_password'] === 1;
+
+        // Parent-specific ward resolution
+        if ($user['linked_type'] === 'parent') {
+            try {
+                $gStmt = db()->prepare('
+                    SELECT g.student_id, g.name AS guardian_name, g.relationship,
+                           s.first_name, s.last_name, s.roll_number
+                    FROM guardians g
+                    JOIN students s ON s.id = g.student_id
+                    WHERE g.id = :gid
+                    LIMIT 1
+                ');
+                $gStmt->execute([':gid' => (int) $user['linked_id']]);
+                $guardian = $gStmt->fetch();
+                if ($guardian) {
+                    $_SESSION['parent_ward_id']   = (int) $guardian['student_id'];
+                    $_SESSION['ward_name']        = trim($guardian['first_name'] . ' ' . $guardian['last_name']);
+                    $_SESSION['ward_roll_number'] = $guardian['roll_number'];
+                    $_SESSION['guardian_name']    = $guardian['guardian_name'];
+                    $_SESSION['relationship']     = $guardian['relationship'];
+                }
+            } catch (\Throwable $e) {
+                // Fail gracefully
+            }
+        }
 
         return [
             'success' => true,

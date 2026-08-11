@@ -11,25 +11,85 @@ class NotificationService
     /**
      * Create an in-app notification for a target user.
      */
-    public function notify(int $userId, string $title, string $message, ?string $link = null, string $type = 'info'): bool
-    {
+    public function notify(
+        int $userId,
+        string $title,
+        string $message,
+        ?string $link = null,
+        string $type = 'info',
+        string $priority = 'normal',
+        string $sourceHierarchy = 'system'
+    ): bool {
         try {
             $stmt = db()->prepare('
                 INSERT INTO notifications (
-                    college_id, user_id, title, message, type, is_read, created_at
+                    college_id, user_id, title, message, link, type, priority, source_hierarchy, is_read, created_at
                 ) VALUES (
-                    1, :user_id, :title, :message, :type, 0, NOW()
+                    1, :user_id, :title, :message, :link, :type, :priority, :source_hierarchy, 0, NOW()
                 )
             ');
 
             return $stmt->execute([
-                ':user_id' => $userId,
-                ':title'   => substr($title, 0, 150),
-                ':message' => $message,
-                ':type'    => $type,
+                ':user_id'          => $userId,
+                ':title'            => substr($title, 0, 150),
+                ':message'          => $message,
+                ':link'             => $link,
+                ':type'             => in_array($type, ['info', 'warning', 'success', 'alert']) ? $type : 'info',
+                ':priority'         => in_array($priority, ['low', 'normal', 'high', 'urgent']) ? $priority : 'normal',
+                ':source_hierarchy' => in_array($sourceHierarchy, ['chairman', 'principal', 'hod', 'admin', 'system']) ? $sourceHierarchy : 'system',
             ]);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             return false;
+        }
+    }
+
+    /**
+     * Send targeted notification to all students (and their linked parents) in a department/semester.
+     */
+    public function notifyDepartment(
+        int $departmentId,
+        string $title,
+        string $message,
+        ?string $link = null,
+        ?int $semesterId = null,
+        string $type = 'info',
+        string $sourceHierarchy = 'hod'
+    ): int {
+        try {
+            $sql = '
+                SELECT u.id AS student_user_id, pu.id AS parent_user_id
+                FROM students s
+                JOIN users u ON u.linked_type = "student" AND u.linked_id = s.id
+                LEFT JOIN guardians g ON g.student_id = s.id
+                LEFT JOIN users pu ON pu.linked_type = "parent" AND pu.linked_id = g.id
+                WHERE s.department_id = :dept_id
+            ';
+            $params = [':dept_id' => $departmentId];
+
+            if ($semesterId !== null) {
+                $sql .= ' AND s.current_semester_id = :sem_id';
+                $params[':sem_id'] = $semesterId;
+            }
+
+            $stmt = db()->prepare($sql);
+            $stmt->execute($params);
+            $rows = $stmt->fetchAll() ?: [];
+
+            $sent = 0;
+            foreach ($rows as $r) {
+                if (!empty($r['student_user_id'])) {
+                    $this->notify((int) $r['student_user_id'], $title, $message, $link, $type, 'normal', $sourceHierarchy);
+                    $sent++;
+                }
+                if (!empty($r['parent_user_id'])) {
+                    $this->notify((int) $r['parent_user_id'], "[Ward Alert] " . $title, $message, $link, $type, 'normal', $sourceHierarchy);
+                    $sent++;
+                }
+            }
+
+            return $sent;
+        } catch (\Throwable $e) {
+            return 0;
         }
     }
 
@@ -43,7 +103,7 @@ class NotificationService
                 SELECT * FROM notifications 
                 WHERE user_id = :user_id AND is_read = 0 
                 ORDER BY created_at DESC 
-                LIMIT 10
+                LIMIT 15
             ');
             $stmt->execute([':user_id' => $userId]);
             $items = $stmt->fetchAll() ?: [];
@@ -56,7 +116,7 @@ class NotificationService
                 'count' => $count,
                 'items' => $items,
             ];
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             return [
                 'count' => 0,
                 'items' => [],
@@ -77,7 +137,25 @@ class NotificationService
             ');
 
             return $stmt->execute([':id' => $notificationId, ':user_id' => $userId]);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
+            return false;
+        }
+    }
+
+    /**
+     * Mark all unread notifications as read for a user.
+     */
+    public function markAllAsRead(int $userId): bool
+    {
+        try {
+            $stmt = db()->prepare('
+                UPDATE notifications 
+                SET is_read = 1, read_at = NOW() 
+                WHERE user_id = :user_id AND is_read = 0
+            ');
+
+            return $stmt->execute([':user_id' => $userId]);
+        } catch (\Throwable $e) {
             return false;
         }
     }
@@ -85,95 +163,70 @@ class NotificationService
     /**
      * Get active announcements for a college.
      */
-    public function getAnnouncements(int $collegeId = 1): array
+    public function getAnnouncements(int $collegeId = 1, ?int $userRoleId = null, ?int $departmentId = null): array
     {
         try {
-            $stmt = db()->prepare('
+            $sql = '
                 SELECT a.*, 
                        u.username AS publisher_name,
-                       COALESCE(r.name, "Everyone") AS target_role
+                       COALESCE(r.name, "Everyone") AS target_role,
+                       d.name AS target_department_name
                 FROM announcements a
                 LEFT JOIN users u ON u.id = a.published_by
                 LEFT JOIN roles r ON r.id = a.target_role
-                WHERE a.college_id = :college_id
-                ORDER BY a.created_at DESC
-            ');
-            $stmt->execute([':college_id' => $collegeId]);
+                LEFT JOIN departments d ON d.id = a.target_department_id
+                WHERE a.college_id = :college_id AND a.is_active = 1
+            ';
+            $params = [':college_id' => $collegeId];
+
+            if ($userRoleId !== null) {
+                $sql .= ' AND (a.target_role IS NULL OR a.target_role = :role_id)';
+                $params[':role_id'] = $userRoleId;
+            }
+
+            if ($departmentId !== null) {
+                $sql .= ' AND (a.target_department_id IS NULL OR a.target_department_id = :dept_id)';
+                $params[':dept_id'] = $departmentId;
+            }
+
+            $sql .= ' ORDER BY FIELD(a.hierarchy_level, "chairman", "principal", "admin", "hod", "faculty"), a.created_at DESC';
+
+            $stmt = db()->prepare($sql);
+            $stmt->execute($params);
             return $stmt->fetchAll() ?: [];
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             return [];
         }
     }
 
     /**
-     * Create a new campus announcement.
+     * Create an announcement with hierarchical targeting.
      */
-    public function createAnnouncement(array $data): bool
+    public function createAnnouncement(array $data, int $userId): bool
     {
         try {
-            $publishedBy = auth_id() ?? 1;
-            $collegeId   = (int) ($data['college_id'] ?? 1);
-            $title       = trim((string) ($data['title'] ?? ''));
-            $content     = trim((string) ($data['content'] ?? ''));
-            $targetRoleStr = strtolower(trim((string) ($data['target_role'] ?? 'all')));
-            $startDate   = !empty($data['start_date']) ? $data['start_date'] . ' 00:00:00' : date('Y-m-d H:i:s');
-            $endDate     = !empty($data['end_date']) ? $data['end_date'] . ' 23:59:59' : date('Y-m-d H:i:s', strtotime('+30 days'));
-
-            $targetRoleId = null;
-            if ($targetRoleStr !== 'all' && $targetRoleStr !== '') {
-                if (is_numeric($targetRoleStr)) {
-                    $targetRoleId = (int) $targetRoleStr;
-                } else {
-                    $roleStmt = db()->prepare('SELECT id FROM roles WHERE LOWER(code) = :code OR LOWER(name) LIKE :name LIMIT 1');
-                    $roleStmt->execute([':code' => $targetRoleStr, ':name' => '%' . $targetRoleStr . '%']);
-                    $roleRow = $roleStmt->fetch();
-                    if ($roleRow) {
-                        $targetRoleId = (int) $roleRow['id'];
-                    }
-                }
-            }
-
             $stmt = db()->prepare('
                 INSERT INTO announcements (
-                    college_id, title, content, target_role, published_by, publish_at, expire_at, status, created_at
+                    college_id, title, content, target_role, target_department_id, target_semester_id,
+                    hierarchy_level, published_by, publish_at, is_active
                 ) VALUES (
-                    :college_id, :title, :content, :target_role, :published_by, :publish_at, :expire_at, "published", NOW()
+                    :college_id, :title, :content, :target_role, :target_department_id, :target_semester_id,
+                    :hierarchy_level, :published_by, NOW(), 1
                 )
             ');
 
             return $stmt->execute([
-                ':college_id'   => $collegeId,
-                ':title'        => $title,
-                ':content'      => $content,
-                ':target_role'  => $targetRoleId,
-                ':published_by' => $publishedBy,
-                ':publish_at'   => $startDate,
-                ':expire_at'    => $endDate,
+                ':college_id'            => $data['college_id'] ?? 1,
+                ':title'                 => $data['title'],
+                ':content'               => $data['content'],
+                ':target_role'           => !empty($data['target_role']) ? (int) $data['target_role'] : null,
+                ':target_department_id'  => !empty($data['target_department_id']) ? (int) $data['target_department_id'] : null,
+                ':target_semester_id'    => !empty($data['target_semester_id']) ? (int) $data['target_semester_id'] : null,
+                ':hierarchy_level'       => $data['hierarchy_level'] ?? 'admin',
+                ':published_by'          => $userId,
             ]);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             return false;
-        }
-    }
-
-    /**
-     * Get system audit logs.
-     */
-    public function getAuditLogs(int $limit = 100, int $offset = 0): array
-    {
-        try {
-            $stmt = db()->prepare('
-                SELECT al.*, u.username
-                FROM audit_logs al
-                LEFT JOIN users u ON u.id = al.user_id
-                ORDER BY al.created_at DESC
-                LIMIT :limit OFFSET :offset
-            ');
-            $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
-            $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
-            $stmt->execute();
-            return $stmt->fetchAll() ?: [];
-        } catch (\Exception $e) {
-            return [];
         }
     }
 }

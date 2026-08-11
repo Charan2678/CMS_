@@ -4,11 +4,22 @@ declare(strict_types=1);
 
 namespace App\Modules\Attendance\services;
 
+use App\Modules\Leave\services\LeaveService;
+use App\Modules\Settings\services\NotificationService;
 use Exception;
 use PDO;
 
 class AttendanceService
 {
+    private NotificationService $notifSvc;
+    private LeaveService $leaveSvc;
+
+    public function __construct()
+    {
+        $this->notifSvc = new NotificationService();
+        $this->leaveSvc = new LeaveService();
+    }
+
     /**
      * Get students enrolled in a section.
      */
@@ -27,6 +38,7 @@ class AttendanceService
 
     /**
      * Get existing attendance records for section, subject, date.
+     * Also merges auto-detected approved leaves for the date.
      */
     public function getExistingAttendance(int $sectionId, int $subjectId, string $date): array
     {
@@ -44,13 +56,22 @@ class AttendanceService
 
         $map = [];
         foreach ($rows as $r) {
-            $map[$r['student_id']] = $r['status'];
+            $map[(int)$r['student_id']] = $r['status'];
         }
+
+        // Auto-detect approved leave requests for this date
+        $leaveStudentIds = $this->leaveSvc->getActiveStudentLeaveIdsForDate($date);
+        foreach ($leaveStudentIds as $sid) {
+            if (!isset($map[(int)$sid])) {
+                $map[(int)$sid] = 'on_leave';
+            }
+        }
+
         return $map;
     }
 
     /**
-     * Bulk save student attendance.
+     * Bulk save student attendance with automated shortage alerts & audit trail.
      */
     public function saveBulkAttendance(int $sectionId, int $subjectId, int $academicYearId, string $date, array $statusMap): bool
     {
@@ -59,14 +80,17 @@ class AttendanceService
         try {
             $stmt = db()->prepare('
                 INSERT INTO attendance (
-                    student_id, subject_id, section_id, academic_year_id, date, status, marked_by, created_at
+                    student_id, subject_id, section_id, academic_year_id, date, status, marked_by, updated_by, created_at
                 ) VALUES (
-                    :student_id, :subject_id, :section_id, :academic_year_id, :date, :status, :marked_by, NOW()
+                    :student_id, :subject_id, :section_id, :academic_year_id, :date, :status, :marked_by, :updated_by, NOW()
                 )
-                ON DUPLICATE KEY UPDATE status = VALUES(status), marked_by = VALUES(marked_by)
+                ON DUPLICATE KEY UPDATE 
+                    status = VALUES(status), 
+                    updated_by = VALUES(updated_by),
+                    updated_at = NOW()
             ');
 
-            $markedBy = auth_id() ?? 1;
+            $currentUserId = auth_id() ?? 1;
 
             foreach ($statusMap as $studentId => $status) {
                 $stmt->execute([
@@ -75,12 +99,17 @@ class AttendanceService
                     ':section_id'       => $sectionId,
                     ':academic_year_id' => $academicYearId,
                     ':date'             => $date,
-                    ':status'           => in_array($status, ['present', 'absent', 'late', 'holiday']) ? $status : 'present',
-                    ':marked_by'        => $markedBy,
+                    ':status'           => in_array($status, ['present', 'absent', 'late', 'holiday', 'on_leave'], true) ? $status : 'present',
+                    ':marked_by'        => $currentUserId,
+                    ':updated_by'       => $currentUserId,
                 ]);
             }
 
             db()->commit();
+
+            // Post-save: Calculate running attendance % and trigger shortage alerts
+            $this->checkAndAlertAttendanceShortage(array_keys($statusMap));
+
             return true;
         } catch (Exception $e) {
             db()->rollBack();
@@ -89,24 +118,85 @@ class AttendanceService
     }
 
     /**
+     * Check running attendance % for students and dispatch alerts if < 75%.
+     */
+    private function checkAndAlertAttendanceShortage(array $studentIds): void
+    {
+        $minPercent = 75.0;
+
+        foreach ($studentIds as $sid) {
+            $studentId = (int) $sid;
+            $stats = $this->getStudentSummary($studentId);
+            $pct = (float) $stats['percentage'];
+
+            // If attendance is below minimum threshold and at least 3 classes conducted
+            if ($pct < $minPercent && $stats['total_conducted'] >= 3) {
+                $student = $this->getStudentDetails($studentId);
+                if ($student) {
+                    $roll = $student['roll_number'];
+                    $name = $student['first_name'] . ' ' . $student['last_name'];
+                    $msg  = "Attendance Shortage Alert: Overall attendance is currently at {$pct}% (Minimum required is 75%). Please ensure regular class attendance.";
+
+                    // 1. Notify Student User
+                    $studentUserId = $this->getStudentUserId($studentId);
+                    if ($studentUserId) {
+                        $this->notifSvc->notify(
+                            $studentUserId,
+                            "⚠️ Attendance Shortage Alert ({$pct}%)",
+                            $msg,
+                            '/attendance',
+                            'alert',
+                            'high'
+                        );
+                    }
+
+                    // 2. Notify Parent User
+                    $parentUserId = $this->getParentUserId($studentId);
+                    if ($parentUserId) {
+                        $this->notifSvc->notify(
+                            $parentUserId,
+                            "🚨 [Ward Alert] Attendance Shortage ({$name} - {$pct}%)",
+                            "Your ward {$name}'s overall attendance has dropped to {$pct}%. Safe standing is 75% or higher.",
+                            '/attendance',
+                            'alert',
+                            'urgent'
+                        );
+                    }
+                }
+            }
+        }
+    }
+
+    /**
      * Resolve student ID for a logged-in user ID.
      */
     public function getStudentIdFromUser(int $userId): ?int
     {
-        // First check session linked_id
         if (!empty($_SESSION['linked_id']) && ($_SESSION['linked_type'] ?? '') === 'student') {
             return (int) $_SESSION['linked_id'];
         }
-
-        $stmt = db()->prepare('SELECT linked_id FROM users WHERE id = :id AND linked_type = "student" LIMIT 1');
-        $stmt->execute([':id' => $userId]);
-        $val = $stmt->fetchColumn();
-
-        if ($val) {
-            return (int) $val;
+        if (!empty($_SESSION['parent_ward_id'])) {
+            return (int) $_SESSION['parent_ward_id'];
         }
 
-        // Fallback: search student by matching email or username
+        $stmt = db()->prepare('SELECT linked_type, linked_id FROM users WHERE id = :id LIMIT 1');
+        $stmt->execute([':id' => $userId]);
+        $userRow = $stmt->fetch();
+
+        if ($userRow) {
+            if ($userRow['linked_type'] === 'student') {
+                return (int) $userRow['linked_id'];
+            }
+            if ($userRow['linked_type'] === 'parent') {
+                $gStmt = db()->prepare('SELECT student_id FROM guardians WHERE id = :gid LIMIT 1');
+                $gStmt->execute([':gid' => (int) $userRow['linked_id']]);
+                $sid = $gStmt->fetchColumn();
+                if ($sid) {
+                    return (int) $sid;
+                }
+            }
+        }
+
         $stmt = db()->prepare('SELECT id FROM students WHERE email = (SELECT email FROM users WHERE id = :id1) OR roll_number = (SELECT username FROM users WHERE id = :id2) LIMIT 1');
         $stmt->execute([':id1' => $userId, ':id2' => $userId]);
         $val = $stmt->fetchColumn();
@@ -125,6 +215,7 @@ class AttendanceService
                 SUM(CASE WHEN status = "present" THEN 1 ELSE 0 END) as total_present,
                 SUM(CASE WHEN status = "absent" THEN 1 ELSE 0 END) as total_absent,
                 SUM(CASE WHEN status = "late" THEN 1 ELSE 0 END) as total_late,
+                SUM(CASE WHEN status = "on_leave" THEN 1 ELSE 0 END) as total_on_leave,
                 SUM(CASE WHEN status = "holiday" THEN 1 ELSE 0 END) as total_holiday
             FROM attendance
             WHERE student_id = :student_id
@@ -135,27 +226,31 @@ class AttendanceService
             'total_present' => 0,
             'total_absent' => 0,
             'total_late' => 0,
+            'total_on_leave' => 0,
             'total_holiday' => 0
         ];
 
-        $conducted = (int) $row['total_conducted'];
-        $effectiveAttended = (int) $row['total_present'] + ((int)$row['total_late'] * 0.5);
+        // Total active academic classes (excluding holidays)
+        $conducted = (int) $row['total_conducted'] - (int) $row['total_holiday'];
+        if ($conducted < 0) $conducted = 0;
+
+        // Effective attended (present + 0.5 late + on_leave excused)
+        $effectiveAttended = (int) $row['total_present'] + ((int)$row['total_late'] * 0.5) + ((int)$row['total_on_leave'] * 1.0);
         $percentage = $conducted > 0 ? round(($effectiveAttended / $conducted) * 100, 1) : 100.0;
+        if ($percentage > 100.0) $percentage = 100.0;
 
         return [
             'total_conducted' => $conducted,
             'total_present'   => (int) $row['total_present'],
             'total_absent'    => (int) $row['total_absent'],
             'total_late'      => (int) $row['total_late'],
+            'total_on_leave'  => (int) $row['total_on_leave'],
             'total_holiday'   => (int) $row['total_holiday'],
             'percentage'      => $percentage,
             'overall_pct'     => $percentage,
         ];
     }
 
-    /**
-     * Alias for getStudentSummary.
-     */
     public function getStudentOverallSummary(int $studentId): array
     {
         return $this->getStudentSummary($studentId);
@@ -175,7 +270,8 @@ class AttendanceService
                 COUNT(a.id) as conducted,
                 SUM(CASE WHEN a.status = "present" THEN 1 ELSE 0 END) as present,
                 SUM(CASE WHEN a.status = "absent" THEN 1 ELSE 0 END) as absent,
-                SUM(CASE WHEN a.status = "late" THEN 1 ELSE 0 END) as late
+                SUM(CASE WHEN a.status = "late" THEN 1 ELSE 0 END) as late,
+                SUM(CASE WHEN a.status = "on_leave" THEN 1 ELSE 0 END) as on_leave
             FROM attendance a
             JOIN subjects sub ON sub.id = a.subject_id
             WHERE a.student_id = :student_id
@@ -187,15 +283,16 @@ class AttendanceService
 
         foreach ($rows as &$r) {
             $conducted = (int) $r['conducted'];
-            $effective = (int) $r['present'] + ((int) $r['late'] * 0.5);
+            $effective = (int) $r['present'] + ((int) $r['late'] * 0.5) + ((int) $r['on_leave'] * 1.0);
             $r['percentage'] = $conducted > 0 ? round(($effective / $conducted) * 100, 1) : 100.0;
+            if ($r['percentage'] > 100.0) $r['percentage'] = 100.0;
         }
 
         return $rows;
     }
 
     /**
-     * Get daily/period-wise attendance log for a student with optional filters.
+     * Get daily attendance log for a student.
      */
     public function getStudentDailyLog(int $studentId, ?string $month = null, ?int $subjectId = null): array
     {
@@ -231,5 +328,32 @@ class AttendanceService
         $stmt = db()->prepare($sql);
         $stmt->execute($params);
         return $stmt->fetchAll() ?: [];
+    }
+
+    private function getStudentDetails(int $studentId): ?array
+    {
+        $stmt = db()->prepare('SELECT id, roll_number, first_name, last_name FROM students WHERE id = :id LIMIT 1');
+        $stmt->execute([':id' => $studentId]);
+        return $stmt->fetch() ?: null;
+    }
+
+    private function getStudentUserId(int $studentId): ?int
+    {
+        $stmt = db()->prepare('SELECT id FROM users WHERE linked_type = "student" AND linked_id = :id LIMIT 1');
+        $stmt->execute([':id' => $studentId]);
+        $id = $stmt->fetchColumn();
+        return $id ? (int) $id : null;
+    }
+
+    private function getParentUserId(int $studentId): ?int
+    {
+        $stmt = db()->prepare('
+            SELECT u.id FROM users u
+            JOIN guardians g ON g.id = u.linked_id AND u.linked_type = "parent"
+            WHERE g.student_id = :sid LIMIT 1
+        ');
+        $stmt->execute([':sid' => $studentId]);
+        $id = $stmt->fetchColumn();
+        return $id ? (int) $id : null;
     }
 }

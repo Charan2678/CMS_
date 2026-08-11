@@ -341,9 +341,9 @@ CREATE TABLE `users` (
     `email`                VARCHAR(150)     NOT NULL,
     `password_hash`        VARCHAR(255)     NOT NULL,
     `role_id`              INT UNSIGNED     NOT NULL,
-    `linked_type`          ENUM('student','faculty','staff','admin') NOT NULL,
+    `linked_type`          ENUM('student','faculty','staff','admin','parent') NOT NULL,
     `linked_id`            INT UNSIGNED     NOT NULL
-                           COMMENT 'ID in students / faculty / staff (polymorphic)',
+                           COMMENT 'ID in students / faculty / staff / guardians (polymorphic)',
     `is_active`            TINYINT UNSIGNED NOT NULL DEFAULT 1,
     `last_login`           DATETIME         DEFAULT NULL,
     `must_change_password` TINYINT UNSIGNED NOT NULL DEFAULT 0,
@@ -710,8 +710,11 @@ CREATE TABLE `payments` (
     `student_fee_id`  INT UNSIGNED  NOT NULL,
     `student_id`      INT UNSIGNED  NOT NULL,
     `amount_paid`     DECIMAL(10,2) NOT NULL,
-    `payment_method`  ENUM('cash','online','dd','cheque') NOT NULL,
+    `payment_method`  ENUM('cash','online','dd','cheque','upi','card','bank_transfer','online_gateway') NOT NULL,
+    `mode`            ENUM('manual','gateway','upi_qr') NOT NULL DEFAULT 'manual',
     `transaction_id`  VARCHAR(100)  DEFAULT NULL,
+    `utr_reference`   VARCHAR(100)  DEFAULT NULL,
+    `fee_category_type` ENUM('academic','hostel','transport','other') NOT NULL DEFAULT 'academic',
     `payment_date`    DATE          NOT NULL,
     `received_by`     INT UNSIGNED  NOT NULL,
     `remarks`         TEXT,
@@ -719,6 +722,7 @@ CREATE TABLE `payments` (
     PRIMARY KEY (`id`),
     KEY `idx_payment_student` (`student_id`),
     KEY `idx_payment_date`    (`payment_date`),
+    KEY `idx_payment_mode`    (`mode`),
     CONSTRAINT `fk_payment_sf`
         FOREIGN KEY (`student_fee_id`) REFERENCES `student_fees` (`id`),
     CONSTRAINT `fk_payment_student`
@@ -759,8 +763,10 @@ CREATE TABLE `attendance` (
     `section_id`       INT UNSIGNED NOT NULL,
     `academic_year_id` INT UNSIGNED NOT NULL,
     `date`             DATE         NOT NULL,
-    `status`           ENUM('present','absent','late','holiday') NOT NULL,
+    `status`           ENUM('present','absent','late','holiday','on_leave') NOT NULL,
     `marked_by`        INT UNSIGNED NOT NULL,
+    `updated_by`       INT UNSIGNED DEFAULT NULL,
+    `updated_at`       DATETIME     DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
     `created_at`       DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (`id`),
     UNIQUE KEY `uq_attendance` (`student_id`, `subject_id`, `date`),
@@ -1054,15 +1060,18 @@ CREATE TABLE `transport_allocations` (
 -- ============================================================
 
 CREATE TABLE `notifications` (
-    `id`          INT UNSIGNED     NOT NULL AUTO_INCREMENT,
-    `college_id`  INT UNSIGNED     NOT NULL,
-    `user_id`     INT UNSIGNED     NOT NULL,
-    `title`       VARCHAR(200)     NOT NULL,
-    `message`     TEXT             NOT NULL,
-    `type`        ENUM('info','warning','success','alert') NOT NULL DEFAULT 'info',
-    `is_read`     TINYINT UNSIGNED NOT NULL DEFAULT 0,
-    `read_at`     DATETIME         DEFAULT NULL,
-    `created_at`  DATETIME         NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `id`                 INT UNSIGNED     NOT NULL AUTO_INCREMENT,
+    `college_id`         INT UNSIGNED     NOT NULL,
+    `user_id`            INT UNSIGNED     NOT NULL,
+    `title`              VARCHAR(200)     NOT NULL,
+    `message`            TEXT             NOT NULL,
+    `link`               VARCHAR(255)     DEFAULT NULL,
+    `type`               ENUM('info','warning','success','alert') NOT NULL DEFAULT 'info',
+    `priority`           ENUM('low','normal','high','urgent') NOT NULL DEFAULT 'normal',
+    `source_hierarchy`   ENUM('chairman','principal','hod','admin','system') NOT NULL DEFAULT 'system',
+    `is_read`            TINYINT UNSIGNED NOT NULL DEFAULT 0,
+    `read_at`            DATETIME         DEFAULT NULL,
+    `created_at`         DATETIME         NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (`id`),
     KEY `idx_notif_user` (`user_id`, `is_read`),
     CONSTRAINT `fk_notif_college`
@@ -1141,10 +1150,147 @@ CREATE TABLE `hall_tickets` (
 
 
 -- ============================================================
+-- BLOCK 23 — CANTEEN MANAGEMENT
+-- Tables: canteen_items, canteen_orders
+-- ============================================================
+
+CREATE TABLE `canteen_items` (
+    `id`             INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    `college_id`     INT UNSIGNED NOT NULL DEFAULT 1,
+    `item_name`      VARCHAR(150) NOT NULL,
+    `category`       VARCHAR(50) NOT NULL DEFAULT 'Snacks',
+    `price`          DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+    `stock_quantity` INT NOT NULL DEFAULT 50,
+    `stock_status`   ENUM('available', 'out_of_stock') NOT NULL DEFAULT 'available',
+    `created_at`     DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    KEY `idx_canteen_college` (`college_id`),
+    KEY `idx_canteen_stock`   (`stock_status`),
+    CONSTRAINT `fk_canteen_item_college` FOREIGN KEY (`college_id`) REFERENCES `colleges` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE `canteen_orders` (
+    `id`             INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    `order_number`   VARCHAR(50) NOT NULL,
+    `college_id`     INT UNSIGNED NOT NULL DEFAULT 1,
+    `user_id`        INT UNSIGNED NOT NULL,
+    `student_id`     INT UNSIGNED DEFAULT NULL,
+    `item_id`        INT UNSIGNED NOT NULL,
+    `item_name`      VARCHAR(150) NOT NULL,
+    `quantity`       INT NOT NULL DEFAULT 1,
+    `unit_price`     DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+    `total_price`    DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+    `payment_method` VARCHAR(50) NOT NULL DEFAULT 'pay_at_counter',
+    `payment_status` ENUM('pending', 'paid', 'failed') NOT NULL DEFAULT 'pending',
+    `order_status`   ENUM('placed', 'preparing', 'ready', 'completed', 'cancelled') NOT NULL DEFAULT 'placed',
+    `notes`          TEXT DEFAULT NULL,
+    `created_at`     DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    KEY `idx_canteen_orders_user`    (`user_id`),
+    KEY `idx_canteen_orders_college` (`college_id`),
+    KEY `idx_canteen_orders_item`    (`item_id`),
+    KEY `idx_canteen_orders_num`     (`order_number`),
+    CONSTRAINT `fk_canteen_orders_college` FOREIGN KEY (`college_id`) REFERENCES `colleges` (`id`) ON DELETE CASCADE,
+    CONSTRAINT `fk_canteen_orders_user`    FOREIGN KEY (`user_id`)    REFERENCES `users` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE `canteen_order_items` (
+    `id`             INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    `order_id`       INT UNSIGNED NOT NULL,
+    `item_id`        INT UNSIGNED NOT NULL,
+    `item_name`      VARCHAR(150) NOT NULL,
+    `quantity`       INT NOT NULL DEFAULT 1,
+    `unit_price`     DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+    `subtotal`       DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+    KEY `idx_coi_order` (`order_id`),
+    CONSTRAINT `fk_coi_order` FOREIGN KEY (`order_id`) REFERENCES `canteen_orders` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
+-- ============================================================
+-- BLOCK 24 — LEAVE MANAGEMENT & HOSTEL OUTPASSES
+-- Tables: leave_requests
+-- ============================================================
+
+CREATE TABLE `leave_requests` (
+    `id`                   INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    `college_id`           INT UNSIGNED NOT NULL DEFAULT 1,
+    `applicant_type`       ENUM('student','staff','faculty') NOT NULL,
+    `applicant_id`         INT UNSIGNED NOT NULL,
+    `leave_type`           ENUM('sick','casual','hostel_outpass','duty','other') NOT NULL DEFAULT 'casual',
+    `from_date`            DATE NOT NULL,
+    `to_date`              DATE NOT NULL,
+    `reason`               TEXT NOT NULL,
+    `expected_return_time` DATETIME DEFAULT NULL,
+    `actual_return_time`   DATETIME DEFAULT NULL,
+    `status`               ENUM('pending','approved','rejected','completed') NOT NULL DEFAULT 'pending',
+    `reviewed_by`          INT UNSIGNED DEFAULT NULL,
+    `reviewed_at`          DATETIME DEFAULT NULL,
+    `remarks`              TEXT DEFAULT NULL,
+    `created_at`           DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    KEY `idx_leave_app`    (`applicant_type`, `applicant_id`),
+    KEY `idx_leave_dates`  (`from_date`, `to_date`),
+    KEY `idx_leave_status` (`status`),
+    CONSTRAINT `fk_leave_college` FOREIGN KEY (`college_id`) REFERENCES `colleges` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
+-- ============================================================
+-- BLOCK 25 — PAYMENT GATEWAY TRANSACTIONS & MULTI-QR
+-- Tables: payment_gateway_transactions
+-- ============================================================
+
+CREATE TABLE `payment_gateway_transactions` (
+    `id`                 INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    `college_id`         INT UNSIGNED NOT NULL DEFAULT 1,
+    `student_fee_id`     INT UNSIGNED DEFAULT NULL,
+    `user_id`            INT UNSIGNED NOT NULL,
+    `fee_type`           ENUM('academic','hostel','transport','canteen','other') NOT NULL DEFAULT 'academic',
+    `gateway`            ENUM('razorpay','upi_qr','netbanking','card','cash') NOT NULL DEFAULT 'razorpay',
+    `gateway_order_id`   VARCHAR(100) DEFAULT NULL,
+    `gateway_payment_id` VARCHAR(100) DEFAULT NULL,
+    `utr_reference`      VARCHAR(100) DEFAULT NULL,
+    `gateway_signature`  VARCHAR(255) DEFAULT NULL,
+    `amount`             DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+    `currency`           VARCHAR(10) NOT NULL DEFAULT 'INR',
+    `status`             ENUM('created','authorized','captured','failed','pending_verification') NOT NULL DEFAULT 'created',
+    `raw_response`       JSON DEFAULT NULL,
+    `created_at`         DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at`         DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    KEY `idx_pg_order`   (`gateway_order_id`),
+    KEY `idx_pg_payid`   (`gateway_payment_id`),
+    KEY `idx_pg_utr`     (`utr_reference`),
+    KEY `idx_pg_status`  (`status`),
+    CONSTRAINT `fk_pg_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
+-- ============================================================
+-- BLOCK 26 — MARKS REVISION & AUDIT LOGGING
+-- Tables: marks_revision_log
+-- ============================================================
+
+CREATE TABLE `marks_revision_log` (
+    `id`         INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    `type`       ENUM('internal','external') NOT NULL,
+    `record_id`  INT UNSIGNED NOT NULL,
+    `student_id` INT UNSIGNED NOT NULL,
+    `subject_id` INT UNSIGNED NOT NULL,
+    `old_marks`  DECIMAL(5,2) DEFAULT NULL,
+    `new_marks`  DECIMAL(5,2) NOT NULL,
+    `changed_by` INT UNSIGNED NOT NULL,
+    `reason`     VARCHAR(255) DEFAULT NULL,
+    `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    KEY `idx_mrl_student` (`student_id`),
+    KEY `idx_mrl_subject` (`subject_id`),
+    CONSTRAINT `fk_mrl_student` FOREIGN KEY (`student_id`) REFERENCES `students` (`id`) ON DELETE CASCADE,
+    CONSTRAINT `fk_mrl_user`    FOREIGN KEY (`changed_by`) REFERENCES `users` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
+-- ============================================================
 SET FOREIGN_KEY_CHECKS = 1;
 -- ============================================================
 -- SCHEMA COMPLETE
--- Total tables : 45
--- Total FKs    : 78
+-- Total tables : 53
+-- Total FKs    : 86
 -- Normalization: 3NF verified
 -- ============================================================

@@ -70,7 +70,8 @@
                         <th style="text-align: right;">Paid</th>
                         <th style="text-align: right;">Balance</th>
                         <th style="text-align: center;">Due Date</th>
-                        <th style="text-align: right;">Status</th>
+                        <th style="text-align: center;">Status</th>
+                        <th style="text-align: right;">Action</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -88,13 +89,22 @@
                             <td style="text-align: right; color: var(--success); font-weight: 600;">₹<?= number_format($paid, 2) ?></td>
                             <td style="text-align: right; color: <?= $bal > 0 ? 'var(--danger)' : 'var(--success)' ?>; font-weight: 600;">₹<?= number_format($bal, 2) ?></td>
                             <td style="text-align: center; color: var(--text-secondary);"><?= !empty($f['due_date']) ? date('d M Y', strtotime($f['due_date'])) : 'N/A' ?></td>
-                            <td style="text-align: right;">
+                            <td style="text-align: center;">
                                 <?php if ($f['status'] === 'paid'): ?>
                                     <span class="badge badge-success">PAID</span>
                                 <?php elseif ($f['status'] === 'partial'): ?>
                                     <span class="badge badge-warning">PARTIAL</span>
                                 <?php else: ?>
                                     <span class="badge badge-danger">PENDING</span>
+                                <?php endif; ?>
+                            </td>
+                            <td style="text-align: right;">
+                                <?php if ($bal > 0): ?>
+                                    <a href="/fee/pay/<?= $f['id'] ?>" class="btn btn-sm btn-primary" style="padding: 0.35rem 0.75rem; font-size: 0.75rem; font-weight: 700; text-decoration: none; display: inline-flex; align-items: center; gap: 0.3rem;">
+                                        <span>📱</span> Pay Online / QR
+                                    </a>
+                                <?php else: ?>
+                                    <span style="color: var(--success); font-weight: 700; font-size: 0.8125rem;">✅ Cleared</span>
                                 <?php endif; ?>
                             </td>
                         </tr>

@@ -275,6 +275,25 @@ function auth_role(): ?string
 }
 
 /**
+ * Get the currently logged-in user array.
+ */
+function auth_user(): ?array
+{
+    if (!is_authenticated()) {
+        return null;
+    }
+    return [
+        'id'          => auth_id(),
+        'username'    => session('username'),
+        'role_code'   => auth_role(),
+        'role_id'     => session('role_id'),
+        'linked_type' => session('linked_type'),
+        'linked_id'   => session('linked_id'),
+        'college_id'  => session('college_id') ?? 1,
+    ];
+}
+
+/**
  * Abort with an HTTP status code if condition is true.
  */
 function abort(int $code, string $message = ''): never

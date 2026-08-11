@@ -29,12 +29,22 @@
                     <form action="/students/<?= $student['id'] ?>/send-credentials" method="POST" style="margin-top: 0.75rem;">
                         <?= csrf_field() ?>
                         <button type="submit" class="btn btn-sm btn-primary" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 0.35rem;">
-                            <span>📧</span> Send Credentials Email
+                            <span>📧</span> Send Student Login Email
                         </button>
                     </form>
                 <?php else: ?>
                     <span class="badge badge-warning">No Login Account</span>
                 <?php endif; ?>
+            </div>
+
+            <div style="margin-bottom: 0.75rem; margin-top: 1rem; border-top: 1px dashed var(--border-color); padding-top: 0.75rem;">
+                <span style="color: var(--text-secondary); display: block; margin-bottom: 0.35rem;">Parent Portal Account:</span>
+                <form action="/students/<?= $student['id'] ?>/provision-parent" method="POST">
+                    <?= csrf_field() ?>
+                    <button type="submit" class="btn btn-sm btn-secondary" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 0.35rem; font-size: 0.75rem; background: rgba(37,99,235,0.1); color: var(--accent-color); border: 1px solid var(--accent-color);">
+                        <span>👨‍👩‍👧</span> Provision / Reset Parent Login
+                    </button>
+                </form>
             </div>
         </div>
     </div>

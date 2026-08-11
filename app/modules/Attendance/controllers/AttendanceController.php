@@ -25,7 +25,7 @@ class AttendanceController extends Controller
      */
     public function index(): void
     {
-        if (auth_role() === 'student') {
+        if (in_array(auth_role(), ['student', 'parent'], true)) {
             $this->studentView();
             return;
         }

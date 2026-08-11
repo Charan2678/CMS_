@@ -35,7 +35,7 @@ class ResultController extends Controller
      */
     public function timetable(): void
     {
-        if (auth_role() === 'student') {
+        if (in_array(auth_role(), ['student', 'parent'], true)) {
             $this->studentTimetable();
             return;
         }
@@ -179,7 +179,7 @@ class ResultController extends Controller
      */
     public function results(): void
     {
-        if (auth_role() === 'student') {
+        if (in_array(auth_role(), ['student', 'parent'], true)) {
             $this->studentResults();
             return;
         }
@@ -285,7 +285,7 @@ class ResultController extends Controller
         $userId    = auth_id();
         $studentId = (int) query('student_id', '0');
 
-        if (auth_role() === 'student') {
+        if (in_array(auth_role(), ['student', 'parent'], true)) {
             $studentId = $userId ? $this->attendanceService->getStudentIdFromUser($userId) : 0;
         } else {
             Permission::enforce('result.publish');

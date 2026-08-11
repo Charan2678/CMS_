@@ -115,6 +115,9 @@
                                             <label style="color: var(--warning); font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 0.25rem;">
                                                 <input type="radio" name="attendance[<?= $st['id'] ?>]" value="late" <?= $currStatus === 'late' ? 'checked' : '' ?>> Late
                                             </label>
+                                            <label style="color: var(--accent-color); font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 0.25rem;">
+                                                <input type="radio" name="attendance[<?= $st['id'] ?>]" value="on_leave" <?= $currStatus === 'on_leave' ? 'checked' : '' ?>> On Leave
+                                            </label>
                                         </div>
                                     </td>
                                 </tr>

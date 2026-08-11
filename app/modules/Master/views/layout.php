@@ -57,13 +57,32 @@ $svg = [
                 <a href="/results" class="nav-item <?= request_uri() === '/results' ? 'active' : '' ?>"><?= $svg['results'] ?> Semester Results</a>
                 <a href="/admit-card" class="nav-item <?= request_uri() === '/admit-card' ? 'active' : '' ?>">🎫 Exam Hall Ticket</a>
                 <a href="/timetable" class="nav-item <?= request_uri() === '/timetable' ? 'active' : '' ?>"><?= $svg['timetable'] ?> Class Timetable</a>
+                <a href="/leave/apply" class="nav-item <?= request_uri() === '/leave/apply' ? 'active' : '' ?>">📝 Apply Leave &amp; Outpass</a>
 
-                <div class="nav-section-title">MY FINANCE & SERVICES</div>
+                <div class="nav-section-title">MY FINANCE &amp; SERVICES</div>
                 <a href="/fee/payments" class="nav-item <?= request_uri() === '/fee/payments' ? 'active' : '' ?>"><?= $svg['receipt'] ?> My Fee Receipts</a>
+                <a href="/fee/pay/1" class="nav-item <?= str_starts_with(request_uri(), '/fee/pay') ? 'active' : '' ?>">💳 Pay Fees &amp; Dues (QR)</a>
                 <a href="/canteen" class="nav-item <?= request_uri() === '/canteen' ? 'active' : '' ?>"><?= $svg['canteen'] ?> Canteen Menu</a>
                 <a href="/library" class="nav-item <?= request_uri() === '/library' ? 'active' : '' ?>"><?= $svg['library'] ?> Library Catalog</a>
                 <a href="/hostel" class="nav-item <?= request_uri() === '/hostel' ? 'active' : '' ?>"><?= $svg['hostel'] ?> Hostel Details</a>
                 <a href="/transport" class="nav-item <?= request_uri() === '/transport' ? 'active' : '' ?>"><?= $svg['transport'] ?> Transport Routes</a>
+
+                <div class="nav-section-title">CAMPUS COMMUNICATION</div>
+                <a href="/announcements" class="nav-item <?= request_uri() === '/announcements' ? 'active' : '' ?>"><?= $svg['announcements'] ?> College Announcements</a>
+
+            <?php elseif ($r === 'parent'): ?>
+                <!-- Parent Portal Sidebar -->
+                <div class="nav-section-title">MY CHILD / WARD</div>
+                <a href="/profile" class="nav-item <?= request_uri() === '/profile' ? 'active' : '' ?>">👨‍🎓 Child Profile &amp; Bio</a>
+                <a href="/attendance" class="nav-item <?= request_uri() === '/attendance' ? 'active' : '' ?>"><?= $svg['attendance'] ?> Ward Attendance</a>
+                <a href="/results" class="nav-item <?= request_uri() === '/results' ? 'active' : '' ?>"><?= $svg['results'] ?> Semester Results</a>
+                <a href="/admit-card" class="nav-item <?= request_uri() === '/admit-card' ? 'active' : '' ?>">🎫 Exam Hall Ticket</a>
+                <a href="/timetable" class="nav-item <?= request_uri() === '/timetable' ? 'active' : '' ?>"><?= $svg['timetable'] ?> Class Timetable</a>
+                <a href="/leave/apply" class="nav-item <?= request_uri() === '/leave/apply' ? 'active' : '' ?>">📝 Apply Ward Leave</a>
+
+                <div class="nav-section-title">FEE &amp; PAYMENTS</div>
+                <a href="/fee/payments" class="nav-item <?= request_uri() === '/fee/payments' ? 'active' : '' ?>"><?= $svg['receipt'] ?> Fee Receipts &amp; Dues</a>
+                <a href="/fee/pay/1" class="nav-item <?= str_starts_with(request_uri(), '/fee/pay') ? 'active' : '' ?>">💳 Pay Fees &amp; Dues (QR)</a>
 
                 <div class="nav-section-title">CAMPUS COMMUNICATION</div>
                 <a href="/announcements" class="nav-item <?= request_uri() === '/announcements' ? 'active' : '' ?>"><?= $svg['announcements'] ?> College Announcements</a>
@@ -81,6 +100,7 @@ $svg = [
                 <a href="/timetable" class="nav-item"><?= $svg['timetable'] ?> Class Timetable</a>
                 <a href="/marks/internal" class="nav-item"><?= $svg['results'] ?> Internal CIA Marks</a>
                 <a href="/results" class="nav-item"><?= $svg['results'] ?> Semester Results</a>
+                <a href="/leave/review" class="nav-item <?= request_uri() === '/leave/review' ? 'active' : '' ?>">📝 Review Leaves &amp; Outpasses</a>
 
                 <div class="nav-section-title">COMMUNICATION</div>
                 <a href="/announcements" class="nav-item"><?= $svg['announcements'] ?> Announcements</a>
@@ -107,6 +127,7 @@ $svg = [
                 <!-- Hostel Warden Sidebar -->
                 <div class="nav-section-title">HOSTEL OPERATIONS</div>
                 <a href="/hostel" class="nav-item"><?= $svg['hostel'] ?> Hostel Management</a>
+                <a href="/leave/outpasses" class="nav-item <?= request_uri() === '/leave/outpasses' ? 'active' : '' ?>">🚪 Outpasses &amp; Check-in</a>
                 <a href="/announcements" class="nav-item"><?= $svg['announcements'] ?> Announcements</a>
 
             <?php elseif ($r === 'transport_manager'): ?>
@@ -142,6 +163,7 @@ $svg = [
                 <a href="/marks/internal" class="nav-item"><?= $svg['results'] ?> Internal CIA Marks</a>
                 <a href="/results" class="nav-item"><?= $svg['results'] ?> Semester Results</a>
                 <a href="/admit-cards/manage" class="nav-item">🎫 Exam Hall Tickets</a>
+                <a href="/leave/review" class="nav-item <?= request_uri() === '/leave/review' ? 'active' : '' ?>">📝 Leave &amp; Outpass Approvals</a>
 
                 <div class="nav-section-title">FINANCE & FEES</div>
                 <a href="/fee/categories" class="nav-item"><?= $svg['receipt'] ?> Fee Categories</a>
@@ -176,8 +198,37 @@ $svg = [
             <!-- Page Title -->
             <div class="header-title"><?= e($title ?? 'Dashboard') ?></div>
 
-            <!-- Right: Theme + Profile -->
-            <div class="user-profile">
+            <!-- Right: Notifications + Theme + Profile -->
+            <div class="user-profile" style="display: flex; align-items: center; gap: 0.75rem;">
+                <!-- Real-Time Notification Bell Dropdown -->
+                <div class="notif-dropdown-wrapper" style="position: relative;">
+                    <button id="notifBellBtn" onclick="toggleNotifDropdown()" title="Notifications" style="position: relative; background: var(--bg-main); border: 1px solid var(--border-color); color: var(--text-primary); width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s ease; font-size: 1.1rem;">
+                        🔔
+                        <span id="notifBadge" style="display: none; position: absolute; top: -4px; right: -4px; background: var(--danger); color: #fff; font-size: 0.65rem; font-weight: 800; border-radius: 10px; padding: 0.1rem 0.35rem; min-width: 16px; text-align: center; border: 2px solid var(--bg-surface); animation: pulse 2s infinite;">0</span>
+                    </button>
+
+                    <!-- Notifications Dropdown Panel -->
+                    <div id="notifDropdownMenu" style="display: none; position: absolute; right: 0; top: 125%; width: 340px; background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: 12px; box-shadow: 0 12px 30px rgba(0,0,0,0.22); z-index: 10000; overflow: hidden; text-align: left;">
+                        <div style="display: flex; align-items: center; justify-content: space-between; padding: 0.75rem 1rem; border-bottom: 1px solid var(--border-color); background: var(--bg-main);">
+                            <div style="font-size: 0.875rem; font-weight: 700; color: var(--text-primary); display: flex; align-items: center; gap: 0.4rem;">
+                                <span>🔔</span> Notifications <span id="notifCountPill" class="badge badge-info" style="font-size: 0.6875rem; display: none;">0 new</span>
+                            </div>
+                            <button onclick="markAllNotificationsRead()" style="background: none; border: none; font-size: 0.75rem; color: var(--accent-color); font-weight: 600; cursor: pointer; padding: 0;">Mark all read</button>
+                        </div>
+
+                        <!-- Notification List Container -->
+                        <div id="notifListContainer" style="max-height: 320px; overflow-y: auto; padding: 0.25rem 0;">
+                            <div style="padding: 1.5rem; text-align: center; color: var(--text-secondary); font-size: 0.8125rem;">
+                                Loading alerts...
+                            </div>
+                        </div>
+
+                        <div style="padding: 0.625rem 1rem; text-align: center; border-top: 1px solid var(--border-color); background: var(--bg-main);">
+                            <a href="/announcements" style="font-size: 0.75rem; color: var(--accent-color); font-weight: 600; text-decoration: none;">View All Campus Circulars &rarr;</a>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Theme Toggle -->
                 <button id="themeToggleBtn" onclick="toggleTheme()" title="Toggle theme" style="background: rgba(2,132,199,0.1); border: 1px solid var(--border-color); color: var(--text-primary); padding: 0.35rem 0.6rem; border-radius: 7px; font-size: 0.8125rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 0.3rem; transition: all 0.2s ease; white-space: nowrap;">
                     <span id="themeIcon">💻</span><span id="themeText">System</span>
@@ -277,11 +328,133 @@ $svg = [
             }
         }
 
+        /* ─── Notification Bell & Dropdown ─── */
+        function toggleNotifDropdown() {
+            const menu = document.getElementById('notifDropdownMenu');
+            if (menu) {
+                const isOpen = menu.style.display === 'block';
+                menu.style.display = isOpen ? 'none' : 'block';
+                if (!isOpen) {
+                    loadNotifications();
+                }
+            }
+        }
+
+        function loadNotifications() {
+            fetch('/api/notifications/unread')
+                .then(r => r.json())
+                .then(data => {
+                    const badge = document.getElementById('notifBadge');
+                    const pill = document.getElementById('notifCountPill');
+                    const list = document.getElementById('notifListContainer');
+                    const count = data.count || 0;
+
+                    if (badge) {
+                        if (count > 0) {
+                            badge.innerText = count > 99 ? '99+' : count;
+                            badge.style.display = 'block';
+                        } else {
+                            badge.style.display = 'none';
+                        }
+                    }
+
+                    if (pill) {
+                        if (count > 0) {
+                            pill.innerText = count + ' new';
+                            pill.style.display = 'inline-block';
+                        } else {
+                            pill.style.display = 'none';
+                        }
+                    }
+
+                    if (list) {
+                        if (!data.items || data.items.length === 0) {
+                            list.innerHTML = `
+                                <div style="padding: 2rem 1rem; text-align: center; color: var(--text-secondary); font-size: 0.8125rem;">
+                                    <div style="font-size: 1.75rem; margin-bottom: 0.25rem;">✨</div>
+                                    <div>All caught up! No unread notifications.</div>
+                                </div>
+                            `;
+                            return;
+                        }
+
+                        let html = '';
+                        data.items.forEach(item => {
+                            const icon = item.type === 'alert' ? '🚨' : (item.type === 'warning' ? '⚠️' : (item.type === 'success' ? '✅' : '📢'));
+                            const link = item.link || '/announcements';
+                            html += `
+                                <div onclick="markNotificationRead(${item.id}, '${link}')" style="padding: 0.75rem 1rem; border-bottom: 1px solid var(--border-color); cursor: pointer; transition: background 0.15s ease; display: flex; gap: 0.75rem; align-items: flex-start; text-decoration: none; color: inherit;" onmouseover="this.style.background='var(--bg-main)'" onmouseout="this.style.background='transparent'">
+                                    <span style="font-size: 1.25rem; flex-shrink: 0; line-height: 1;">${icon}</span>
+                                    <div style="flex: 1; min-width: 0;">
+                                        <div style="display: flex; align-items: center; justify-content: space-between; gap: 0.5rem;">
+                                            <div style="font-size: 0.8125rem; font-weight: 700; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${escapeHtml(item.title)}</div>
+                                            <span style="font-size: 0.65rem; color: var(--text-secondary); white-space: nowrap;">${timeAgo(item.created_at)}</span>
+                                        </div>
+                                        <div style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.2rem; line-height: 1.35; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
+                                            ${escapeHtml(item.message)}
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+                        });
+                        list.innerHTML = html;
+                    }
+                })
+                .catch(() => {});
+        }
+
+        function markNotificationRead(id, redirectUrl) {
+            fetch('/notifications/mark-read/' + id, { method: 'POST' })
+                .then(() => {
+                    loadNotifications();
+                    if (redirectUrl && redirectUrl !== '#') {
+                        window.location.href = redirectUrl;
+                    }
+                })
+                .catch(() => {
+                    if (redirectUrl && redirectUrl !== '#') window.location.href = redirectUrl;
+                });
+        }
+
+        function markAllNotificationsRead() {
+            fetch('/notifications/mark-all-read', { method: 'POST' })
+                .then(() => {
+                    loadNotifications();
+                });
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.innerText = text;
+            return div.innerHTML;
+        }
+
+        function timeAgo(dateStr) {
+            if (!dateStr) return '';
+            const d = new Date(dateStr);
+            const now = new Date();
+            const diff = Math.floor((now - d) / 1000);
+            if (diff < 60) return 'Just now';
+            if (diff < 3600) return Math.floor(diff / 60) + 'm ago';
+            if (diff < 86400) return Math.floor(diff / 3600) + 'h ago';
+            return Math.floor(diff / 86400) + 'd ago';
+        }
+
+        // Auto load unread count on page load
+        document.addEventListener('DOMContentLoaded', loadNotifications);
+
         document.addEventListener('click', function(e) {
-            const wrapper = document.querySelector('.profile-dropdown-wrapper');
-            if (wrapper && !wrapper.contains(e.target)) {
-                const menu = document.getElementById('profileDropdownMenu');
-                if (menu) menu.style.display = 'none';
+            const pWrapper = document.querySelector('.profile-dropdown-wrapper');
+            if (pWrapper && !pWrapper.contains(e.target)) {
+                const pMenu = document.getElementById('profileDropdownMenu');
+                if (pMenu) pMenu.style.display = 'none';
+            }
+
+            const nWrapper = document.querySelector('.notif-dropdown-wrapper');
+            if (nWrapper && !nWrapper.contains(e.target)) {
+                const nMenu = document.getElementById('notifDropdownMenu');
+                if (nMenu) nMenu.style.display = 'none';
             }
         });
 

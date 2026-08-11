@@ -18,7 +18,7 @@ class NotificationController extends Controller
     }
 
     /**
-     * Campus Announcements Board.
+     * Campus Announcements Board with Hierarchical Updates.
      */
     public function announcements(): void
     {
@@ -36,19 +36,20 @@ class NotificationController extends Controller
                 $error = 'Invalid security token.';
             } else {
                 $data = [
-                    'college_id'  => 1,
-                    'title'       => $this->input('title'),
-                    'content'     => $this->input('content'),
-                    'target_role' => $this->input('target_role', 'all'),
-                    'start_date'  => $this->input('start_date', date('Y-m-d')),
-                    'end_date'    => $this->input('end_date', date('Y-m-d', strtotime('+30 days'))),
+                    'college_id'            => 1,
+                    'title'                 => $this->input('title'),
+                    'content'               => $this->input('content'),
+                    'target_role'           => $this->input('target_role'),
+                    'target_department_id'  => $this->input('target_department_id'),
+                    'target_semester_id'    => $this->input('target_semester_id'),
+                    'hierarchy_level'       => $this->input('hierarchy_level', auth_role() === 'super_admin' ? 'chairman' : (auth_role() === 'admin' ? 'principal' : (auth_role() === 'hod' ? 'hod' : 'faculty'))),
                 ];
 
                 if (empty($data['title']) || empty($data['content'])) {
                     $error = 'Title and content are required.';
                 } else {
-                    if ($this->notificationService->createAnnouncement($data)) {
-                        $success = 'Announcement broadcasted successfully.';
+                    if ($this->notificationService->createAnnouncement($data, (int) auth_id())) {
+                        $success = 'Announcement broadcasted successfully across campus!';
                     } else {
                         $error = 'Failed to create announcement.';
                     }
@@ -56,10 +57,15 @@ class NotificationController extends Controller
             }
         }
 
-        $announcements = $this->notificationService->getAnnouncements(1);
+        $userRoleId = null;
+        if (in_array(auth_role(), ['student', 'parent'])) {
+            $userRoleId = auth_role() === 'student' ? 10 : 11;
+        }
+
+        $announcements = $this->notificationService->getAnnouncements(1, $userRoleId);
 
         $this->render('Settings/views/announcements', [
-            'title'         => 'Campus Announcements',
+            'title'         => 'Campus Announcements & Circulars',
             'announcements' => $announcements,
             'canBroadcast'  => $canBroadcast,
             'error'         => $error,
@@ -68,17 +74,47 @@ class NotificationController extends Controller
     }
 
     /**
-     * Immutable System Audit Logs Viewer.
+     * AJAX endpoint: Get unread notifications for currently logged in user.
      */
-    public function auditLogs(): void
+    public function getUnread(): void
     {
-        Permission::enforce('audit.view');
+        if (!is_authenticated()) {
+            $this->json(['count' => 0, 'items' => []], 401);
+            return;
+        }
 
-        $logs = $this->notificationService->getAuditLogs(100, 0);
+        $userId = (int) auth_id();
+        $res = $this->notificationService->getUnreadNotifications($userId);
+        $this->json($res);
+    }
 
-        $this->render('Settings/views/audit_logs', [
-            'title' => 'System Audit Logs',
-            'logs'  => $logs,
-        ], 'layout');
+    /**
+     * AJAX endpoint: Mark single notification as read.
+     */
+    public function markRead(int $id): void
+    {
+        if (!is_authenticated()) {
+            $this->json(['success' => false, 'error' => 'Unauthenticated'], 401);
+            return;
+        }
+
+        $userId = (int) auth_id();
+        $ok = $this->notificationService->markAsRead($id, $userId);
+        $this->json(['success' => $ok]);
+    }
+
+    /**
+     * AJAX endpoint: Mark all notifications as read.
+     */
+    public function markAllRead(): void
+    {
+        if (!is_authenticated()) {
+            $this->json(['success' => false, 'error' => 'Unauthenticated'], 401);
+            return;
+        }
+
+        $userId = (int) auth_id();
+        $ok = $this->notificationService->markAllAsRead($userId);
+        $this->json(['success' => $ok]);
     }
 }

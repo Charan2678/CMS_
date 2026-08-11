@@ -105,6 +105,13 @@ VALUES
 (2, 2, 1, 1, 1, 1, 1)
 ON DUPLICATE KEY UPDATE `is_current` = 1;
 
+-- 10b. Sample Guardians
+INSERT INTO `guardians` (`id`, `student_id`, `relationship`, `name`, `mobile`, `email`, `occupation`, `annual_income`, `is_primary`)
+VALUES
+(1, 1, 'father', 'Robert Doe', '9999911111', 'parent.john@kuppam.edu.in', 'Business', 650000.00, 1),
+(2, 2, 'mother', 'Sarah Smith', '9999922222', 'parent.jane@kuppam.edu.in', 'Professor', 800000.00, 1)
+ON DUPLICATE KEY UPDATE `name` = VALUES(`name`);
+
 -- 11. Role Permissions Safeguard
 INSERT INTO `role_permissions` (`role_id`, `permission_id`, `granted`)
 SELECT 1, id, 1 FROM permissions

@@ -30,20 +30,34 @@ class CanteenController extends Controller
             } else {
                 $action = $this->input('_action', 'add_item');
 
-                if ($action === 'place_order') {
+                if ($action === 'place_order' || $action === 'place_cart_order') {
                     $userId = auth_id();
                     if (!$userId) {
                         $error = 'You must be logged in to place an order.';
                     } else {
-                        $res = $this->canteenService->placeOrder([
-                            'college_id'     => $_SESSION['college_id'] ?? 1,
-                            'user_id'        => $userId,
-                            'student_id'     => $_SESSION['linked_id'] ?? null,
-                            'item_id'        => (int) $this->input('item_id'),
-                            'quantity'       => (int) $this->input('quantity', '1'),
-                            'payment_method' => $this->input('payment_method', 'pay_at_counter'),
-                            'notes'          => $this->input('notes'),
-                        ]);
+                        // Check if cart JSON or single item
+                        $cartJson = $this->input('cart_json');
+                        $cartItems = [];
+
+                        if (!empty($cartJson)) {
+                            $decoded = json_decode($cartJson, true);
+                            if (is_array($decoded)) {
+                                $cartItems = $decoded;
+                            }
+                        } else {
+                            $cartItems[] = [
+                                'item_id'  => (int) $this->input('item_id'),
+                                'quantity' => (int) $this->input('quantity', '1'),
+                            ];
+                        }
+
+                        $res = $this->canteenService->placeCartOrder(
+                            $cartItems,
+                            (int) $userId,
+                            $_SESSION['linked_id'] ?? null,
+                            $this->input('payment_method', 'pay_at_counter'),
+                            $this->input('notes')
+                        );
 
                         if ($res['success']) {
                             $success = $res['message'];
@@ -53,10 +67,11 @@ class CanteenController extends Controller
                     }
                 } elseif ($action === 'update_order_status') {
                     Permission::enforce('canteen.manage');
-                    $orderId = (int) $this->input('order_id');
-                    $status  = $this->input('order_status');
+                    $orderId   = (int) $this->input('order_id');
+                    $status    = $this->input('order_status');
+                    $payStatus = $this->input('payment_status'); // optional
 
-                    if ($this->canteenService->updateOrderStatus($orderId, $status)) {
+                    if ($this->canteenService->updateOrderStatus($orderId, $status, $payStatus)) {
                         $success = 'Order status updated successfully.';
                     } else {
                         $error = 'Failed to update order status.';
@@ -64,11 +79,12 @@ class CanteenController extends Controller
                 } else {
                     Permission::enforce('canteen.manage');
                     $data = [
-                        'college_id'   => 1,
-                        'item_name'    => $this->input('item_name'),
-                        'category'     => $this->input('category', 'Snacks'),
-                        'price'        => (float) $this->input('price', '0.00'),
-                        'stock_status' => $this->input('stock_status', 'available'),
+                        'college_id'      => 1,
+                        'item_name'       => $this->input('item_name'),
+                        'category'        => $this->input('category', 'Snacks'),
+                        'price'           => (float) $this->input('price', '0.00'),
+                        'stock_quantity'  => (int) $this->input('stock_quantity', '50'),
+                        'stock_status'    => $this->input('stock_status', 'available'),
                     ];
 
                     if (empty($data['item_name'])) {
@@ -86,7 +102,7 @@ class CanteenController extends Controller
 
         $items     = $this->canteenService->getCanteenItems(1);
         $userId    = auth_id();
-        $myOrders  = $userId ? $this->canteenService->getUserOrders($userId) : [];
+        $myOrders  = $userId ? $this->canteenService->getUserOrders((int)$userId) : [];
         $allOrders = $canManage ? $this->canteenService->getAllOrders(1) : [];
 
         $this->render('Canteen/views/index', [
