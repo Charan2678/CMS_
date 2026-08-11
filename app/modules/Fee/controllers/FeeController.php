@@ -270,10 +270,10 @@ class FeeController extends Controller
                 SELECT sf.id FROM student_fees sf
                 JOIN fee_structures fs ON fs.id = sf.fee_structure_id
                 JOIN fee_categories fc ON fc.id = fs.fee_category_id
-                WHERE sf.student_id = :sid AND (LOWER(fc.name) LIKE :pat OR LOWER(fc.code) LIKE :pat)
+                WHERE sf.student_id = :sid AND (LOWER(fc.name) LIKE :pat1 OR LOWER(fc.code) LIKE :pat2)
                 ORDER BY sf.id DESC LIMIT 1
             ');
-            $sfStmt->execute([':sid' => $myStudentId, ':pat' => "%{$catPattern}%"]);
+            $sfStmt->execute([':sid' => $myStudentId, ':pat1' => "%{$catPattern}%", ':pat2' => "%{$catPattern}%"]);
             $sfId = $sfStmt->fetchColumn();
 
             if (!$sfId) {
@@ -316,10 +316,10 @@ class FeeController extends Controller
                     INSERT INTO student_fees (
                         student_id, fee_structure_id, academic_year_id, amount_due, discount, final_amount, status, created_at
                     ) VALUES (
-                        :sid, :fs_id, 1, :amt, 0.00, :amt, "pending", NOW()
+                        :sid, :fs_id, 1, :amt1, 0.00, :amt2, "pending", NOW()
                     )
                 ');
-                $inSf->execute([':sid' => $myStudentId, ':fs_id' => $fsId, ':amt' => $catAmount]);
+                $inSf->execute([':sid' => $myStudentId, ':fs_id' => $fsId, ':amt1' => $catAmount, ':amt2' => $catAmount]);
                 $studentFeeId = (int) db()->lastInsertId();
             } else {
                 $studentFeeId = (int) $sfId;
