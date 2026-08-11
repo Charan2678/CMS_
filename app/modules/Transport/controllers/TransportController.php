@@ -82,14 +82,39 @@ class TransportController extends Controller
         $allocations = $this->transportService->getAllocations();
         $students    = $this->studentService->getStudents(1, 1, 100)['data'] ?? [];
 
+        $myStudentId = null;
+        $isStudentOrParent = false;
+        if (is_authenticated()) {
+            $user = auth_user();
+            if ($user && $user['linked_type'] === 'student') {
+                $myStudentId = (int) $user['linked_id'];
+                $isStudentOrParent = true;
+            } elseif ($user && $user['linked_type'] === 'parent') {
+                $myStudentId = (int) (session('active_ward_id') ?? 1);
+                $isStudentOrParent = true;
+            }
+        }
+
+        $mySubscription = null;
+        if ($myStudentId) {
+            foreach ($allocations as $a) {
+                if ((int)$a['student_id'] === $myStudentId && $a['status'] === 'active') {
+                    $mySubscription = $a;
+                    break;
+                }
+            }
+        }
+
         $this->render('Transport/views/index', [
-            'title'       => 'Transport & Bus Routes Management',
-            'routes'      => $routes,
-            'allocations' => $allocations,
-            'students'    => $students,
-            'canManage'   => $canManage,
-            'error'       => $error,
-            'success'     => $success,
+            'title'             => 'Transport & Bus Routes Management',
+            'routes'            => $routes,
+            'allocations'       => $allocations,
+            'students'          => $students,
+            'mySubscription'    => $mySubscription,
+            'isStudentOrParent' => $isStudentOrParent,
+            'canManage'         => $canManage,
+            'error'             => $error,
+            'success'           => $success,
         ], 'layout');
     }
 }

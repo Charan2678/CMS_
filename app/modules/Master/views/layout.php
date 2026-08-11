@@ -61,6 +61,7 @@ $svg = [
 
                 <div class="nav-section-title">MY FINANCE &amp; SERVICES</div>
                 <a href="/fee/payments" class="nav-item <?= request_uri() === '/fee/payments' ? 'active' : '' ?>"><?= $svg['receipt'] ?> My Fee Receipts</a>
+                <a href="/fee/pay/1" class="nav-item <?= str_starts_with(request_uri(), '/fee/pay') ? 'active' : '' ?>">💳 Pay Fees &amp; Dues (QR)</a>
                 <a href="/canteen" class="nav-item <?= request_uri() === '/canteen' ? 'active' : '' ?>"><?= $svg['canteen'] ?> Canteen Menu</a>
                 <a href="/library" class="nav-item <?= request_uri() === '/library' ? 'active' : '' ?>"><?= $svg['library'] ?> Library Catalog</a>
                 <a href="/hostel" class="nav-item <?= request_uri() === '/hostel' ? 'active' : '' ?>"><?= $svg['hostel'] ?> Hostel Details</a>
@@ -81,6 +82,7 @@ $svg = [
 
                 <div class="nav-section-title">FEE &amp; PAYMENTS</div>
                 <a href="/fee/payments" class="nav-item <?= request_uri() === '/fee/payments' ? 'active' : '' ?>"><?= $svg['receipt'] ?> Fee Receipts &amp; Dues</a>
+                <a href="/fee/pay/1" class="nav-item <?= str_starts_with(request_uri(), '/fee/pay') ? 'active' : '' ?>">💳 Pay Fees &amp; Dues (QR)</a>
 
                 <div class="nav-section-title">CAMPUS COMMUNICATION</div>
                 <a href="/announcements" class="nav-item <?= request_uri() === '/announcements' ? 'active' : '' ?>"><?= $svg['announcements'] ?> College Announcements</a>

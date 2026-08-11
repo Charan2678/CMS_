@@ -24,6 +24,39 @@
     </div>
 </div>
 
+<?php if (!empty($isStudentOrParent)): ?>
+<!-- Student Hostel Fee Payment Banner -->
+<div class="card" style="margin-bottom: 2rem; border-top: 4px solid #8b5cf6; background: linear-gradient(135deg, rgba(139, 92, 246, 0.05) 0%, rgba(2, 132, 199, 0.05) 100%);">
+    <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1.25rem;">
+        <div>
+            <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.25rem;">
+                <span style="font-size: 1.35rem;">🛏️</span>
+                <h3 style="margin: 0; font-size: 1.15rem; font-weight: 800; color: var(--text-primary);">
+                    <?= !empty($myAllocation) ? 'My Hostel Room &amp; Mess Fee Portal' : 'Hostel Admission &amp; Room Fee Payment' ?>
+                </h3>
+                <span class="badge" style="background: #8b5cf6; color: #fff; font-size: 0.7rem; font-weight: 700;">Official Canara Bank QR</span>
+            </div>
+            <p style="margin: 0; font-size: 0.8125rem; color: var(--text-secondary);">
+                <?php if (!empty($myAllocation)): ?>
+                    Currently Allocated: <strong><?= e($myAllocation['block_name']) ?> &bull; Room <?= e($myAllocation['room_number']) ?></strong>. Scan and pay your semester hostel &amp; mess dues directly.
+                <?php else: ?>
+                    Pay semester hostel room rent &amp; mess advance directly via verified Canara Bank QR code (<code>106508632000311@cnrb</code>).
+                <?php endif; ?>
+            </p>
+        </div>
+
+        <div style="display: flex; gap: 0.75rem; align-items: center;">
+            <a href="/fee/pay/hostel" class="btn btn-primary" style="background: #8b5cf6; border-color: #8b5cf6; text-decoration: none; font-weight: 800; padding: 0.65rem 1.35rem; display: inline-flex; align-items: center; gap: 0.5rem; border-radius: 8px; box-shadow: 0 4px 12px rgba(139, 92, 246, 0.25);">
+                <span>📱</span> Pay Hostel Fee (Scan QR)
+            </a>
+            <a href="/leave/apply" class="btn btn-outline-primary" style="text-decoration: none; font-weight: 700; padding: 0.65rem 1rem; font-size: 0.8125rem; border-radius: 8px; border: 1px solid var(--border-color); color: var(--text-primary);">
+                <span>🚪</span> Apply Outpass
+            </a>
+        </div>
+    </div>
+</div>
+<?php endif; ?>
+
 <?php if (!empty($canAllocate)): ?>
 <!-- Allocation & Management Grid -->
 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 2rem;">
@@ -188,6 +221,7 @@
                     <th style="padding: 0.65rem 0.75rem;">Type</th>
                     <th style="padding: 0.65rem 0.75rem;">Warden</th>
                     <th style="padding: 0.65rem 0.75rem;">Contact</th>
+                    <th style="padding: 0.65rem 0.75rem; text-align: center;">Hostel Fee</th>
                 </tr>
             </thead>
             <tbody>
@@ -197,6 +231,11 @@
                         <td style="padding: 0.75rem;"><span class="badge badge-info" style="text-transform: uppercase;"><?= e($b['gender_type']) ?></span></td>
                         <td style="padding: 0.75rem;"><?= e($b['warden_name'] ?? 'N/A') ?></td>
                         <td style="padding: 0.75rem; color: var(--text-secondary);"><?= e($b['warden_phone'] ?? 'N/A') ?></td>
+                        <td style="padding: 0.75rem; text-align: center;">
+                            <a href="/fee/pay/hostel" class="btn btn-sm btn-primary" style="background: #8b5cf6; border-color: #8b5cf6; text-decoration: none; padding: 0.35rem 0.85rem; font-size: 0.75rem; font-weight: 700; border-radius: 6px;">
+                                💳 Pay ₹25,000 (QR)
+                            </a>
+                        </td>
                     </tr>
                 <?php endforeach; ?>
             </tbody>

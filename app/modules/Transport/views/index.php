@@ -6,6 +6,36 @@
     <div class="alert alert-success" style="margin-bottom: 1.5rem;"><?= e($success) ?></div>
 <?php endif; ?>
 
+<?php if (!empty($isStudentOrParent)): ?>
+<!-- Student Bus Subscription & Payment Banner -->
+<div class="card" style="margin-bottom: 2rem; border-top: 4px solid var(--accent-color); background: linear-gradient(135deg, rgba(2, 132, 199, 0.05) 0%, rgba(37, 99, 235, 0.05) 100%);">
+    <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1.25rem;">
+        <div>
+            <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.25rem;">
+                <span style="font-size: 1.35rem;">🚌</span>
+                <h3 style="margin: 0; font-size: 1.15rem; font-weight: 800; color: var(--text-primary);">
+                    <?= !empty($mySubscription) ? 'My College Bus Subscription' : 'Bus Transport Route & Fee Payment' ?>
+                </h3>
+                <span class="badge" style="background: #0284c7; color: #fff; font-size: 0.7rem; font-weight: 700;">Official Canara Bank QR</span>
+            </div>
+            <p style="margin: 0; font-size: 0.8125rem; color: var(--text-secondary);">
+                <?php if (!empty($mySubscription)): ?>
+                    Active Route: <strong><?= e($mySubscription['route_name']) ?></strong> (Pickup: <?= e($mySubscription['pickup_point'] ?? 'Campus') ?>). Scan and pay your annual bus transport fare directly.
+                <?php else: ?>
+                    Subscribe to college bus transportation &amp; pay annual route fare via verified Canara Bank QR code (<code>106508598000310@cnrb</code>).
+                <?php endif; ?>
+            </p>
+        </div>
+
+        <div style="display: flex; gap: 0.75rem; align-items: center;">
+            <a href="/fee/pay/transport" class="btn btn-primary" style="text-decoration: none; font-weight: 800; padding: 0.65rem 1.35rem; display: inline-flex; align-items: center; gap: 0.5rem; border-radius: 8px; box-shadow: 0 4px 12px rgba(2, 132, 199, 0.25);">
+                <span>📱</span> Pay Bus Fee (Scan QR)
+            </a>
+        </div>
+    </div>
+</div>
+<?php endif; ?>
+
 <?php if (!empty($canManage)): ?>
 <!-- Transport Operations & Subscriptions Grid -->
 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 2rem;">
@@ -161,6 +191,7 @@
                     <th style="padding: 0.65rem 0.75rem;">Route Pathway</th>
                     <th style="padding: 0.65rem 0.75rem;">Active Riders</th>
                     <th style="padding: 0.65rem 0.75rem; text-align: right;">Annual Bus Fee</th>
+                    <th style="padding: 0.65rem 0.75rem; text-align: center;">Bus Fee Action</th>
                 </tr>
             </thead>
             <tbody>
@@ -172,6 +203,11 @@
                         <td style="padding: 0.75rem; font-weight: 700; color: var(--text-primary);"><?= e($r['active_riders'] ?? 0) ?> Students</td>
                         <td style="padding: 0.75rem; text-align: right; font-weight: 800; color: var(--success); font-size: 0.9375rem;">
                             ₹<?= number_format((float)$r['fare'], 2) ?>
+                        </td>
+                        <td style="padding: 0.75rem; text-align: center;">
+                            <a href="/fee/pay/transport" class="btn btn-sm btn-primary" style="text-decoration: none; padding: 0.35rem 0.85rem; font-size: 0.75rem; font-weight: 700; border-radius: 6px;">
+                                💳 Pay (Scan QR)
+                            </a>
                         </td>
                     </tr>
                 <?php endforeach; ?>
