@@ -246,31 +246,39 @@
         .status-banner {
             display: flex;
             align-items: center;
-            justify-content: space-between;
+            gap: 1.25rem;
             background: var(--success-light);
             border: 1px solid rgba(5, 150, 105, 0.3);
             border-radius: 8px;
-            padding: 0.875rem 1.25rem;
+            padding: 1rem 1.25rem;
             margin-bottom: 2rem;
         }
 
         .paid-tag {
             display: inline-flex;
             align-items: center;
-            gap: 0.4rem;
+            justify-content: center;
+            gap: 0.45rem;
             background: var(--success);
             color: #ffffff;
             font-size: 0.8125rem;
-            font-weight: 900;
-            padding: 0.35rem 0.85rem;
+            font-weight: 800;
+            padding: 0.5rem 1rem;
             border-radius: 6px;
             letter-spacing: 0.05em;
+            white-space: nowrap;
+            flex-shrink: 0;
+            line-height: 1;
+            box-shadow: 0 2px 6px rgba(5, 150, 105, 0.2);
         }
 
         .status-msg {
-            font-size: 0.8125rem;
+            font-size: 0.875rem;
             color: #065f46;
             font-weight: 600;
+            line-height: 1.45;
+            flex: 1;
+            margin: 0;
         }
 
         /* Itemized Table */
@@ -455,9 +463,54 @@
             text-transform: uppercase;
         }
 
-        .sign-subtitle {
-            font-size: 0.6875rem;
-            color: var(--text-muted);
+        /* Responsive Viewports */
+        @media (max-width: 768px) {
+            body {
+                padding: 1rem 0.5rem;
+            }
+            .invoice-card {
+                padding: 1.5rem;
+            }
+            .invoice-header {
+                flex-direction: column;
+                gap: 1.25rem;
+            }
+            .invoice-meta-badge {
+                text-align: left;
+            }
+            .info-grid {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+            .calculation-grid {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+            }
+            .invoice-footer {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+            }
+            .signature-block {
+                text-align: left;
+            }
+            .sign-line {
+                margin-left: 0;
+            }
+        }
+
+        @media (max-width: 560px) {
+            .status-banner {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.75rem;
+                padding: 1rem;
+            }
+            .paid-tag {
+                width: auto;
+            }
+            .status-msg {
+                font-size: 0.8125rem;
+            }
         }
 
         /* Print Optimization */
@@ -609,7 +662,8 @@
             <!-- Status Banner -->
             <div class="status-banner">
                 <div class="paid-tag">
-                    <span>✓</span> PAID &amp; VERIFIED
+                    <span style="font-size: 0.9rem; line-height: 1;">✓</span>
+                    <span>PAID &amp; VERIFIED</span>
                 </div>
                 <div class="status-msg">
                     Payment of <strong>₹<?= number_format((float)$receipt['amount_paid'], 2) ?></strong> successfully captured &amp; posted to institutional accounts ledger.
