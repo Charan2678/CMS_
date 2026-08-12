@@ -308,14 +308,14 @@ class PlacementController extends Controller
 
         if (!$studentId) {
             $this->render('Placement/views/portal', [
-                'title'       => 'Placement Portal',
-                'student'     => null,
-                'drives'      => [],
-                'appliedMap'  => [],
-                'cgpa'        => 0,
-                'backlogs'    => 0,
-                'attendance'  => 0,
-                'error'       => 'Student record not found.'
+                'title'         => 'Placement Portal',
+                'student'       => null,
+                'drives'        => [],
+                'appliedMap'    => [],
+                'cgpa'          => 0.0,
+                'backlogs'      => 0,
+                'attendancePct' => 0.0,
+                'error'         => 'Student record not found.'
             ], 'layout');
             return;
         }
