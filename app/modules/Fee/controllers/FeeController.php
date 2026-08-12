@@ -254,19 +254,59 @@ class FeeController extends Controller
         $targetFeeType = in_array($idStr, ['hostel', 'transport', 'transport_change', 'academic', 'mess'], true) ? $idStr : null;
 
         // Resolve student ID from active session
-        $myStudentId = 1;
+        $myStudentId = 0;
         if (is_authenticated()) {
             $user = auth_user();
-            if ($user && $user['linked_type'] === 'student') {
+            if ($user && $user['linked_type'] === 'student' && !empty($user['linked_id'])) {
                 $myStudentId = (int) $user['linked_id'];
-            } elseif ($user && $user['linked_type'] === 'parent') {
-                $myStudentId = (int) (session('active_ward_id') ?? 1);
+            } elseif ($user && $user['linked_type'] === 'parent' && !empty(session('active_ward_id'))) {
+                $myStudentId = (int) session('active_ward_id');
             }
         }
 
         if (empty($idStr) || $idStr === 'default') {
             $targetFeeType = 'academic';
         }
+
+        // Verify if student exists in students table or get first active student
+        if ($myStudentId <= 0 || !(int)db()->query("SELECT COUNT(*) FROM students WHERE id = $myStudentId")->fetchColumn()) {
+            $myStudentId = (int) (db()->query('SELECT id FROM students ORDER BY id ASC LIMIT 1')->fetchColumn() ?: 0);
+        }
+
+        // If no student exists in database yet, render empty state without DB insert
+        if ($myStudentId <= 0) {
+            $fee = [
+                'id'                 => 0,
+                'final_amount'       => 0.00,
+                'total_paid'         => 0.00,
+                'category_name'      => 'College Academic & Tuition Fee',
+                'course_code'        => 'N/A',
+                'semester_number'    => 1,
+                'due_date'           => date('Y-m-d', strtotime('+30 days')),
+                'academic_year_name' => date('Y') . '-' . (date('Y') + 1),
+                'roll_number'        => 'N/A',
+                'first_name'         => 'No Enrolled',
+                'last_name'          => 'Students',
+                'email'              => 'admin@kuppam.edu.in'
+            ];
+            $feeType = $targetFeeType ?? 'academic';
+            $upiDetails = $this->gatewayService->getUpiDetailsForFeeType($feeType);
+            $upiUri     = $this->gatewayService->generateUpiUri($feeType, 0.00, "FEE-0", "N/A");
+
+            $this->render('Fee/views/pay', [
+                'title'         => 'Secure Online Fee Payment',
+                'fee'           => $fee,
+                'dueBalance'    => 0.00,
+                'feeType'       => $feeType,
+                'upiDetails'    => $upiDetails,
+                'upiUri'        => $upiUri,
+                'error'         => 'No student records currently exist in the database. Please admit a student to process real fee payments.',
+            ], 'layout');
+            return;
+        }
+
+        $studentFeeId = is_numeric($id) ? (int)$id : 0;
+>>>>>>> 5fb75443465ab85c62c642c90b95a6667cec4441
 
         if ($targetFeeType) {
             $catPattern = match($targetFeeType) {
@@ -357,10 +397,13 @@ class FeeController extends Controller
         $fee = $sfStmt->fetch();
 
         if (!$fee) {
-            // Fallback to student's latest fee record
+            // Fallback to student's latest fee record or first available
             $altSf = db()->prepare('SELECT id FROM student_fees WHERE student_id = :sid ORDER BY id DESC LIMIT 1');
             $altSf->execute([':sid' => $myStudentId]);
             $fallbackId = $altSf->fetchColumn();
+            if (!$fallbackId) {
+                $fallbackId = (int) db()->query('SELECT id FROM student_fees ORDER BY id ASC LIMIT 1')->fetchColumn();
+            }
             if ($fallbackId) {
                 $sfStmt->execute([':id' => $fallbackId]);
                 $fee = $sfStmt->fetch();

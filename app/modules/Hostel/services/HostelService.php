@@ -464,18 +464,22 @@ class HostelService
      */
     public function getPaymentSettings(int $collegeId = 1): array
     {
-        $stmt = db()->prepare('SELECT * FROM hostel_payment_settings WHERE college_id = :cid LIMIT 1');
-        $stmt->execute([':cid' => $collegeId]);
-        $row = $stmt->fetch();
-        if (!$row) {
-            return [
-                'qr_image'     => '/assets/images/hostel_qr.png',
-                'upi_id'       => 'kec.hostel@upi',
-                'payee_name'   => 'Kuppam Engineering College Hostel Account',
-                'instructions' => 'Scan with GPay, PhonePe, Paytm, or BHIM to pay your semester hostel fee.',
-            ];
+        try {
+            $stmt = db()->prepare('SELECT * FROM hostel_payment_settings WHERE college_id = :cid LIMIT 1');
+            $stmt->execute([':cid' => $collegeId]);
+            $row = $stmt->fetch();
+            if ($row) {
+                return $row;
+            }
+        } catch (\Throwable $e) {
+            // Table doesn't exist, return fallback defaults
         }
-        return $row;
+        return [
+            'qr_image'     => '/assets/images/hostel_qr.png',
+            'upi_id'       => 'kec.hostel@upi',
+            'payee_name'   => 'Kuppam Engineering College Hostel Account',
+            'instructions' => 'Scan with GPay, PhonePe, Paytm, or BHIM to pay your semester hostel fee.',
+        ];
     }
 
     /**
@@ -483,18 +487,22 @@ class HostelService
      */
     public function updatePaymentSettings(int $collegeId, array $data): bool
     {
-        $stmt = db()->prepare('
-            UPDATE hostel_payment_settings
-            SET qr_image = :qr, upi_id = :upi, payee_name = :pname, instructions = :inst
-            WHERE college_id = :cid
-        ');
-        return $stmt->execute([
-            ':qr'    => $data['qr_image'] ?? '/assets/images/hostel_qr.png',
-            ':upi'   => $data['upi_id'] ?? 'kec.hostel@upi',
-            ':pname' => $data['payee_name'] ?? 'Kuppam Engineering College Hostel Account',
-            ':inst'  => $data['instructions'] ?? 'Scan with GPay/PhonePe to pay hostel fee.',
-            ':cid'   => $collegeId,
-        ]);
+        try {
+            $stmt = db()->prepare('
+                UPDATE hostel_payment_settings
+                SET qr_image = :qr, upi_id = :upi, payee_name = :pname, instructions = :inst
+                WHERE college_id = :cid
+            ');
+            return $stmt->execute([
+                ':qr'    => $data['qr_image'] ?? '/assets/images/hostel_qr.png',
+                ':upi'   => $data['upi_id'] ?? 'kec.hostel@upi',
+                ':pname' => $data['payee_name'] ?? 'Kuppam Engineering College Hostel Account',
+                ':inst'  => $data['instructions'] ?? 'Scan with GPay/PhonePe to pay hostel fee.',
+                ':cid'   => $collegeId,
+            ]);
+        } catch (\Throwable $e) {
+            return false;
+        }
     }
 
     /**

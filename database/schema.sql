@@ -1466,11 +1466,23 @@ CREATE TABLE IF NOT EXISTS `placement_trainings` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 
+CREATE TABLE IF NOT EXISTS `hostel_payment_settings` (
+    `id`           INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    `college_id`   INT UNSIGNED NOT NULL DEFAULT 1,
+    `qr_image`     VARCHAR(255) DEFAULT '/assets/images/hostel_qr.png',
+    `upi_id`       VARCHAR(100) DEFAULT 'kec.hostel@upi',
+    `payee_name`   VARCHAR(150) DEFAULT 'Kuppam Engineering College Hostel Account',
+    `instructions` TEXT DEFAULT NULL,
+    `created_at`   DATETIME DEFAULT CURRENT_TIMESTAMP,
+    `updated_at`   DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT `fk_hps_college` FOREIGN KEY (`college_id`) REFERENCES `colleges` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 -- ============================================================
 SET FOREIGN_KEY_CHECKS = 1;
 -- ============================================================
 -- SCHEMA COMPLETE
--- Total tables : 63
--- Total FKs    : 90
+-- Total tables : 64
+-- Total FKs    : 91
 -- Normalization: 3NF verified
 -- ============================================================

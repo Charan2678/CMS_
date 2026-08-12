@@ -28,18 +28,23 @@
                 <span>🎓</span> My Placement Profile
             </h2>
             
+            <?php
+                $cgpaVal          = (float)($cgpa ?? 0.0);
+                $backlogsVal      = (int)($backlogs ?? 0);
+                $attendancePctVal = (float)($attendancePct ?? 0.0);
+            ?>
             <div style="background: rgba(255,255,255,0.02); padding: 1rem; border-radius: 8px; border: 1px solid var(--border-color); display: flex; flex-direction: column; gap: 0.75rem; margin-bottom: 1.5rem;">
                 <div style="display: flex; justify-content: space-between;">
                     <span style="color: var(--text-secondary); font-size: 0.8125rem;">Cumulative CGPA</span>
-                    <strong style="color: var(--accent-color); font-size: 1rem;"><?= number_format($cgpa, 2) ?></strong>
+                    <strong style="color: var(--accent-color); font-size: 1rem;"><?= number_format($cgpaVal, 2) ?></strong>
                 </div>
                 <div style="display: flex; justify-content: space-between;">
                     <span style="color: var(--text-secondary); font-size: 0.8125rem;">Active Backlogs</span>
-                    <strong style="<?= $backlogs > 0 ? 'color: var(--danger);' : 'color: var(--success);' ?> font-size: 1rem;"><?= (int)$backlogs ?></strong>
+                    <strong style="<?= $backlogsVal > 0 ? 'color: var(--danger);' : 'color: var(--success);' ?> font-size: 1rem;"><?= $backlogsVal ?></strong>
                 </div>
                 <div style="display: flex; justify-content: space-between;">
                     <span style="color: var(--text-secondary); font-size: 0.8125rem;">Overall Attendance</span>
-                    <strong style="<?= $attendancePct < 75.0 ? 'color: var(--danger);' : 'color: var(--success);' ?> font-size: 1rem;"><?= number_format($attendancePct, 1) ?>%</strong>
+                    <strong style="<?= $attendancePctVal < 75.0 ? 'color: var(--danger);' : 'color: var(--success);' ?> font-size: 1rem;"><?= number_format($attendancePctVal, 1) ?>%</strong>
                 </div>
             </div>
 

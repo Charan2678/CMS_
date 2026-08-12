@@ -17,7 +17,6 @@ TRUNCATE TABLE hostel_allocations;
 TRUNCATE TABLE hostel_bookings;
 TRUNCATE TABLE hostel_rooms;
 TRUNCATE TABLE hostel_blocks;
-TRUNCATE TABLE hostel_payment_settings;
 
 -- 4. Transport Sample Data
 TRUNCATE TABLE transport_allocations;

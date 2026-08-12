@@ -542,6 +542,68 @@ class TransportService
         }
 
         if (!empty($filters['search'])) {
+            $sql .= ' AND (s.first_name LIKE :srch OR s.last_name LIKE :srch OR s.roll_number LIKE :srch OR tbp.pass_number LIKE :srch)';
+            $params[':srch'] = '%' . $filters['search'] . '%';
+        }
+
+        $sql .= ' ORDER BY tbp.id DESC LIMIT ' . (int) $limit;
+
+        $stmt = db()->prepare($sql);
+        $stmt->execute($params);
+        return $stmt->fetchAll() ?: [];
+    }
+
+    /**
+     * Get all student payment records for Transport Manager Accounts ledger (`/transport/accounts`).
+     */
+    public function getStudentPaymentStatus(): array
+    {
+        try {
+            $stmt = db()->prepare('
+                SELECT 
+                    s.id AS student_db_id,
+                    s.roll_number AS student_id,
+                    CONCAT(s.first_name, " ", COALESCE(s.last_name, "")) AS name,
+                    COALESCE(d.code, "CSE") AS department,
+                    tr.route_name AS route,
+                    tr.route_code,
+                    tr.bus_number,
+                    ts.annual_fee,
+                    COALESCE(tp.amount, 0.00) AS amount_paid,
+                    (ts.annual_fee - COALESCE(tp.amount, 0.00)) AS pending_amount,
+                    COALESCE(tp.verification_status, tp.payment_status, "unpaid") AS verification_status,
+                    COALESCE(tp.payment_status, ts.payment_status, "UNPAID") AS status,
+                    tp.transaction_id,
+                    tp.payment_date,
+                    tp.id AS payment_id,
+                    ts.id AS subscription_id
+                FROM transport_subscriptions ts
+                JOIN students s ON s.id = ts.student_id
+                LEFT JOIN student_academics sa ON sa.student_id = s.id AND sa.is_current = 1
+                LEFT JOIN departments d ON d.id = sa.department_id
+                JOIN transport_routes tr ON tr.id = ts.route_id
+                LEFT JOIN transport_payments tp ON tp.subscription_id = ts.id
+                ORDER BY ts.id DESC
+            ');
+            $stmt->execute();
+            $rows = $stmt->fetchAll() ?: [];
+            if (!empty($rows)) {
+                return $rows;
+            }
+        } catch (\Throwable $e) {
+            // Fallback on query exception
+        }
+
+        return [];
+    }
+>>>>>>> 5fb75443465ab85c62c642c90b95a6667cec4441
+
+        if (!empty($filters['route_id'])) {
+            $sql .= ' AND tbp.route_id = :route_id';
+            $params[':route_id'] = (int) $filters['route_id'];
+        }
+
+        if (!empty($filters['search'])) {
             $sql .= ' AND (s.first_name LIKE :q OR s.last_name LIKE :q OR s.roll_number LIKE :q OR tbp.pass_number LIKE :q)';
             $params[':q'] = '%' . $filters['search'] . '%';
         }

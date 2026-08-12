@@ -172,8 +172,11 @@ class LeaveService
     /**
      * Get leave requests submitted by a specific student/staff.
      */
-    public function getMyLeaves(string $applicantType, int $applicantId): array
+    public function getMyLeaves(string $applicantType, ?int $applicantId = null): array
     {
+        if (empty($applicantId)) {
+            return [];
+        }
         try {
             $stmt = db()->prepare('
                 SELECT lr.*, u.username AS reviewer_name
