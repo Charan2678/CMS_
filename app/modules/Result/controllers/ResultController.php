@@ -210,14 +210,20 @@ class ResultController extends Controller
     {
         $userId = auth_id();
 
-        $facStmt = db()->prepare('SELECT id FROM faculty WHERE user_id = :uid LIMIT 1');
-        $facStmt->execute([':uid' => $userId]);
-        $facultyId = (int) ($facStmt->fetchColumn() ?: 0);
+        // 1. Resolve faculty_id from linked_id on users table
+        $uStmt = db()->prepare('SELECT linked_id FROM users WHERE id = :uid AND linked_type = "faculty" LIMIT 1');
+        $uStmt->execute([':uid' => $userId]);
+        $facultyId = (int) ($uStmt->fetchColumn() ?: 0);
 
+        // 2. Fallback: resolve by email match
         if (!$facultyId) {
-            $uStmt = db()->prepare('SELECT linked_id FROM users WHERE id = :uid AND linked_type = "faculty" LIMIT 1');
-            $uStmt->execute([':uid' => $userId]);
-            $facultyId = (int) ($uStmt->fetchColumn() ?: 0);
+            $fStmt = db()->prepare('
+                SELECT f.id FROM faculty f
+                JOIN users u ON LOWER(u.email) = LOWER(f.email)
+                WHERE u.id = :uid LIMIT 1
+            ');
+            $fStmt->execute([':uid' => $userId]);
+            $facultyId = (int) ($fStmt->fetchColumn() ?: 0);
         }
 
         $res = $facultyId ? $this->resultService->getFacultyTimetable($facultyId) : ['info' => null, 'grid' => [], 'is_published' => false];
