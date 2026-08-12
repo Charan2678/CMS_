@@ -1,11 +1,11 @@
-<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; width: 100%;">
+<div class="dashboard-grid-equal" style="width: 100%;">
     <!-- Department Breakdown -->
-    <div class="card">
-        <h3 style="font-size: 1.125rem; font-weight: 700; color: var(--text-primary); margin-top: 0; margin-bottom: 1.25rem; display: flex; align-items: center; gap: 0.5rem;">
-            <span>🏢</span> Student Enrollment by Department
+    <div class="card" style="border-top: 4px solid var(--accent-color);">
+        <h3 style="font-size: 1.125rem; font-weight: 800; color: var(--text-primary); margin-top: 0; margin-bottom: 1.25rem; display: flex; align-items: center; gap: 0.5rem;">
+            <?= icon('building-2', 'icon-sm') ?> Student Enrollment by Department
         </h3>
 
-        <div style="overflow-x: auto; width: 100%;">
+        <div class="table-responsive" style="width: 100%;">
             <table class="table">
                 <thead>
                     <tr>
@@ -34,12 +34,12 @@
     </div>
 
     <!-- Course Breakdown -->
-    <div class="card">
-        <h3 style="font-size: 1.125rem; font-weight: 700; color: var(--text-primary); margin-top: 0; margin-bottom: 1.25rem; display: flex; align-items: center; gap: 0.5rem;">
-            <span>🎓</span> Student Enrollment by Degree Program
+    <div class="card" style="border-top: 4px solid var(--accent-color);">
+        <h3 style="font-size: 1.125rem; font-weight: 800; color: var(--text-primary); margin-top: 0; margin-bottom: 1.25rem; display: flex; align-items: center; gap: 0.5rem;">
+            <?= icon('graduation-cap', 'icon-sm') ?> Student Enrollment by Degree Program
         </h3>
 
-        <div style="overflow-x: auto; width: 100%;">
+        <div class="table-responsive" style="width: 100%;">
             <table class="table">
                 <thead>
                     <tr>

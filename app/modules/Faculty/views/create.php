@@ -5,8 +5,8 @@
 <div class="card" style="width: 100%;">
     <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem;">
         <div>
-            <h2 style="font-size: 1.25rem; font-weight: 800; color: var(--text-primary); margin: 0; display: flex; align-items: center; gap: 0.5rem;">
-                <span>👨‍🏫</span> Onboard Faculty Member
+            <h2 style="font-size: 1.25rem; font-weight: 800; color: var(--text-primary); margin: 0; display: flex; align-items: center; gap: 0.5rem; letter-spacing: -0.015em;">
+                <?= icon('school', 'icon-md') ?> Onboard Faculty Member
             </h2>
             <div style="font-size: 0.8125rem; color: var(--text-secondary); margin-top: 0.25rem;">
                 Create teaching staff profile and auto-provision faculty portal login
@@ -23,7 +23,7 @@
     <form method="POST" action="/faculty/create">
         <?= csrf_field() ?>
 
-        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.25rem; margin-bottom: 1.5rem;">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.25rem; margin-bottom: 1.5rem;">
             <div class="form-group">
                 <label class="form-label" for="employee_id">Employee Code / ID *</label>
                 <input type="text" id="employee_id" name="employee_id" class="form-control" required placeholder="e.g. FAC-CSE-001">
@@ -89,14 +89,14 @@
                 <input type="date" id="joining_date" name="joining_date" class="form-control" value="<?= date('Y-m-d') ?>">
             </div>
 
-            <div class="form-group" style="display: flex; align-items: center; gap: 0.5rem; grid-column: 1 / -1;">
-                <input type="checkbox" id="is_hod" name="is_hod" value="1">
+            <div class="form-group" style="display: flex; align-items: center; gap: 0.5rem; grid-column: 1 / -1; background: var(--bg-main); padding: 0.75rem 1rem; border-radius: 10px; border: 1px solid var(--border-color); box-shadow: var(--shadow-xs);">
+                <input type="checkbox" id="is_hod" name="is_hod" value="1" style="width: 18px; height: 18px; cursor: pointer;">
                 <label for="is_hod" style="font-size: 0.875rem; color: var(--accent-color); cursor: pointer; font-weight: 700;">Assign as Head of Department (HOD)</label>
             </div>
         </div>
 
         <div style="text-align: right; border-top: 1px solid var(--border-color); padding-top: 1.25rem;">
-            <button type="submit" class="btn-primary" style="width: auto; padding: 0.875rem 3rem; font-weight: 700;">Onboard Faculty & Create Account</button>
+            <button type="submit" class="btn-primary" style="width: auto; padding: 0.875rem 2.5rem; font-weight: 700;"><?= icon('user-check', 'icon-sm') ?> Onboard Faculty &amp; Create Account</button>
         </div>
     </form>
 </div>

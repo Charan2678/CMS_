@@ -86,8 +86,10 @@ class Router
                 // Handle callback or controller array [ControllerClass, 'methodName']
                 $handler = $route['handler'];
 
+                $positionalParams = array_values($params);
+
                 if (is_callable($handler)) {
-                    call_user_func_array($handler, $params);
+                    call_user_func_array($handler, $positionalParams);
                     return;
                 }
 
@@ -106,7 +108,7 @@ class Router
                         die("[CMS Router] Method {$method} not found in {$controllerClass}");
                     }
 
-                    call_user_func_array([$controller, $method], $params);
+                    call_user_func_array([$controller, $method], $positionalParams);
                     return;
                 }
             }

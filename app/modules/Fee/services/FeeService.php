@@ -227,6 +227,26 @@ class FeeService
 
             db()->commit();
 
+            // Auto-activate or update transport route and bus pass if transport fee or modification fee was paid
+            $catCodeStmt = db()->prepare('
+                SELECT fc.code, fc.name FROM student_fees sf 
+                JOIN fee_structures fs ON fs.id = sf.fee_structure_id 
+                JOIN fee_categories fc ON fc.id = fs.fee_category_id 
+                WHERE sf.id = :sfid LIMIT 1
+            ');
+            $catCodeStmt->execute([':sfid' => $studentFeeId]);
+            $catInfo = $catCodeStmt->fetch();
+            $catCode = strtolower((string)($catInfo['code'] ?? ''));
+            $catName = strtolower((string)($catInfo['name'] ?? ''));
+
+            if (str_contains($catCode, 'transport') || str_contains($catName, 'transport') || str_contains($catName, 'bus') || str_contains($catName, 'route')) {
+                try {
+                    (new \App\Modules\Transport\services\TransportService())->getOrCreateBusPass((int)$sf['student_id']);
+                } catch (\Throwable $e) {
+                    // Non-blocking bus pass sync
+                }
+            }
+
             return [
                 'success'        => true,
                 'message'        => 'Payment recorded successfully! Receipt Generated: ' . $receiptNumber,
@@ -246,27 +266,63 @@ class FeeService
     public function getReceiptDetails(int $receiptId): ?array
     {
         $stmt = db()->prepare('
-            SELECT r.*, p.amount_paid, p.payment_method, p.transaction_id, p.payment_date, p.remarks,
-                   sf.amount_due, sf.discount, sf.final_amount, sf.status AS fee_status,
-                   fc.name AS fee_category_name,
-                   s.roll_number, s.first_name AS student_first_name, s.last_name AS student_last_name, s.email AS student_email,
-                   c.name AS course_name, c.code AS course_code, sem.number AS semester_number,
-                   col.name AS college_name, col.address AS college_address, col.phone AS college_phone, col.email AS college_email
+            SELECT r.*,
+                   p.amount_paid, p.payment_method, p.transaction_id, p.payment_date, p.remarks,
+                   p.student_id, p.student_fee_id, p.received_by,
+                   COALESCE(p.mode, "counter") AS payment_mode,
+                   COALESCE(p.utr_reference, p.transaction_id) AS utr_reference,
+                   COALESCE(sf.amount_due, p.amount_paid) AS amount_due,
+                   COALESCE(sf.discount, 0.00) AS discount,
+                   COALESCE(sf.final_amount, p.amount_paid) AS final_amount,
+                   COALESCE(sf.status, "paid") AS fee_status,
+                   COALESCE(fc.name, "Academic Fee") AS fee_category_name,
+                   COALESCE(fc.code, "FEE") AS fee_category_code,
+                   COALESCE(ay.name, "Academic Year 2025-2026") AS academic_year_name,
+                   s.roll_number, s.first_name AS student_first_name, s.last_name AS student_last_name,
+                   s.email AS student_email, s.mobile AS student_mobile,
+                   c.name AS course_name, c.code AS course_code,
+                   d.name AS department_name, d.code AS department_code,
+                   sem.number AS semester_number,
+                   col.name AS college_name, col.code AS college_code, col.address AS college_address,
+                   col.city AS college_city, col.state AS college_state, col.pincode AS college_pincode,
+                   col.phone AS college_phone, col.email AS college_email, col.website AS college_website,
+                   col.logo_path AS college_logo, col.affiliation_body, col.affiliation_number,
+                   u.username AS cashier_username
             FROM receipts r
             JOIN payments p ON p.id = r.payment_id
-            JOIN student_fees sf ON sf.id = p.student_fee_id
-            JOIN fee_structures fs ON fs.id = sf.fee_structure_id
-            JOIN fee_categories fc ON fc.id = fs.fee_category_id
-            JOIN students s ON s.id = p.student_id
-            JOIN colleges col ON col.id = s.college_id
+            LEFT JOIN student_fees sf ON sf.id = p.student_fee_id
+            LEFT JOIN fee_structures fs ON fs.id = sf.fee_structure_id
+            LEFT JOIN fee_categories fc ON fc.id = fs.fee_category_id
+            LEFT JOIN academic_years ay ON ay.id = sf.academic_year_id
+            LEFT JOIN students s ON s.id = p.student_id
+            LEFT JOIN colleges col ON col.id = COALESCE(s.college_id, 1)
             LEFT JOIN student_academics sa ON sa.student_id = s.id AND sa.is_current = 1
-            LEFT JOIN courses c ON c.id = sa.course_id
-            LEFT JOIN semesters sem ON sem.id = sa.semester_id
+            LEFT JOIN courses c ON c.id = COALESCE(sa.course_id, fs.course_id)
+            LEFT JOIN departments d ON d.id = c.department_id
+            LEFT JOIN semesters sem ON sem.id = COALESCE(sa.semester_id, fs.semester_id)
+            LEFT JOIN users u ON u.id = p.received_by
             WHERE r.id = :id
             LIMIT 1
         ');
         $stmt->execute([':id' => $receiptId]);
-        return $stmt->fetch() ?: null;
+        $receipt = $stmt->fetch();
+        if (!$receipt) {
+            return null;
+        }
+
+        // Calculate total previously paid for this student fee to compute remaining balance
+        $paidTotalStmt = db()->prepare('
+            SELECT COALESCE(SUM(amount_paid), 0.00) FROM payments WHERE student_fee_id = :sf_id
+        ');
+        $paidTotalStmt->execute([':sf_id' => $receipt['student_fee_id'] ?? 0]);
+        $totalPaidForFee = (float) $paidTotalStmt->fetchColumn();
+        $balanceRemaining = max(0.00, (float)$receipt['final_amount'] - $totalPaidForFee);
+
+        $receipt['total_paid_overall'] = $totalPaidForFee;
+        $receipt['balance_remaining']  = $balanceRemaining;
+        $receipt['amount_in_words']    = number_to_words_inr((float)$receipt['amount_paid']);
+
+        return $receipt;
     }
 
     /**

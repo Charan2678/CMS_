@@ -5,8 +5,8 @@
 <div class="card" style="width: 100%;">
     <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem;">
         <div>
-            <h2 style="font-size: 1.25rem; font-weight: 800; color: var(--text-primary); margin: 0; display: flex; align-items: center; gap: 0.5rem;">
-                <span>➕</span> Student Admission Pipeline
+            <h2 style="font-size: 1.25rem; font-weight: 800; color: var(--text-primary); margin: 0; display: flex; align-items: center; gap: 0.5rem; letter-spacing: -0.015em;">
+                <?= icon('user-plus', 'icon-md') ?> Student Admission Pipeline
             </h2>
             <div style="font-size: 0.8125rem; color: var(--text-secondary); margin-top: 0.25rem;">
                 Provision new student record, academic placement, documents, and portal login
@@ -19,8 +19,8 @@
         <?= csrf_field() ?>
 
         <!-- Section 1: Personal Information -->
-        <h3 style="font-size: 1rem; font-weight: 700; color: var(--accent-color); margin-bottom: 1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem;">
-            1. Personal & Contact Details
+        <h3 style="font-size: 1rem; font-weight: 700; color: var(--accent-color); margin-bottom: 1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; display: flex; align-items: center; gap: 0.45rem;">
+            <?= icon('user', 'icon-xs') ?> 1. Personal &amp; Contact Details
         </h3>
 
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.25rem; margin-bottom: 2rem;">
@@ -70,8 +70,8 @@
         </div>
 
         <!-- Section 2: Guardian Details -->
-        <h3 style="font-size: 1rem; font-weight: 700; color: var(--accent-color); margin-bottom: 1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem;">
-            2. Parent & Guardian Details
+        <h3 style="font-size: 1rem; font-weight: 700; color: var(--accent-color); margin-bottom: 1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; display: flex; align-items: center; gap: 0.45rem;">
+            <?= icon('users', 'icon-xs') ?> 2. Parent &amp; Guardian Details
         </h3>
 
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.25rem; margin-bottom: 2rem;">
@@ -101,8 +101,8 @@
         </div>
 
         <!-- Section 3: Academic Placement -->
-        <h3 style="font-size: 1rem; font-weight: 700; color: var(--accent-color); margin-bottom: 1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem;">
-            3. Academic Placement
+        <h3 style="font-size: 1rem; font-weight: 700; color: var(--accent-color); margin-bottom: 1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; display: flex; align-items: center; gap: 0.45rem;">
+            <?= icon('graduation-cap', 'icon-xs') ?> 3. Academic Placement
         </h3>
 
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.25rem; margin-bottom: 2rem;">
@@ -163,8 +163,8 @@
         </div>
 
         <!-- Section 4: Document Upload -->
-        <h3 style="font-size: 1rem; font-weight: 700; color: var(--accent-color); margin-bottom: 1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem;">
-            4. Document Attachments
+        <h3 style="font-size: 1rem; font-weight: 700; color: var(--accent-color); margin-bottom: 1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; display: flex; align-items: center; gap: 0.45rem;">
+            <?= icon('file-text', 'icon-xs') ?> 4. Document Attachments
         </h3>
 
         <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 1.25rem; margin-bottom: 2rem;">
@@ -184,15 +184,17 @@
         </div>
 
         <!-- System Action Note -->
-        <div style="background: rgba(2, 132, 199, 0.1); border: 1px solid var(--border-color); padding: 1.25rem; border-radius: 8px; margin-bottom: 2rem;">
-            <strong style="color: var(--accent-color); font-size: 0.9375rem;">⚡ Automated System Provisioning:</strong>
-            <p style="font-size: 0.8125rem; color: var(--text-secondary); margin: 0.25rem 0 0 0; line-height: 1.4;">
+        <div style="background: rgba(2, 132, 199, 0.08); border: 1px solid var(--border-color); padding: 1.25rem; border-radius: 10px; margin-bottom: 2rem; box-shadow: var(--shadow-xs);">
+            <strong style="color: var(--accent-color); font-size: 0.9375rem; display: flex; align-items: center; gap: 0.4rem;">
+                <?= icon('zap', 'icon-xs') ?> Automated System Provisioning:
+            </strong>
+            <p style="font-size: 0.8125rem; color: var(--text-secondary); margin: 0.35rem 0 0 0; line-height: 1.45;">
                 Submitting this form will automatically generate the student record, assign academic placement, attach uploaded documents, and provision an Admin-managed login account (Username: Roll No, Default Password: <code>Student123!</code>).
             </p>
         </div>
 
         <div style="text-align: right; border-top: 1px solid var(--border-color); padding-top: 1.25rem;">
-            <button type="submit" class="btn-primary" style="width: auto; padding: 0.875rem 3rem; font-weight: 700;">Execute Student Admission</button>
+            <button type="submit" class="btn-primary" style="width: auto; padding: 0.875rem 2.5rem; font-weight: 700;"><?= icon('user-check', 'icon-sm') ?> Execute Student Admission</button>
         </div>
     </form>
 </div>

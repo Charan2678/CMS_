@@ -1,18 +1,18 @@
 <div class="card">
     <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem;">
         <div>
-            <h2 style="font-size: 1.25rem; font-weight: 800; color: var(--text-primary); margin: 0; display: flex; align-items: center; gap: 0.5rem;">
-                <span>📜</span> System Activity & Security Audit Logs
+            <h2 style="font-size: 1.25rem; font-weight: 800; color: var(--text-primary); margin: 0; display: flex; align-items: center; gap: 0.5rem; letter-spacing: -0.015em;">
+                <?= icon('shield-alert', 'icon-md') ?> System Activity &amp; Security Audit Logs
             </h2>
             <div style="font-size: 0.8125rem; color: var(--text-secondary); margin-top: 0.25rem;">
                 Immutable system audit trail tracking user actions, logins, and data transactions
             </div>
         </div>
 
-        <span class="badge badge-warning" style="font-size: 0.75rem; text-transform: uppercase;">Write-Only Audit Ledger</span>
+        <span class="badge badge-warning" style="font-size: 0.75rem; text-transform: uppercase;"><?= icon('shield', 'icon-xs') ?> Write-Only Audit Ledger</span>
     </div>
 
-    <div style="overflow-x: auto;">
+    <div class="table-responsive">
         <table class="table">
             <thead>
                 <tr>

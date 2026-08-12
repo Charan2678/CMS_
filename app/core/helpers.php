@@ -239,6 +239,14 @@ function flash(string $key, mixed $value): void
 }
 
 /**
+ * Alias for flash().
+ */
+function flash_set(string $key, mixed $value): void
+{
+    flash($key, $value);
+}
+
+/**
  * Get and immediately remove a flash message.
  */
 function flash_get(string $key, mixed $default = null): mixed
@@ -467,8 +475,6 @@ function validate_upload(array $file): array
     return ['ok' => true, 'error' => null];
 }
 
-// ─── Mail Dispatch Helper ────────────────────────────────────
-
 /**
  * Send an HTML email notification.
  *
@@ -481,3 +487,78 @@ function send_mail(string $to, string $subject, string $body): bool
 {
     return \App\Core\Mailer::send($to, $subject, $body);
 }
+
+// ─── Currency to Words Helper ────────────────────────────────
+
+/**
+ * Convert numerical Indian Rupee currency amount into English words.
+ *
+ * Example: 25000.00 -> "Twenty Five Thousand Rupees Only"
+ */
+function number_to_words_inr(float $number): string
+{
+    $number = abs($number);
+    $no = (int) floor($number);
+    $point = (int) round(($number - $no) * 100);
+    $digits_1 = strlen((string)$no);
+    $i = 0;
+    $str = [];
+    $words = [
+        0 => '', 1 => 'One', 2 => 'Two', 3 => 'Three', 4 => 'Four', 5 => 'Five',
+        6 => 'Six', 7 => 'Seven', 8 => 'Eight', 9 => 'Nine', 10 => 'Ten',
+        11 => 'Eleven', 12 => 'Twelve', 13 => 'Thirteen', 14 => 'Fourteen',
+        15 => 'Fifteen', 16 => 'Sixteen', 17 => 'Seventeen', 18 => 'Eighteen',
+        19 => 'Nineteen', 20 => 'Twenty', 30 => 'Thirty', 40 => 'Forty',
+        50 => 'Fifty', 60 => 'Sixty', 70 => 'Seventy', 80 => 'Eighty',
+        90 => 'Ninety'
+    ];
+    $digits = ['', 'Hundred', 'Thousand', 'Lakh', 'Crore'];
+
+    while ($i < $digits_1) {
+        $divider = ($i == 2) ? 10 : 100;
+        $number_part = $no % $divider;
+        $no = (int) floor($no / $divider);
+        $i += ($divider == 10) ? 1 : 2;
+        if ($number_part) {
+            $counter = count($str);
+            $plural = ($counter && $number_part > 9) ? '' : '';
+            $unit = ($counter < count($digits)) ? ' ' . $digits[$counter] : '';
+            $hundred = ($counter == 1 && isset($str[0]) && $str[0]) ? ' and ' : null;
+            $str[] = ($number_part < 21)
+                ? $words[$number_part] . $unit . $plural . $hundred
+                : $words[(int) floor($number_part / 10) * 10] . ' ' . $words[$number_part % 10] . $unit . $plural . $hundred;
+        } else {
+            $str[] = null;
+        }
+    }
+    $str = array_filter(array_reverse($str));
+    $result = trim(preg_replace('/\s+/', ' ', implode(' ', $str)));
+    $result = $result ? $result . ' Rupees' : 'Zero Rupees';
+
+    if ($point > 0) {
+        $paise = ($point < 21)
+            ? $words[$point]
+            : $words[(int) floor($point / 10) * 10] . ' ' . $words[$point % 10];
+        $result .= ' and ' . trim($paise) . ' Paise';
+    }
+    return $result . ' Only';
+}
+
+/**
+ * Render a Lucide vector icon tag.
+ *
+ * @param string $name Lucide icon name (e.g. 'graduation-cap', 'check-circle-2', 'credit-card')
+ * @param string $class Extra CSS classes
+ * @param array $attrs Extra HTML attributes
+ */
+function icon(string $name, string $class = '', array $attrs = []): string
+{
+    $attrString = '';
+    foreach ($attrs as $k => $v) {
+        $attrString .= ' ' . htmlspecialchars((string) $k, ENT_QUOTES, 'UTF-8') . '="' . htmlspecialchars((string) $v, ENT_QUOTES, 'UTF-8') . '"';
+    }
+    $classes = trim('lucide-icon ' . $class);
+    return '<i data-lucide="' . htmlspecialchars($name, ENT_QUOTES, 'UTF-8') . '" class="' . htmlspecialchars($classes, ENT_QUOTES, 'UTF-8') . '"' . $attrString . '></i>';
+}
+
+

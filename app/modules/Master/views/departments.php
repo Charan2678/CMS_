@@ -9,15 +9,15 @@
 <!-- Page Header & Title Banner -->
 <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
     <div>
-        <h1 style="font-size: 1.5rem; font-weight: 800; color: var(--text-primary); margin: 0; display: flex; align-items: center; gap: 0.625rem;">
-            <span>🏢</span> Academic Departments Directory
+        <h1 style="font-size: 1.5rem; font-weight: 800; color: var(--text-primary); margin: 0; display: flex; align-items: center; gap: 0.625rem; letter-spacing: -0.015em;">
+            <?= icon('building-2', 'icon-md') ?> Academic Departments Directory
         </h1>
         <div style="font-size: 0.875rem; color: var(--text-secondary); margin-top: 0.25rem;">
             Manage college departments, short codes, established dates, and assigned Heads of Department (HOD)
         </div>
     </div>
     <div style="display: flex; gap: 0.75rem;">
-        <span class="badge badge-info" style="font-size: 0.8125rem; padding: 0.5rem 1rem;">Total Departments: <?= count($departments) ?></span>
+        <span class="badge badge-info" style="font-size: 0.8125rem; padding: 0.45rem 0.9rem;"><?= icon('layers', 'icon-xs') ?> Total Departments: <?= count($departments) ?></span>
     </div>
 </div>
 
@@ -25,7 +25,7 @@
     <!-- Form Card -->
     <div class="card" style="height: fit-content;">
         <h2 style="font-size: 1.125rem; font-weight: 800; color: var(--text-primary); margin-top: 0; margin-bottom: 1.25rem; display: flex; align-items: center; gap: 0.5rem;">
-            <span>➕</span> Add New Department
+            <?= icon('plus', 'icon-sm') ?> Add New Department
         </h2>
 
         <form method="POST" action="/master/departments">
@@ -46,17 +46,17 @@
                 <input type="number" id="established_year" name="established_year" class="form-control" min="1900" max="2100" placeholder="e.g. 2001">
             </div>
 
-            <button type="submit" class="btn-primary" style="width: 100%; padding: 0.875rem 1.5rem;">Create Department</button>
+            <button type="submit" class="btn-primary" style="width: 100%; padding: 0.875rem 1.5rem;"><?= icon('plus', 'icon-sm') ?> Create Department</button>
         </form>
     </div>
 
     <!-- Directory Card -->
     <div class="card">
         <h2 style="font-size: 1.125rem; font-weight: 800; color: var(--text-primary); margin-top: 0; margin-bottom: 1.25rem; display: flex; align-items: center; gap: 0.5rem;">
-            <span>📑</span> Academic Departments Directory
+            <?= icon('clipboard-list', 'icon-sm') ?> Academic Departments Directory
         </h2>
 
-        <div style="overflow-x: auto; width: 100%;">
+        <div class="table-responsive">
             <table class="table">
                 <thead>
                     <tr>
@@ -82,7 +82,7 @@
                                     <?= !empty($dept['hod_first_name']) ? '<strong style="color: var(--text-primary);">' . e($dept['hod_first_name'] . ' ' . $dept['hod_last_name']) . '</strong>' : '<span style="opacity: 0.6;">Unassigned</span>' ?>
                                 </td>
                                 <td>
-                                    <span class="badge badge-success">Active</span>
+                                    <span class="badge badge-success"><?= icon('check-circle-2', 'icon-xs') ?> Active</span>
                                 </td>
                             </tr>
                         <?php endforeach; ?>

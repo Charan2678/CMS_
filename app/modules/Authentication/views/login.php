@@ -1,12 +1,14 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="color-scheme" content="light">
     <title>Kuppam Engineering College — GNUMS Portal Login</title>
     <link rel="icon" type="image/png" href="/assets/images/favicon.png">
     <link rel="shortcut icon" href="/favicon.ico">
     <link rel="stylesheet" href="/assets/css/auth.css">
+    <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body>
     <div class="login-split-container">
@@ -183,8 +185,9 @@
             }
         }
 
-        // Initialize Carousel
+        // Initialize Carousel & Icons
         document.addEventListener('DOMContentLoaded', function() {
+            if (typeof lucide !== 'undefined') lucide.createIcons();
             showSlide(0);
             startInterval();
         });

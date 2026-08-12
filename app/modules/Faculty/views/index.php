@@ -5,8 +5,8 @@
 <div class="card">
     <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem;">
         <div>
-            <h2 style="font-size: 1.25rem; font-weight: 800; color: var(--text-primary); margin: 0; display: flex; align-items: center; gap: 0.5rem;">
-                <span>👨‍🏫</span> Faculty Members Directory
+            <h2 style="font-size: 1.25rem; font-weight: 800; color: var(--text-primary); margin: 0; display: flex; align-items: center; gap: 0.5rem; letter-spacing: -0.015em;">
+                <?= icon('school', 'icon-md') ?> Faculty Members Directory
             </h2>
             <div style="font-size: 0.8125rem; color: var(--text-secondary); margin-top: 0.25rem;">
                 Academic teaching staff, designations, and department workloads
@@ -14,9 +14,9 @@
         </div>
 
         <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
-            <a href="/faculty/designations" class="btn-primary" style="text-decoration: none; padding: 0.5rem 1rem; background: var(--bg-main); border: 1px solid var(--border-color); color: var(--text-primary);">Designations</a>
-            <a href="/faculty/assign-subject" class="btn-primary" style="text-decoration: none; padding: 0.5rem 1rem; background: var(--bg-main); border: 1px solid var(--border-color); color: var(--text-primary);">Assign Subjects</a>
-            <a href="/faculty/create" class="btn-primary" style="text-decoration: none; padding: 0.5rem 1.25rem; font-weight: 700;">+ Onboard Faculty</a>
+            <a href="/faculty/designations" class="btn btn-secondary" style="font-size: 0.8125rem;"><?= icon('tag', 'icon-xs') ?> Designations</a>
+            <a href="/faculty/assign-subject" class="btn btn-secondary" style="font-size: 0.8125rem;"><?= icon('book', 'icon-xs') ?> Assign Subjects</a>
+            <a href="/faculty/create" class="btn-primary" style="text-decoration: none; padding: 0.5rem 1.25rem; font-weight: 700;"><?= icon('user-plus', 'icon-xs') ?> Onboard Faculty</a>
         </div>
     </div>
 
@@ -47,12 +47,12 @@
         </div>
 
         <div>
-            <button type="submit" class="btn-primary" style="width: 100%; margin-top: 0;">Apply Filters</button>
+            <button type="submit" class="btn-primary" style="width: 100%; margin-top: 0;"><?= icon('filter', 'icon-xs') ?> Apply Filters</button>
         </div>
     </form>
 
     <!-- Faculty Table -->
-    <div style="overflow-x: auto;">
+    <div class="table-responsive">
         <table class="table">
             <thead>
                 <tr>
@@ -79,10 +79,10 @@
                             <td style="color: var(--text-secondary); font-weight: 600;"><?= e($fac['department_code']) ?></td>
                             <td style="color: var(--text-secondary);"><?= e($fac['qualification'] ?? 'N/A') ?></td>
                             <td>
-                                <span class="badge badge-success">Active</span>
+                                <span class="badge badge-success"><?= icon('check-circle-2', 'icon-xs') ?> Active</span>
                             </td>
                             <td>
-                                <a href="/faculty/<?= $fac['id'] ?>" class="btn-primary" style="padding: 0.35rem 0.75rem; font-size: 0.75rem; border-radius: 6px; text-decoration: none; display: inline-block;">View Profile &rarr;</a>
+                                <a href="/faculty/<?= $fac['id'] ?>" class="btn-primary" style="padding: 0.35rem 0.75rem; font-size: 0.75rem; border-radius: 6px; text-decoration: none; display: inline-flex; align-items: center; gap: 0.3rem;">View Profile <?= icon('arrow-right', 'icon-xs') ?></a>
                             </td>
                         </tr>
                     <?php endforeach; ?>

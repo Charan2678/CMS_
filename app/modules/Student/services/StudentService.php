@@ -135,6 +135,30 @@ class StudentService
         $dStmt->execute([':sid' => $studentId]);
         $student['documents'] = $dStmt->fetchAll() ?: [];
 
+        // Fetch Transport Subscription & Today's Checkin
+        $tStmt = db()->prepare('
+            SELECT ta.*, tr.route_name, v.registration_number AS bus_number, v.driver_name, v.driver_mobile
+            FROM transport_allocations ta
+            JOIN transport_routes tr ON tr.id = ta.route_id
+            LEFT JOIN vehicles v ON v.id = tr.vehicle_id
+            WHERE ta.student_id = :sid AND ta.status = "active"
+            LIMIT 1
+        ');
+        $tStmt->execute([':sid' => $studentId]);
+        $student['transport'] = $tStmt->fetch() ?: null;
+
+        $cStmt = db()->prepare('
+            SELECT tbp.*, v.registration_number AS bus_number, tr.route_name
+            FROM transport_bus_passes tbp
+            JOIN vehicles v ON v.id = tbp.vehicle_id
+            JOIN transport_routes tr ON tr.id = tbp.route_id
+            WHERE tbp.student_id = :sid
+            ORDER BY tbp.id DESC
+            LIMIT 1
+        ');
+        $cStmt->execute([':sid' => $studentId]);
+        $student['bus_pass'] = $cStmt->fetch() ?: null;
+
         return $student;
     }
 

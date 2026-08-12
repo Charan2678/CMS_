@@ -55,7 +55,6 @@ Router::post('/hostel/pay',               [HostelController::class, 'pay']);
 Router::get('/hostel/history',            [HostelController::class, 'history']);
 Router::get('/hostel/details',            [HostelController::class, 'parentView']);
 
-
 Router::get('/transport',                   [TransportController::class, 'index']);
 Router::post('/transport',                  [TransportController::class, 'index']);
 Router::get('/transport/dashboard',         [TransportController::class, 'index']);
@@ -70,8 +69,12 @@ Router::post('/transport/accounts',         [TransportController::class, 'accoun
 Router::get('/transport/change-requests',   [TransportController::class, 'changeRequests']);
 Router::post('/transport/change-requests',  [TransportController::class, 'changeRequests']);
 Router::get('/transport/announcements',     [NotificationController::class, 'announcements']);
-
-
+Router::post('/transport/subscribe',            [TransportController::class, 'subscribeRoute']);
+Router::get('/transport/pass',                  [TransportController::class, 'myPass']);
+Router::get('/transport/pass/{id}',             [TransportController::class, 'viewPass']);
+Router::get('/transport/passes',                [TransportController::class, 'passes']);
+Router::post('/transport/pass/{id}/suspend',    [TransportController::class, 'suspendPass']);
+Router::post('/transport/pass/{id}/reactivate', [TransportController::class, 'reactivatePass']);
 
 Router::get('/canteen',                   [CanteenController::class, 'index']);
 Router::post('/canteen',                  [CanteenController::class, 'index']);
@@ -83,7 +86,6 @@ Router::post('/canteen/orders',           [CanteenController::class, 'orders']);
 Router::get('/canteen/inventory',         [CanteenController::class, 'inventory']);
 Router::post('/canteen/inventory',        [CanteenController::class, 'inventory']);
 Router::get('/canteen/announcements',     [NotificationController::class, 'announcements']);
-
 Router::get('/accounts',   [AccountsController::class, 'index']);
 
 // ─── Notifications & Audit Routes ────────────────────────────

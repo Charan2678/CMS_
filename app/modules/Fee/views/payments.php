@@ -7,46 +7,46 @@
 <?php endif; ?>
 
 <?php if (!empty($pendingVerifications)): ?>
-<div class="card" style="margin-bottom: 2rem; border-top: 4px solid #f59e0b; background: rgba(245, 158, 11, 0.03);">
-    <h2 style="font-size: 1.125rem; font-weight: 700; color: var(--text-primary); margin-top: 0; margin-bottom: 1.25rem; display: flex; align-items: center; justify-content: space-between;">
-        <span style="display: flex; align-items: center; gap: 0.5rem;"><span>📱</span> Pending UPI / QR Verifications (<?= count($pendingVerifications) ?> Requests)</span>
-        <span class="badge badge-warning">Action Required</span>
+<div class="card" style="margin-bottom: 2rem; border-top: 4px solid var(--warning); background: rgba(245, 158, 11, 0.03);">
+    <h2 style="font-size: 1.125rem; font-weight: 800; color: var(--text-primary); margin-top: 0; margin-bottom: 1.25rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem;">
+        <span style="display: flex; align-items: center; gap: 0.5rem;"><?= icon('smartphone', 'icon-sm') ?> Pending UPI / QR Verifications (<?= count($pendingVerifications) ?> Requests)</span>
+        <span class="badge badge-warning"><?= icon('clock', 'icon-xs') ?> Action Required</span>
     </h2>
 
-    <div style="overflow-x: auto;">
-        <table class="table" style="width: 100%; border-collapse: collapse; font-size: 0.8125rem;">
+    <div class="table-responsive">
+        <table class="table" style="font-size: 0.8125rem;">
             <thead>
-                <tr style="border-bottom: 2px solid var(--border-color); text-align: left; background: var(--bg-main);">
-                    <th style="padding: 0.65rem 0.75rem;">Transaction Ref</th>
-                    <th style="padding: 0.65rem 0.75rem;">Student</th>
-                    <th style="padding: 0.65rem 0.75rem;">Fee Type</th>
-                    <th style="padding: 0.65rem 0.75rem;">Amount</th>
-                    <th style="padding: 0.65rem 0.75rem;">Bank UTR / Ref No</th>
-                    <th style="padding: 0.65rem 0.75rem;">Submitted At</th>
-                    <th style="padding: 0.65rem 0.75rem; text-align: center;">Counter Action</th>
+                <tr>
+                    <th>Transaction Ref</th>
+                    <th>Student</th>
+                    <th>Fee Type</th>
+                    <th>Amount</th>
+                    <th>Bank UTR / Ref No</th>
+                    <th>Submitted At</th>
+                    <th style="text-align: center;">Counter Action</th>
                 </tr>
             </thead>
             <tbody>
                 <?php foreach ($pendingVerifications as $pv): ?>
-                    <tr style="border-bottom: 1px solid var(--border-color);">
-                        <td style="padding: 0.75rem; font-family: monospace; font-weight: 700; color: var(--accent-color);"><?= e($pv['transaction_reference']) ?></td>
-                        <td style="padding: 0.75rem;">
+                    <tr>
+                        <td style="font-family: monospace; font-weight: 700; color: var(--accent-color);"><?= e($pv['transaction_reference']) ?></td>
+                        <td>
                             <div style="font-weight: 700; color: var(--text-primary);"><?= e($pv['first_name'] . ' ' . $pv['last_name']) ?></div>
                             <div style="font-size: 0.7rem; color: var(--text-secondary);"><?= e($pv['roll_number']) ?></div>
                         </td>
-                        <td style="padding: 0.75rem;"><span class="badge badge-info" style="text-transform: uppercase;"><?= e($pv['fee_type']) ?></span></td>
-                        <td style="padding: 0.75rem; font-weight: 800; color: var(--success); font-size: 0.9375rem;">₹<?= number_format((float)$pv['amount'], 2) ?></td>
-                        <td style="padding: 0.75rem;">
+                        <td><span class="badge badge-info" style="text-transform: uppercase;"><?= e($pv['fee_type']) ?></span></td>
+                        <td style="font-weight: 800; color: var(--success); font-size: 0.9375rem;">₹<?= number_format((float)$pv['amount'], 2) ?></td>
+                        <td>
                             <code style="background: rgba(245, 158, 11, 0.15); color: #d97706; padding: 3px 8px; border-radius: 4px; font-weight: 700;"><?= e($pv['utr_reference']) ?></code>
                         </td>
-                        <td style="padding: 0.75rem; color: var(--text-secondary); white-space: nowrap;"><?= date('d M, h:i A', strtotime($pv['created_at'])) ?></td>
-                        <td style="padding: 0.75rem; text-align: center;">
+                        <td style="color: var(--text-secondary); white-space: nowrap;"><?= date('d M, h:i A', strtotime($pv['created_at'])) ?></td>
+                        <td style="text-align: center;">
                             <form method="POST" action="/fee/payments" style="display: inline;">
                                 <?= csrf_field() ?>
                                 <input type="hidden" name="_action" value="verify_utr">
                                 <input type="hidden" name="transaction_id" value="<?= $pv['id'] ?>">
-                                <button type="submit" class="btn btn-sm btn-success" style="padding: 0.35rem 0.75rem; font-weight: 700; font-size: 0.75rem;">
-                                    ✅ Confirm &amp; Post Receipt
+                                <button type="submit" class="btn btn-sm btn-success" style="padding: 0.35rem 0.75rem; font-weight: 700; font-size: 0.75rem; display: inline-flex; align-items: center; gap: 0.3rem;">
+                                    <?= icon('check-circle-2', 'icon-xs') ?> Confirm &amp; Post Receipt
                                 </button>
                             </form>
                         </td>
@@ -61,21 +61,21 @@
 <div class="card">
     <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem;">
         <div>
-            <h2 style="font-size: 1.25rem; font-weight: 800; color: var(--text-primary); margin: 0; display: flex; align-items: center; gap: 0.5rem;">
-                <span>💳</span> Fee Collection & Student Financial Ledger
+            <h2 style="font-size: 1.25rem; font-weight: 800; color: var(--text-primary); margin: 0; display: flex; align-items: center; gap: 0.5rem; letter-spacing: -0.015em;">
+                <?= icon('credit-card', 'icon-md') ?> Fee Collection &amp; Student Financial Ledger
             </h2>
             <div style="font-size: 0.8125rem; color: var(--text-secondary); margin-top: 0.25rem;">
                 Process payments, generate receipts, and track outstanding balances
             </div>
         </div>
 
-        <a href="/fee/assign" class="btn-primary" style="text-decoration: none; width: auto; padding: 0.625rem 1.25rem; font-weight: 700;">
-            + Mass Assign Fees
+        <a href="/fee/assign" class="btn-primary" style="text-decoration: none; width: auto; padding: 0.625rem 1.25rem; font-weight: 700; display: inline-flex; align-items: center; gap: 0.35rem;">
+            <?= icon('plus', 'icon-xs') ?> Mass Assign Fees
         </a>
     </div>
 
     <!-- Filters -->
-    <form method="GET" action="/fee/payments" style="margin-bottom: 1.5rem; display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; align-items: end; background: var(--bg-main); padding: 1.25rem; border-radius: 10px; border: 1px solid var(--border-color);">
+    <form method="GET" action="/fee/payments" class="filter-bar">
         <div>
             <label class="form-label">Search Student</label>
             <input type="text" name="search" class="form-control" placeholder="Roll No, Name..." value="<?= e($filters['search']) ?>">
@@ -92,12 +92,12 @@
         </div>
 
         <div>
-            <button type="submit" class="btn-primary" style="width: 100%; margin-top: 0;">Filter Ledger</button>
+            <button type="submit" class="btn-primary" style="width: 100%; margin-top: 0;"><?= icon('filter', 'icon-xs') ?> Filter Ledger</button>
         </div>
     </form>
 
     <!-- Student Fees Ledger Table -->
-    <div style="overflow-x: auto;">
+    <div class="table-responsive">
         <table class="table">
             <thead>
                 <tr>
@@ -127,18 +127,20 @@
                             <td style="font-weight: 700; color: var(--success);">₹<?= number_format((float)$sf['total_paid'], 2) ?></td>
                             <td>
                                 <?php if ($sf['status'] === 'paid'): ?>
-                                    <span class="badge badge-success">PAID</span>
+                                    <span class="badge badge-success"><?= icon('check-circle-2', 'icon-xs') ?> PAID</span>
                                 <?php elseif ($sf['status'] === 'partial'): ?>
-                                    <span class="badge badge-warning">PARTIAL</span>
+                                    <span class="badge badge-warning"><?= icon('clock', 'icon-xs') ?> PARTIAL</span>
                                 <?php else: ?>
-                                    <span class="badge badge-danger">PENDING</span>
+                                    <span class="badge badge-danger"><?= icon('alert-circle', 'icon-xs') ?> PENDING</span>
                                 <?php endif; ?>
                             </td>
                             <td>
                                 <?php if ($sf['status'] !== 'paid'): ?>
-                                    <button onclick="openPaymentModal(<?= $sf['id'] ?>, '<?= e($sf['first_name'] . ' ' . $sf['last_name']) ?>', <?= (float)$sf['final_amount'] - (float)$sf['total_paid'] ?>)" class="btn-primary" style="padding: 0.35rem 0.75rem; font-size: 0.75rem; border-radius: 6px; width: auto;">Collect ₹</button>
+                                    <button onclick="openPaymentModal(<?= $sf['id'] ?>, '<?= e($sf['first_name'] . ' ' . $sf['last_name']) ?>', <?= (float)$sf['final_amount'] - (float)$sf['total_paid'] ?>)" class="btn-primary" style="padding: 0.35rem 0.75rem; font-size: 0.75rem; border-radius: 6px; width: auto; display: inline-flex; align-items: center; gap: 0.25rem;">
+                                        <?= icon('credit-card', 'icon-xs') ?> Collect ₹
+                                    </button>
                                 <?php else: ?>
-                                    <span class="badge badge-success" style="font-size: 0.75rem;">Cleared</span>
+                                    <span class="badge badge-success" style="font-size: 0.75rem;"><?= icon('check-circle-2', 'icon-xs') ?> Cleared</span>
                                 <?php endif; ?>
                             </td>
                         </tr>
@@ -150,9 +152,11 @@
 </div>
 
 <!-- Modal for Payment Collection -->
-<div id="paymentModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); z-index: 1000; align-items: center; justify-content: center;">
-    <div class="card" style="width: 100%; max-width: 440px; border-top: 4px solid var(--accent-color);">
-        <h3 style="font-size: 1.125rem; font-weight: 800; color: var(--text-primary); margin-top: 0; margin-bottom: 0.75rem;">Collect Fee Payment</h3>
+<div id="paymentModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(8px); z-index: 1000; align-items: center; justify-content: center;">
+    <div class="card" style="width: 100%; max-width: 440px; border-top: 4px solid var(--accent-color); box-shadow: var(--shadow-xl);">
+        <h3 style="font-size: 1.125rem; font-weight: 800; color: var(--text-primary); margin-top: 0; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.4rem;">
+            <?= icon('credit-card', 'icon-sm') ?> Collect Fee Payment
+        </h3>
         <p id="modalStudentName" style="color: var(--accent-color); font-weight: 700; margin-bottom: 1.25rem; font-size: 0.875rem;"></p>
 
         <form method="POST" action="/fee/payments">
@@ -180,8 +184,8 @@
             </div>
 
             <div style="display: flex; gap: 1rem;">
-                <button type="button" onclick="closePaymentModal()" class="btn-primary" style="background: var(--bg-main); border: 1px solid var(--border-color); color: var(--text-primary); width: 40%;">Cancel</button>
-                <button type="submit" class="btn-primary" style="width: 60%;">Record Payment</button>
+                <button type="button" onclick="closePaymentModal()" class="btn btn-secondary" style="width: 40%;">Cancel</button>
+                <button type="submit" class="btn-primary" style="width: 60%;"><?= icon('check-circle-2', 'icon-xs') ?> Record Payment</button>
             </div>
         </form>
     </div>

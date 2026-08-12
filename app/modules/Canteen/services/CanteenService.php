@@ -162,6 +162,8 @@ class CanteenService
 
     public function updateOrderStatus(int $orderId, string $status, ?string $payStatus = null): bool
     {
+        $order = db()->query("SELECT * FROM canteen_orders WHERE id = $orderId")->fetch(\PDO::FETCH_ASSOC);
+
         $sql = 'UPDATE canteen_orders SET order_status = :status';
         $params = [':status' => $status, ':id' => $orderId];
 
@@ -172,7 +174,20 @@ class CanteenService
 
         $sql .= ' WHERE id = :id';
         $stmt = db()->prepare($sql);
-        return $stmt->execute($params);
+        $ok = $stmt->execute($params);
+
+        if ($ok && $status === 'ready' && $order) {
+            $this->notifSvc->notify(
+                (int) $order['user_id'],
+                "Food Order Ready! (Token: {$order['order_number']})",
+                "Your canteen order for '{$order['item_name']}' is prepared and ready for pickup at the counter.",
+                '/canteen',
+                'success',
+                'high'
+            );
+        }
+
+        return $ok;
     }
 
     public function getStatistics(int $collegeId = 1): array

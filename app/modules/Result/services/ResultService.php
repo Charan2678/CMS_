@@ -17,42 +17,10 @@ class ResultService
         $this->notifSvc = new NotificationService();
     }
 
-    // ─── 0. Period Configuration (single source of truth) ────────────────
-    /**
-     * Returns the full daily schedule structure.
-     *
-     * Each entry is either a 'period' or a 'break'.
-     * Edit the 'start' / 'end' values here to update timings college-wide.
-     *
-     * Structure:
-     *   P1 → P2 → Morning Break → P3 → P4 → Lunch Break → P5 → P6 → P7 → P8
-     *
-     * @return array<int, array{type: string, number: int|null, label: string, start: string, end: string}>
-     */
-    public static function getPeriodConfig(): array
+    // ─── 1. Timetable Scheduling ──────────────────────────────
+    public function getTimetableForSection(int $sectionId, int $academicYearId): array
     {
-        return [
-            ['type' => 'period', 'number' => 1, 'label' => 'Period 1',      'start' => '09:00', 'end' => '09:55'],
-            ['type' => 'period', 'number' => 2, 'label' => 'Period 2',      'start' => '09:55', 'end' => '10:50'],
-            ['type' => 'break',  'number' => null, 'label' => 'Morning Break', 'start' => '10:50', 'end' => '11:05'],
-            ['type' => 'period', 'number' => 3, 'label' => 'Period 3',      'start' => '11:05', 'end' => '12:00'],
-            ['type' => 'period', 'number' => 4, 'label' => 'Period 4',      'start' => '12:00', 'end' => '12:55'],
-            ['type' => 'break',  'number' => null, 'label' => 'Lunch Break',   'start' => '12:55', 'end' => '13:40'],
-            ['type' => 'period', 'number' => 5, 'label' => 'Period 5',      'start' => '13:40', 'end' => '14:35'],
-            ['type' => 'period', 'number' => 6, 'label' => 'Period 6',      'start' => '14:35', 'end' => '15:30'],
-            ['type' => 'period', 'number' => 7, 'label' => 'Period 7',      'start' => '15:30', 'end' => '16:25'],
-            ['type' => 'period', 'number' => 8, 'label' => 'Period 8',      'start' => '16:25', 'end' => '17:20'],
-        ];
-    }
-
-    // ─── 1. Timetable Scheduling (Student & Staff) ──────────────────
-
-    /**
-     * Get Timetable Grid for a Section (Student Timetable).
-     */
-    public function getTimetableForSection(int $sectionId, int $academicYearId, bool $publishedOnly = false): array
-    {
-        $sql = '
+        $stmt = db()->prepare('
             SELECT tt.*, sub.name AS subject_name, sub.code AS subject_code,
                    f.first_name AS faculty_first_name, f.last_name AS faculty_last_name,
                    r.name AS room_name
@@ -61,13 +29,8 @@ class ResultService
             JOIN faculty f ON f.id = tt.faculty_id
             LEFT JOIN rooms r ON r.id = tt.room_id
             WHERE tt.section_id = :section_id AND tt.academic_year_id = :ay_id
-        ';
-        if ($publishedOnly) {
-            $sql .= ' AND tt.status = "PUBLISHED"';
-        }
-        $sql .= ' ORDER BY tt.day_of_week ASC, tt.period_number ASC';
-
-        $stmt = db()->prepare($sql);
+            ORDER BY tt.day_of_week ASC, tt.period_number ASC
+        ');
         $stmt->execute([':section_id' => $sectionId, ':ay_id' => $academicYearId]);
         $rows = $stmt->fetchAll() ?: [];
 
@@ -78,335 +41,35 @@ class ResultService
         return $grid;
     }
 
-    /**
-     * Get Timetable Grid for a Faculty Member (Staff Timetable).
-     */
-    public function getTimetableForFaculty(int $facultyId, int $academicYearId, bool $publishedOnly = false): array
+    public function saveTimetableSlot(array $data): bool
     {
-        $sql = '
-            SELECT tt.*, sub.name AS subject_name, sub.code AS subject_code,
-                   sec.name AS section_name, c.code AS course_code, sem.number AS semester_number,
-                   r.name AS room_name
-            FROM timetable tt
-            JOIN subjects sub ON sub.id = tt.subject_id
-            JOIN sections sec ON sec.id = tt.section_id
-            JOIN semesters sem ON sem.id = sec.semester_id
-            JOIN courses c ON c.id = sem.course_id
-            LEFT JOIN rooms r ON r.id = tt.room_id
-            WHERE tt.faculty_id = :faculty_id AND tt.academic_year_id = :ay_id
-        ';
-        if ($publishedOnly) {
-            $sql .= ' AND tt.status = "PUBLISHED"';
-        }
-        $sql .= ' ORDER BY tt.day_of_week ASC, tt.period_number ASC';
-
-        $stmt = db()->prepare($sql);
-        $stmt->execute([':faculty_id' => $facultyId, ':ay_id' => $academicYearId]);
-        $rows = $stmt->fetchAll() ?: [];
-
-        $grid = [];
-        foreach ($rows as $r) {
-            $grid[$r['day_of_week']][$r['period_number']] = $r;
-        }
-        return $grid;
-    }
-
-    /**
-     * Get publication status ('DRAFT' or 'PUBLISHED') for Student or Staff timetable.
-     */
-    public function getPublicationStatus(string $type, int $academicYearId, ?int $sectionId = null, ?int $facultyId = null): string
-    {
-        $type = strtoupper($type);
-        if ($type === 'STUDENT' && $sectionId) {
-            $stmt = db()->prepare('
-                SELECT status FROM timetable_publications
-                WHERE timetable_type = "STUDENT" AND academic_year_id = :ay_id AND section_id = :sec_id
-                LIMIT 1
-            ');
-            $stmt->execute([':ay_id' => $academicYearId, ':sec_id' => $sectionId]);
-            return $stmt->fetchColumn() ?: 'DRAFT';
-        } elseif ($type === 'STAFF' && $facultyId) {
-            $stmt = db()->prepare('
-                SELECT status FROM timetable_publications
-                WHERE timetable_type = "STAFF" AND academic_year_id = :ay_id AND faculty_id = :fac_id
-                LIMIT 1
-            ');
-            $stmt->execute([':ay_id' => $academicYearId, ':fac_id' => $facultyId]);
-            return $stmt->fetchColumn() ?: 'DRAFT';
-        }
-        return 'DRAFT';
-    }
-
-    /**
-     * Publish Student or Staff Timetable.
-     */
-    public function publishTimetable(string $type, int $academicYearId, ?int $sectionId = null, ?int $facultyId = null, int $publishedBy = 1): bool
-    {
-        $type = strtoupper($type);
-        db()->beginTransaction();
-        try {
-            if ($type === 'STUDENT' && $sectionId) {
-                $pubStmt = db()->prepare('
-                    INSERT INTO timetable_publications (timetable_type, academic_year_id, section_id, status, published_at, published_by)
-                    VALUES ("STUDENT", :ay_id, :sec_id, "PUBLISHED", NOW(), :pub_by)
-                    ON DUPLICATE KEY UPDATE status = "PUBLISHED", published_at = NOW(), published_by = VALUES(published_by)
-                ');
-                $pubStmt->execute([':ay_id' => $academicYearId, ':sec_id' => $sectionId, ':pub_by' => $publishedBy]);
-
-                $updStmt = db()->prepare('
-                    UPDATE timetable SET status = "PUBLISHED"
-                    WHERE section_id = :sec_id AND academic_year_id = :ay_id
-                ');
-                $updStmt->execute([':sec_id' => $sectionId, ':ay_id' => $academicYearId]);
-            } elseif ($type === 'STAFF' && $facultyId) {
-                $pubStmt = db()->prepare('
-                    INSERT INTO timetable_publications (timetable_type, academic_year_id, faculty_id, status, published_at, published_by)
-                    VALUES ("STAFF", :ay_id, :fac_id, "PUBLISHED", NOW(), :pub_by)
-                    ON DUPLICATE KEY UPDATE status = "PUBLISHED", published_at = NOW(), published_by = VALUES(published_by)
-                ');
-                $pubStmt->execute([':ay_id' => $academicYearId, ':fac_id' => $facultyId, ':pub_by' => $publishedBy]);
-
-                $updStmt = db()->prepare('
-                    UPDATE timetable SET status = "PUBLISHED"
-                    WHERE faculty_id = :fac_id AND academic_year_id = :ay_id
-                ');
-                $updStmt->execute([':fac_id' => $facultyId, ':ay_id' => $academicYearId]);
-            }
-            db()->commit();
-            return true;
-        } catch (\Exception $e) {
-            db()->rollBack();
-            return false;
-        }
-    }
-
-    /**
-     * Unpublish Student or Staff Timetable.
-     */
-    public function unpublishTimetable(string $type, int $academicYearId, ?int $sectionId = null, ?int $facultyId = null): bool
-    {
-        $type = strtoupper($type);
-        db()->beginTransaction();
-        try {
-            if ($type === 'STUDENT' && $sectionId) {
-                $pubStmt = db()->prepare('
-                    UPDATE timetable_publications SET status = "DRAFT"
-                    WHERE timetable_type = "STUDENT" AND academic_year_id = :ay_id AND section_id = :sec_id
-                ');
-                $pubStmt->execute([':ay_id' => $academicYearId, ':sec_id' => $sectionId]);
-
-                $updStmt = db()->prepare('
-                    UPDATE timetable SET status = "DRAFT"
-                    WHERE section_id = :sec_id AND academic_year_id = :ay_id
-                ');
-                $updStmt->execute([':sec_id' => $sectionId, ':ay_id' => $academicYearId]);
-            } elseif ($type === 'STAFF' && $facultyId) {
-                $pubStmt = db()->prepare('
-                    UPDATE timetable_publications SET status = "DRAFT"
-                    WHERE timetable_type = "STAFF" AND academic_year_id = :ay_id AND faculty_id = :fac_id
-                ');
-                $pubStmt->execute([':ay_id' => $academicYearId, ':fac_id' => $facultyId]);
-
-                $updStmt = db()->prepare('
-                    UPDATE timetable SET status = "DRAFT"
-                    WHERE faculty_id = :fac_id AND academic_year_id = :ay_id
-                ');
-                $updStmt->execute([':fac_id' => $facultyId, ':ay_id' => $academicYearId]);
-            }
-            db()->commit();
-            return true;
-        } catch (\Exception $e) {
-            db()->rollBack();
-            return false;
-        }
-    }
-
-    /**
-     * Delete a timetable slot.
-     */
-    public function deleteTimetableSlot(int $slotId): bool
-    {
-        $stmt = db()->prepare('DELETE FROM timetable WHERE id = :id');
-        return $stmt->execute([':id' => $slotId]);
-    }
-
-    /**
-     * Save timetable slot with Conflict Validation.
-     *
-     * Validates:
-     *   1. Faculty Conflict: Same faculty assigned to another class during same day & period
-     *   2. Room Conflict: Same room assigned to another class during same day & period
-     *   3. Section Conflict: Same section assigned to another subject during same day & period
-     *
-     * @return array{success: bool, message: string}
-     */
-    public function saveTimetableSlotWithValidation(array $data): array
-    {
-        $secId   = (int) ($data['section_id'] ?? 0);
-        $ayId    = (int) ($data['academic_year_id'] ?? 0);
-        $day     = strtolower((string) ($data['day_of_week'] ?? 'monday'));
-        $period  = (int) ($data['period_number'] ?? 1);
-        $subId   = (int) ($data['subject_id'] ?? 0);
-        $facId   = (int) ($data['faculty_id'] ?? 0);
-        $roomId  = !empty($data['room_id']) ? (int) $data['room_id'] : null;
-        $ttType  = strtoupper((string) ($data['timetable_type'] ?? 'STUDENT'));
-
-        if (empty($secId) || empty($ayId) || empty($subId) || empty($facId)) {
-            return ['success' => false, 'message' => 'Section, Academic Year, Subject, and Faculty are required fields.'];
-        }
-
-        // 1. Faculty Conflict Check
-        $facCheck = db()->prepare('
-            SELECT tt.id, sec.name AS section_name, sub.code AS subject_code
-            FROM timetable tt
-            JOIN sections sec ON sec.id = tt.section_id
-            JOIN subjects sub ON sub.id = tt.subject_id
-            WHERE tt.faculty_id = :fac_id
-              AND tt.academic_year_id = :ay_id
-              AND tt.day_of_week = :day
-              AND tt.period_number = :period
-              AND tt.section_id != :sec_id
-            LIMIT 1
-        ');
-        $facCheck->execute([
-            ':fac_id' => $facId,
-            ':ay_id'  => $ayId,
-            ':day'     => $day,
-            ':period' => $period,
-            ':sec_id' => $secId,
-        ]);
-        $facConflict = $facCheck->fetch();
-        if ($facConflict) {
-            $facStmt = db()->prepare('SELECT first_name, last_name FROM faculty WHERE id = :id');
-            $facStmt->execute([':id' => $facId]);
-            $facRow = $facStmt->fetch();
-            $facName = $facRow ? "{$facRow['first_name']} {$facRow['last_name']}" : "Faculty #{$facId}";
-            return [
-                'success' => false,
-                'message' => "⚠️ Faculty Conflict: {$facName} is already assigned to Section '{$facConflict['section_name']}' ({$facConflict['subject_code']}) on " . ucfirst($day) . " Period {$period}."
-            ];
-        }
-
-        // 2. Room Conflict Check
-        if ($roomId) {
-            $roomCheck = db()->prepare('
-                SELECT tt.id, sec.name AS section_name, r.name AS room_name
-                FROM timetable tt
-                JOIN sections sec ON sec.id = tt.section_id
-                JOIN rooms r ON r.id = tt.room_id
-                WHERE tt.room_id = :room_id
-                  AND tt.academic_year_id = :ay_id
-                  AND tt.day_of_week = :day
-                  AND tt.period_number = :period
-                  AND tt.section_id != :sec_id
-                LIMIT 1
-            ');
-            $roomCheck->execute([
-                ':room_id' => $roomId,
-                ':ay_id'   => $ayId,
-                ':day'     => $day,
-                ':period'  => $period,
-                ':sec_id'  => $secId,
-            ]);
-            $roomConflict = $roomCheck->fetch();
-            if ($roomConflict) {
-                return [
-                    'success' => false,
-                    'message' => "⚠️ Classroom Conflict: Room '{$roomConflict['room_name']}' is already occupied by Section '{$roomConflict['section_name']}' on " . ucfirst($day) . " Period {$period}."
-                ];
-            }
-        }
-
-        // 3. Section Slot Conflict Check
-        $secCheck = db()->prepare('
-            SELECT tt.id, sub.code AS subject_code
-            FROM timetable tt
-            JOIN subjects sub ON sub.id = tt.subject_id
-            WHERE tt.section_id = :sec_id
-              AND tt.academic_year_id = :ay_id
-              AND tt.day_of_week = :day
-              AND tt.period_number = :period
-              AND tt.subject_id != :sub_id
-            LIMIT 1
-        ');
-        $secCheck->execute([
-            ':sec_id' => $secId,
-            ':ay_id'  => $ayId,
-            ':day'     => $day,
-            ':period' => $period,
-            ':sub_id' => $subId,
-        ]);
-        $secConflict = $secCheck->fetch();
-        if ($secConflict) {
-            return [
-                'success' => false,
-                'message' => "⚠️ Section Conflict: This section already has '{$secConflict['subject_code']}' scheduled on " . ucfirst($day) . " Period {$period}."
-            ];
-        }
-
-        // Get timings from Period Config
-        $pConfig = self::getPeriodConfig();
-        $startTime = '09:00:00';
-        $endTime   = '09:55:00';
-        foreach ($pConfig as $pc) {
-            if ($pc['type'] === 'period' && (int)$pc['number'] === $period) {
-                $startTime = $pc['start'] . ':00';
-                $endTime   = $pc['end'] . ':00';
-                break;
-            }
-        }
-
-        // Determine initial status from existing publication status
-        $currentPubStatus = $this->getPublicationStatus($ttType, $ayId, $secId, $facId);
-
-        // Save / Upsert slot
         $stmt = db()->prepare('
             INSERT INTO timetable (
                 section_id, academic_year_id, day_of_week, period_number,
-                subject_id, faculty_id, room_id, timetable_type, status,
-                start_time, end_time, created_by, created_at
+                subject_id, faculty_id, room_id, start_time, end_time, created_at
             ) VALUES (
                 :section_id, :academic_year_id, :day_of_week, :period_number,
-                :subject_id, :faculty_id, :room_id, :timetable_type, :status,
-                :start_time, :end_time, :created_by, NOW()
+                :subject_id, :faculty_id, :room_id, :start_time, :end_time, NOW()
             )
             ON DUPLICATE KEY UPDATE
-                subject_id     = VALUES(subject_id),
-                faculty_id     = VALUES(faculty_id),
-                room_id        = VALUES(room_id),
-                timetable_type = VALUES(timetable_type),
-                status         = VALUES(status),
-                start_time     = VALUES(start_time),
-                end_time       = VALUES(end_time),
-                updated_by     = VALUES(created_by)
+                subject_id = VALUES(subject_id),
+                faculty_id = VALUES(faculty_id),
+                room_id    = VALUES(room_id),
+                start_time = VALUES(start_time),
+                end_time   = VALUES(end_time)
         ');
 
-        $ok = $stmt->execute([
-            ':section_id'       => $secId,
-            ':academic_year_id' => $ayId,
-            ':day_of_week'      => $day,
-            ':period_number'    => $period,
-            ':subject_id'       => $subId,
-            ':faculty_id'       => $facId,
-            ':room_id'          => $roomId,
-            ':timetable_type'   => $ttType,
-            ':status'           => $currentPubStatus,
-            ':start_time'       => $startTime,
-            ':end_time'         => $endTime,
-            ':created_by'       => auth_id() ?? 1,
+        return $stmt->execute([
+            ':section_id'       => (int) $data['section_id'],
+            ':academic_year_id' => (int) $data['academic_year_id'],
+            ':day_of_week'      => strtolower($data['day_of_week']),
+            ':period_number'    => (int) $data['period_number'],
+            ':subject_id'       => (int) $data['subject_id'],
+            ':faculty_id'       => (int) $data['faculty_id'],
+            ':room_id'          => !empty($data['room_id']) ? (int)$data['room_id'] : null,
+            ':start_time'       => $data['start_time'] ?? '09:00:00',
+            ':end_time'         => $data['end_time'] ?? '10:00:00',
         ]);
-
-        if ($ok) {
-            return ['success' => true, 'message' => 'Timetable slot allocated successfully!'];
-        }
-
-        return ['success' => false, 'message' => 'Failed to allocate timetable slot due to a database error.'];
-    }
-
-    public function saveTimetableSlot(array $data): bool
-    {
-        $res = $this->saveTimetableSlotWithValidation($data);
-        return $res['success'];
     }
 
     // ─── 2. Internal Marks ─────────────────────────────────────
@@ -654,7 +317,7 @@ class ResultService
             $recipients = $stStmt->fetchAll() ?: [];
 
             foreach ($recipients as $rec) {
-                $title = "🎓 {$semName} Official Results Published!";
+                $title = "{$semName} Official Results Published!";
                 $msg   = "Your official examination marks and SGPA for {$semName} have been published. View your marksheet now.";
 
                 if (!empty($rec['student_user_id'])) {
@@ -768,180 +431,16 @@ class ResultService
         return $semResults;
     }
 
-
-
-    // ─── 6. Full Examination Results Dashboard ────────────────
     /**
-     * Fetch all mid + semester examination results for a student, grouped by academic year.
-     *
-     * Returns:
-     *   [
-     *     [
-     *       'academic_year_id'   => int,
-     *       'academic_year_name' => string,
-     *       'mid_exams'          => [
-     *           'cia1' => ['label'=>'Mid Examination 1','published'=>bool,'subjects'=>[...],'summary'=>[...]],
-     *           'cia2' => [...],
-     *           'cia3' => [...],
-     *           'cia4' => [...],
-     *       ],
-     *       'semester_results' => [  // each published semester result for this AY
-     *           [ ...existing $semResults row with 'subjects' sub-array... ],
-     *       ],
-     *     ],
-     *     ...
-     *   ]
-     */
-    public function getStudentFullExamResults(int $studentId): array
-    {
-        // ── 1. Fetch all academic year placements for this student ──────────
-        $placementStmt = db()->prepare('
-            SELECT
-                sa.academic_year_id,
-                sa.semester_id,
-                sa.course_id,
-                ay.name  AS academic_year_name,
-                sem.number AS semester_number,
-                sem.name   AS semester_name,
-                c.name     AS course_name
-            FROM student_academics sa
-            JOIN academic_years ay  ON ay.id  = sa.academic_year_id
-            JOIN semesters      sem ON sem.id  = sa.semester_id
-            JOIN courses        c   ON c.id   = sa.course_id
-            WHERE sa.student_id = :student_id
-            ORDER BY ay.start_date DESC, sem.number ASC
-        ');
-        $placementStmt->execute([':student_id' => $studentId]);
-        $placements = $placementStmt->fetchAll() ?: [];
-
-        if (empty($placements)) {
-            return [];
-        }
-
-        // ── 2. Collect unique academic years (preserve order) ──────────────
-        $academicYears = [];
-        foreach ($placements as $pl) {
-            $ayId = (int) $pl['academic_year_id'];
-            if (!isset($academicYears[$ayId])) {
-                $academicYears[$ayId] = [
-                    'academic_year_id'   => $ayId,
-                    'academic_year_name' => $pl['academic_year_name'],
-                    'mid_exams'          => [],
-                    'semester_results'   => [],
-                ];
-            }
-        }
-
-        // ── 3. Mid Examination definitions ────────────────────────────────
-        $midDefs = [
-            'cia1' => 'Mid Examination 1',
-            'cia2' => 'Mid Examination 2',
-            'cia3' => 'Mid Examination 3',
-            'cia4' => 'Mid Examination 4',
-        ];
-
-        // ── 4. Fetch mid exam data for each academic year ──────────────────
-        foreach (array_keys($academicYears) as $ayId) {
-            foreach ($midDefs as $examType => $examLabel) {
-                // Fetch marks for this student, AY, and exam type
-                $midStmt = db()->prepare('
-                    SELECT
-                        im.subject_id,
-                        im.marks_obtained,
-                        im.max_marks,
-                        sub.code  AS subject_code,
-                        sub.name  AS subject_name,
-                        sub.type  AS subject_type,
-                        sub.pass_internal_marks
-                    FROM internal_marks im
-                    JOIN subjects sub ON sub.id = im.subject_id
-                    WHERE im.student_id      = :student_id
-                      AND im.academic_year_id = :ay_id
-                      AND im.exam_type        = :exam_type
-                    ORDER BY sub.code ASC
-                ');
-                $midStmt->execute([
-                    ':student_id' => $studentId,
-                    ':ay_id'      => $ayId,
-                    ':exam_type'  => $examType,
-                ]);
-                $rows = $midStmt->fetchAll() ?: [];
-
-                $published   = !empty($rows);
-                $subjects    = [];
-                $totalObt    = 0.0;
-                $totalMax    = 0.0;
-                $passedCount = 0;
-                $failedCount = 0;
-
-                foreach ($rows as $row) {
-                    $obt      = (float) $row['marks_obtained'];
-                    $max      = (float) $row['max_marks'];
-                    $passMin  = (float) ($row['pass_internal_marks'] ?? 0);
-                    $pct      = $max > 0 ? ($obt / $max) * 100 : 0.0;
-                    $passed   = ($passMin > 0) ? ($obt >= $passMin) : ($pct >= 40.0);
-
-                    $subjects[] = [
-                        'subject_code'   => $row['subject_code'],
-                        'subject_name'   => $row['subject_name'],
-                        'marks_obtained' => $obt,
-                        'max_marks'      => $max,
-                        'percentage'     => round($pct, 1),
-                        'result'         => $passed ? 'PASS' : 'FAIL',
-                    ];
-
-                    $totalObt += $obt;
-                    $totalMax += $max;
-                    if ($passed) $passedCount++; else $failedCount++;
-                }
-
-                $overallPct = $totalMax > 0 ? round(($totalObt / $totalMax) * 100, 2) : 0.0;
-
-                $academicYears[$ayId]['mid_exams'][$examType] = [
-                    'label'           => $examLabel,
-                    'exam_type'       => $examType,
-                    'published'       => $published,
-                    'subjects'        => $subjects,
-                    'summary'         => [
-                        'total_subjects' => count($subjects),
-                        'passed'         => $passedCount,
-                        'failed'         => $failedCount,
-                        'total_obtained' => $totalObt,
-                        'total_max'      => $totalMax,
-                        'percentage'     => $overallPct,
-                        'overall_result' => ($failedCount === 0 && $published) ? 'PASS' : ($published ? 'FAIL' : 'NOT_PUBLISHED'),
-                    ],
-                ];
-            }
-        }
-
-        // ── 5. Fetch semester results (reuse existing logic) ───────────────
-        $semResults = $this->getStudentAllSemesterResults($studentId);
-
-        foreach ($semResults as $sr) {
-            $ayId = (int) $sr['academic_year_id'];
-            if (isset($academicYears[$ayId])) {
-                $academicYears[$ayId]['semester_results'][] = $sr;
-            }
-        }
-
-        return array_values($academicYears);
-    }
-
-    /**
-     * Fetch timetable grid for a student's active section.
+     * Fetch timetable grid for a student's current active section.
      */
     public function getStudentTimetable(int $studentId): array
     {
         $stmt = db()->prepare('
-            SELECT sa.section_id, sa.academic_year_id, sa.department_id, sa.semester_id,
-                   sec.name as section_name, ay.name as academic_year_name,
-                   d.name as department_name, sem.number as semester_number
+            SELECT sa.section_id, sa.academic_year_id, sec.name as section_name, ay.name as academic_year_name
             FROM student_academics sa
             JOIN sections sec ON sec.id = sa.section_id
             JOIN academic_years ay ON ay.id = sa.academic_year_id
-            LEFT JOIN departments d ON d.id = sa.department_id
-            LEFT JOIN semesters sem ON sem.id = sa.semester_id
             WHERE sa.student_id = :student_id AND sa.is_current = 1
             LIMIT 1
         ');
@@ -949,57 +448,13 @@ class ResultService
         $ac = $stmt->fetch();
 
         if (!$ac) {
-            return ['info' => null, 'grid' => [], 'is_published' => false];
+            return ['info' => null, 'grid' => []];
         }
 
-        $pubStatus = $this->getPublicationStatus('STUDENT', (int)$ac['academic_year_id'], (int)$ac['section_id']);
-        $isPublished = ($pubStatus === 'PUBLISHED');
-
-        $grid = [];
-        if ($isPublished) {
-            $grid = $this->getTimetableForSection((int)$ac['section_id'], (int)$ac['academic_year_id'], true);
-        }
-
+        $grid = $this->getTimetableForSection((int)$ac['section_id'], (int)$ac['academic_year_id']);
         return [
-            'info'         => $ac,
-            'grid'         => $grid,
-            'is_published' => $isPublished,
-        ];
-    }
-
-    /**
-     * Fetch timetable grid for a faculty member.
-     */
-    public function getFacultyTimetable(int $facultyId): array
-    {
-        $facStmt = db()->prepare('
-            SELECT f.*, d.name AS dept_name, ay.id AS ay_id, ay.name AS ay_name
-            FROM faculty f
-            LEFT JOIN departments d ON d.id = f.department_id
-            CROSS JOIN academic_years ay ON ay.is_current = 1
-            WHERE f.id = :faculty_id
-            LIMIT 1
-        ');
-        $facStmt->execute([':faculty_id' => $facultyId]);
-        $fac = $facStmt->fetch();
-
-        if (!$fac) {
-            return ['info' => null, 'grid' => [], 'is_published' => false];
-        }
-
-        $ayId = (int) ($fac['ay_id'] ?? 1);
-        $pubStatus = $this->getPublicationStatus('STAFF', $ayId, null, $facultyId);
-        $isPublished = ($pubStatus === 'PUBLISHED');
-
-        $grid = [];
-        if ($isPublished) {
-            $grid = $this->getTimetableForFaculty($facultyId, $ayId, true);
-        }
-
-        return [
-            'info'         => $fac,
-            'grid'         => $grid,
-            'is_published' => $isPublished,
+            'info' => $ac,
+            'grid' => $grid
         ];
     }
 }

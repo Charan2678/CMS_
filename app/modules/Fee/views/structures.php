@@ -1,19 +1,3 @@
-<div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
-    <div>
-        <h1 style="font-size: 1.5rem; font-weight: 800; color: var(--text-primary); margin: 0; display: flex; align-items: center; gap: 0.5rem;">
-            <span>📋</span> Fee Structures &amp; Fee Schedules
-        </h1>
-        <p style="color: var(--text-secondary); font-size: 0.85rem; margin: 0.25rem 0 0 0;">
-            Configure academic fee structures by program, semester, and batch.
-        </p>
-    </div>
-    <div>
-        <a href="/fee/payments" class="btn-secondary" style="display: inline-flex; align-items: center; gap: 0.5rem; text-decoration: none; padding: 0.5rem 1rem; border-radius: 8px; font-weight: 600; font-size: 0.875rem; background: var(--bg-main); border: 1px solid var(--border-color); color: var(--text-primary); transition: all 0.2s ease;">
-            <span>←</span> Back to Fee &amp; Financial Ledger
-        </a>
-    </div>
-</div>
-
 <?php if (!empty($error)): ?>
     <div class="alert alert-danger" style="margin-bottom: 1.5rem;"><?= e($error) ?></div>
 <?php endif; ?>
@@ -22,11 +6,11 @@
     <div class="alert alert-success" style="margin-bottom: 1.5rem;"><?= e($success) ?></div>
 <?php endif; ?>
 
-<div style="display: grid; grid-template-columns: 1fr 2fr; gap: 1.5rem;">
+<div class="page-split">
     <!-- Create Fee Structure Panel -->
     <div class="card">
-        <h2 style="font-size: 1.125rem; font-weight: 700; color: var(--text-primary); margin-top: 0; margin-bottom: 1.25rem; display: flex; align-items: center; gap: 0.5rem;">
-            <span>➕</span> Define Fee Structure
+        <h2 style="font-size: 1.125rem; font-weight: 800; color: var(--text-primary); margin-top: 0; margin-bottom: 1.25rem; display: flex; align-items: center; gap: 0.5rem;">
+            <?= icon('plus', 'icon-sm') ?> Define Fee Structure
         </h2>
 
         <form method="POST" action="/fee/structures">
@@ -86,17 +70,17 @@
                 </div>
             </div>
 
-            <button type="submit" class="btn-primary" style="width: 100%;">Save Fee Structure</button>
+            <button type="submit" class="btn-primary" style="width: 100%;"><?= icon('save', 'icon-xs') ?> Save Fee Structure</button>
         </form>
     </div>
 
     <!-- Fee Structures List Panel -->
     <div class="card">
-        <h2 style="font-size: 1.125rem; font-weight: 700; color: var(--text-primary); margin-top: 0; margin-bottom: 1.25rem; display: flex; align-items: center; gap: 0.5rem;">
-            <span>⚙️</span> Configured Fee Schedules Directory
+        <h2 style="font-size: 1.125rem; font-weight: 800; color: var(--text-primary); margin-top: 0; margin-bottom: 1.25rem; display: flex; align-items: center; gap: 0.5rem;">
+            <?= icon('settings', 'icon-sm') ?> Configured Fee Schedules Directory
         </h2>
 
-        <div style="overflow-x: auto;">
+        <div class="table-responsive">
             <table class="table">
                 <thead>
                     <tr>
@@ -119,7 +103,7 @@
                                 <td style="font-weight: 700; color: var(--accent-color);"><?= e($fs['course_code']) ?> (Sem <?= e($fs['semester_number']) ?>)</td>
                                 <td style="font-weight: 600; color: var(--text-primary);"><?= e($fs['category_name']) ?></td>
                                 <td style="font-weight: 800; color: var(--success);">₹<?= number_format((float)$fs['amount'], 2) ?></td>
-                                <td style="color: var(--text-secondary);"><?= date('d M Y', strtotime($fs['due_date'])) ?></td>
+                                <td style="color: var(--text-secondary); font-size: 0.8125rem;"><?= date('d M Y', strtotime($fs['due_date'])) ?></td>
                             </tr>
                         <?php endforeach; ?>
                     <?php endif; ?>

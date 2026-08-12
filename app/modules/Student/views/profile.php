@@ -17,10 +17,10 @@
             <!-- Student Avatar Container with Interactive Photo Upload -->
             <div style="position: relative; text-align: center;">
                 <?php if (!empty($student['photo_path'])): ?>
-                    <img src="<?= e($student['photo_path']) ?>" alt="Profile Photo" style="width: 90px; height: 90px; border-radius: 50%; object-fit: cover; border: 3px solid var(--accent-color); box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+                    <img src="<?= e($student['photo_path']) ?>" alt="Profile Photo" style="width: 90px; height: 90px; border-radius: 50%; object-fit: cover; border: 3px solid var(--accent-color); box-shadow: var(--shadow-md);">
                 <?php else: ?>
-                    <div style="width: 90px; height: 90px; border-radius: 50%; background: rgba(2, 132, 199, 0.15); color: var(--accent-color); display: flex; align-items: center; justify-content: center; font-size: 2.5rem; border: 3px solid var(--accent-color);">
-                        👨‍🎓
+                    <div style="width: 90px; height: 90px; border-radius: 50%; background: rgba(2, 132, 199, 0.12); color: var(--accent-color); display: flex; align-items: center; justify-content: center; font-size: 2.25rem; border: 3px solid var(--accent-color); box-shadow: var(--shadow-sm);">
+                        <?= icon('graduation-cap', 'icon-xl') ?>
                     </div>
                 <?php endif; ?>
 
@@ -28,17 +28,17 @@
                 <form method="POST" action="/profile" enctype="multipart/form-data" style="margin-top: 0.5rem;">
                     <?= csrf_field() ?>
                     <input type="hidden" name="_action" value="upload_photo">
-                    <label for="profile_photo_input" class="btn-primary" style="padding: 0.25rem 0.5rem; font-size: 0.75rem; border-radius: 6px; cursor: pointer; display: inline-flex; align-items: center; gap: 0.25rem;">
-                        <span>📷</span> Upload Photo
+                    <label for="profile_photo_input" class="btn-primary" style="padding: 0.25rem 0.55rem; font-size: 0.75rem; border-radius: 6px; cursor: pointer; display: inline-flex; align-items: center; gap: 0.3rem;">
+                        <?= icon('camera', 'icon-xs') ?> Upload Photo
                     </label>
                     <input type="file" id="profile_photo_input" name="profile_photo" accept="image/*" style="display: none;" onchange="this.form.submit()">
                 </form>
             </div>
 
             <div>
-                <h1 style="font-size: 1.5rem; font-weight: 800; color: var(--text-primary); margin: 0; display: flex; align-items: center; gap: 0.5rem;">
+                <h1 style="font-size: 1.5rem; font-weight: 800; color: var(--text-primary); margin: 0; display: flex; align-items: center; gap: 0.5rem; letter-spacing: -0.015em;">
                     <?= e($student['first_name'] . ' ' . $student['last_name']) ?>
-                    <span class="badge badge-success" style="font-size: 0.75rem;">Active Student</span>
+                    <span class="badge badge-success" style="font-size: 0.75rem;"><?= icon('check-circle-2', 'icon-xs') ?> Active Student</span>
                 </h1>
                 <div style="font-size: 0.9375rem; color: var(--accent-color); font-weight: 700; margin-top: 0.25rem;">
                     Roll No: <?= e($student['roll_number']) ?> &bull; Admission No: <?= e($student['admission_number']) ?>
@@ -52,11 +52,11 @@
 </div>
 
 <!-- Section 1: Personal Details & Documents Center -->
-<div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem; margin-bottom: 2rem;">
+<div class="dashboard-grid-2">
     <!-- Personal & Contact Information Form -->
     <div class="card">
-        <h2 style="font-size: 1.125rem; font-weight: 700; color: var(--text-primary); margin-top: 0; margin-bottom: 1.25rem; display: flex; align-items: center; gap: 0.5rem;">
-            <span>👤</span> Personal & Contact Details
+        <h2 style="font-size: 1.125rem; font-weight: 800; color: var(--text-primary); margin-top: 0; margin-bottom: 1.25rem; display: flex; align-items: center; gap: 0.5rem;">
+            <?= icon('user', 'icon-sm') ?> Personal &amp; Contact Details
         </h2>
 
         <form method="POST" action="/profile">
@@ -134,7 +134,7 @@
                 </div>
             </div>
 
-            <button type="submit" class="btn-primary">Save Personal Details</button>
+            <button type="submit" class="btn-primary"><?= icon('save', 'icon-xs') ?> Save Personal Details</button>
         </form>
     </div>
 
@@ -142,8 +142,8 @@
     <div style="display: flex; flex-direction: column; gap: 1.5rem;">
         <!-- Upload Document Panel -->
         <div class="card">
-            <h2 style="font-size: 1.125rem; font-weight: 700; color: var(--text-primary); margin-top: 0; margin-bottom: 1.25rem; display: flex; align-items: center; gap: 0.5rem;">
-                <span>📤</span> Upload Document
+            <h2 style="font-size: 1.125rem; font-weight: 800; color: var(--text-primary); margin-top: 0; margin-bottom: 1.25rem; display: flex; align-items: center; gap: 0.5rem;">
+                <?= icon('upload', 'icon-sm') ?> Upload Document
             </h2>
 
             <form method="POST" action="/profile" enctype="multipart/form-data">
@@ -171,14 +171,14 @@
                     <input type="file" name="document_file" class="form-control" required accept=".pdf,.jpg,.jpeg,.png">
                 </div>
 
-                <button type="submit" class="btn-primary" style="width: 100%;">Upload File</button>
+                <button type="submit" class="btn-primary" style="width: 100%;"><?= icon('upload-cloud', 'icon-xs') ?> Upload File</button>
             </form>
         </div>
 
         <!-- Attached Documents List -->
         <div class="card">
-            <h2 style="font-size: 1.125rem; font-weight: 700; color: var(--text-primary); margin-top: 0; margin-bottom: 1.25rem; display: flex; align-items: center; gap: 0.5rem;">
-                <span>📎</span> My Uploaded Documents
+            <h2 style="font-size: 1.125rem; font-weight: 800; color: var(--text-primary); margin-top: 0; margin-bottom: 1.25rem; display: flex; align-items: center; gap: 0.5rem;">
+                <?= icon('paperclip', 'icon-sm') ?> My Uploaded Documents
             </h2>
 
             <?php if (empty($student['documents'])): ?>
@@ -186,14 +186,14 @@
             <?php else: ?>
                 <div style="display: flex; flex-direction: column; gap: 0.75rem;">
                     <?php foreach ($student['documents'] as $doc): ?>
-                        <div style="background: var(--bg-main); padding: 0.875rem 1rem; border-radius: 8px; border: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between;">
+                        <div style="background: var(--bg-main); padding: 0.875rem 1rem; border-radius: 8px; border: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between; box-shadow: var(--shadow-xs);">
                             <div>
                                 <div style="font-weight: 700; font-size: 0.875rem; color: var(--text-primary);"><?= e($doc['document_name']) ?></div>
                                 <div style="font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase; margin-top: 0.15rem;">
                                     Type: <?= e($doc['document_type']) ?> &bull; <?= date('d M Y', strtotime($doc['created_at'])) ?>
                                 </div>
                             </div>
-                            <a href="<?= e($doc['file_path']) ?>" target="_blank" class="badge badge-info" style="text-decoration: none;">Download</a>
+                            <a href="<?= e($doc['file_path']) ?>" target="_blank" class="badge badge-info" style="text-decoration: none; display: inline-flex; align-items: center; gap: 0.3rem;"><?= icon('download', 'icon-xs') ?> Download</a>
                         </div>
                     <?php endforeach; ?>
                 </div>
@@ -203,11 +203,11 @@
 </div>
 
 <!-- Section 2: 2-Column Grid — Parent Information Card (Left) & Change Password Card (Right) -->
-<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 2rem;">
+<div class="dashboard-grid-equal">
     <!-- Parent & Guardian Details Card (Left) -->
     <div class="card">
-        <h2 style="font-size: 1.125rem; font-weight: 700; color: var(--text-primary); margin-top: 0; margin-bottom: 1.25rem; display: flex; align-items: center; gap: 0.5rem;">
-            <span>👨‍👩‍👧</span> Parent & Guardian Information
+        <h2 style="font-size: 1.125rem; font-weight: 800; color: var(--text-primary); margin-top: 0; margin-bottom: 1.25rem; display: flex; align-items: center; gap: 0.5rem;">
+            <?= icon('users', 'icon-sm') ?> Parent &amp; Guardian Information
         </h2>
 
         <?php 
@@ -249,14 +249,14 @@
                 <input type="text" name="guardian_occupation" class="form-control" placeholder="e.g. Business / Government Service / Engineer" value="<?= e($primaryG['occupation'] ?? '') ?>">
             </div>
 
-            <button type="submit" class="btn-primary">Save Parent Information</button>
+            <button type="submit" class="btn-primary"><?= icon('save', 'icon-xs') ?> Save Parent Information</button>
         </form>
     </div>
 
-    <!-- Account Security & Change Password Card (Right, beside Parent Card) -->
+    <!-- Account Security & Change Password Card (Right) -->
     <div class="card">
-        <h2 style="font-size: 1.125rem; font-weight: 700; color: var(--text-primary); margin-top: 0; margin-bottom: 1.25rem; display: flex; align-items: center; gap: 0.5rem;">
-            <span>🔒</span> Account Security & Password
+        <h2 style="font-size: 1.125rem; font-weight: 800; color: var(--text-primary); margin-top: 0; margin-bottom: 1.25rem; display: flex; align-items: center; gap: 0.5rem;">
+            <?= icon('lock', 'icon-sm') ?> Account Security &amp; Password
         </h2>
 
         <form method="POST" action="/profile">
@@ -278,7 +278,7 @@
                 <input type="password" name="confirm_password" class="form-control" required placeholder="Re-enter new password">
             </div>
 
-            <button type="submit" class="btn-primary" style="width: 100%;">Update Password</button>
+            <button type="submit" class="btn-primary" style="width: 100%;"><?= icon('key', 'icon-xs') ?> Update Password</button>
         </form>
     </div>
 </div>

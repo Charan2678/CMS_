@@ -1,74 +1,16 @@
-<?php
-$svg = [
-    'home'         => '<svg class="nav-svg-icon" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>',
-    'attendance'   => '<svg class="nav-svg-icon" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line><path d="M9 16l2 2 4-4"></path></svg>',
-    'results'      => '<svg class="nav-svg-icon" viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>',
-    'timetable'    => '<svg class="nav-svg-icon" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line><circle cx="16" cy="16" r="3"></circle><polyline points="16 15 16 16 17 16"></polyline></svg>',
-    'receipt'      => '<svg class="nav-svg-icon" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><line x1="10" y1="9" x2="8" y2="9"></line></svg>',
-    'canteen'      => '<svg class="nav-svg-icon" viewBox="0 0 24 24"><path d="M18 8v13M18 3v2M10 3v18M14 3v18M6 3v5a4 4 0 0 4 4h0a4 4 0 0 4 4-4V3"></path></svg>',
-    'order'        => '<svg class="nav-svg-icon" viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg>',
-    'library'      => '<svg class="nav-svg-icon" viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg>',
-    'book'         => '<svg class="nav-svg-icon" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>',
-    'history'      => '<svg class="nav-svg-icon" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line><path d="M12 14l2 2 4-4"></path></svg>',
-    'ticket'       => '<svg class="nav-svg-icon" viewBox="0 0 24 24"><path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v2z"></path></svg>',
-    'leave'        => '<svg class="nav-svg-icon" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line></svg>',
-    'hostel'       => '<svg class="nav-svg-icon" viewBox="0 0 24 24"><path d="M2 4v16M2 8h20v12M2 17h20M6 8v3a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2V8"></path></svg>',
-    'transport'    => '<svg class="nav-svg-icon" viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="13" rx="2"></rect><circle cx="7.5" cy="15.5" r="1.5"></circle><circle cx="16.5" cy="15.5" r="1.5"></circle><path d="M3 11h18M5 19v2M19 19v2"></path></svg>',
-    'announcements'=> '<svg class="nav-svg-icon" viewBox="0 0 24 24"><path d="M22 10.5V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-4.5l-4-3 4-3z"></path><path d="M18 8l-6 4 6 4"></path></svg>',
-    'people'       => '<svg class="nav-svg-icon" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>',
-    'college'      => '<svg class="nav-svg-icon" viewBox="0 0 24 24"><path d="M3 21h18M3 7v14M21 7v14M6 21V11M10 21V11M14 21V11M18 21V11M12 3L2 7h20l-10-4z"></path></svg>',
-    'reports'      => '<svg class="nav-svg-icon" viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>',
-    'logs'         => '<svg class="nav-svg-icon" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><line x1="10" y1="9" x2="8" y2="9"></line></svg>',
-    'money'        => '<svg class="nav-svg-icon" viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>',
-];
-?>
-<?php
-$theme = null;
-try {
-    $themeStmt = db()->query('SELECT * FROM theme_settings WHERE college_id = 1 LIMIT 1');
-    $theme = $themeStmt->fetch(\PDO::FETCH_ASSOC);
-} catch (\Exception $e) {
-    // Fail silently
-}
-$collegeName = $theme['college_name'] ?? 'Kuppam Engineering College';
-$logoPath = $theme['logo_path'] ?? '/assets/images/logo.png';
-$primaryColor = $theme['color_primary'] ?? '#0284c7';
-$secondaryColor = $theme['color_secondary'] ?? '#0369a1';
-$fontFamily = $theme['font_family'] ?? 'Inter';
-$borderRadius = $theme['border_radius'] ?? '8px';
-?>
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?= e($title ?? 'Management ERP') ?> — <?= e($collegeName ?? 'Kuppam Engineering College') ?></title>
-    <script>
-        (function() {
-            var t = localStorage.getItem('kec_theme') || 'light';
-            document.documentElement.setAttribute('data-theme', t);
-        })();
-    </script>
+    <meta name="color-scheme" content="light">
+    <title><?= e($title ?? 'Management ERP') ?> — Kuppam Engineering College</title>
     <link rel="icon" type="image/png" href="/assets/images/favicon.png">
     <link rel="shortcut icon" href="/favicon.ico">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=<?= urlencode($fontFamily) ?>:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/assets/css/app.css?v=<?= time() ?>">
-    <style>
-        :root {
-            --sidebar-bg: linear-gradient(180deg, <?= $primaryColor ?> 0%, <?= $secondaryColor ?> 100%);
-            --accent-color: <?= $primaryColor ?>;
-            --accent-hover: <?= $secondaryColor ?>;
-            --input-border-radius: <?= $borderRadius ?>;
-            --border-radius: <?= $borderRadius ?>;
-        }
-        body {
-            font-family: '<?= $fontFamily ?>', 'Inter', system-ui, -apple-system, sans-serif !important;
-        }
-    </style>
+    <!-- Lucide Vector Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
 </head>
-
 <body>
 
 <div class="app-layout">
@@ -79,8 +21,8 @@ $borderRadius = $theme['border_radius'] ?? '8px';
     <aside class="sidebar">
         <div class="sidebar-header">
             <div class="brand-logo" style="display: flex; align-items: center; gap: 0.75rem;">
-                <img src="<?= e($logoPath) ?>" alt="Logo" style="width: 36px; height: 36px; object-fit: contain;">
-                <span style="font-size: 0.875rem; font-weight: 700; color: #f8fafc; line-height: 1.2; word-break: break-word;"><?= e($collegeName) ?></span>
+                <img src="/assets/images/logo.png" alt="KEC Logo" style="width: 34px; height: 34px; object-fit: contain;">
+                <span style="font-size: 0.875rem; font-weight: 700; color: #1F2937; line-height: 1.2; word-break: break-word; letter-spacing: -0.01em; font-family: 'Plus Jakarta Sans', sans-serif;">Kuppam Engineering College</span>
             </div>
         </div>
 
@@ -88,419 +30,444 @@ $borderRadius = $theme['border_radius'] ?? '8px';
             <?php $r = auth_role(); ?>
 
             <div class="nav-section-title">MAIN</div>
-            <?php 
-                $dashUrl = match($r) {
-                    'librarian'         => '/library',
-                    'canteen_manager'   => '/canteen',
-                    'transport_manager' => '/transport',
-                    'hostel_warden'     => '/hostel',
-                    'accounts_staff'    => '/accounts',
-                    default             => '/dashboard',
-                };
-            ?>
-            <a href="<?= $dashUrl ?>" class="nav-item <?= request_uri() === $dashUrl || request_uri() === '/dashboard' ? 'active' : '' ?>">
-                <?= $svg['home'] ?> Dashboard
+            <a href="/dashboard" class="nav-item <?= request_uri() === '/dashboard' ? 'active' : '' ?>">
+                <?= icon('layout-dashboard') ?> <span>Dashboard</span>
             </a>
 
             <?php if ($r === 'student'): ?>
                 <!-- Student Portal Sidebar -->
                 <div class="nav-section-title">MY ACADEMICS</div>
-                <a href="/attendance" class="nav-item <?= request_uri() === '/attendance' ? 'active' : '' ?>"><?= $svg['attendance'] ?> My Attendance</a>
-                <a href="/results" class="nav-item <?= request_uri() === '/results' ? 'active' : '' ?>"><?= $svg['results'] ?> Semester Results</a>
-                <a href="/admit-card" class="nav-item <?= request_uri() === '/admit-card' ? 'active' : '' ?>"><?= $svg['ticket'] ?> Exam Hall Ticket</a>
-                <a href="/timetable" class="nav-item <?= request_uri() === '/timetable' ? 'active' : '' ?>"><?= $svg['timetable'] ?> Class Timetable</a>
-                <a href="/leave/apply" class="nav-item <?= str_starts_with(request_uri(), '/leave') ? 'active' : '' ?>"><?= $svg['leave'] ?> Apply Leave &amp; Outpass</a>
-                <a href="/exam-timetable" class="nav-item <?= request_uri() === '/exam-timetable' ? 'active' : '' ?>">🗓️ Exam Timetable</a>
-                <a href="/placement/portal" class="nav-item <?= request_uri() === '/placement/portal' ? 'active' : '' ?>">💼 Placement Portal</a>
+                <a href="/attendance" class="nav-item <?= request_uri() === '/attendance' ? 'active' : '' ?>"><?= icon('calendar-check') ?> <span>My Attendance</span></a>
+                <a href="/results" class="nav-item <?= request_uri() === '/results' ? 'active' : '' ?>"><?= icon('file-spreadsheet') ?> <span>Semester Results</span></a>
+                <a href="/admit-card" class="nav-item <?= request_uri() === '/admit-card' ? 'active' : '' ?>"><?= icon('ticket') ?> <span>Exam Hall Ticket</span></a>
+                <a href="/timetable" class="nav-item <?= request_uri() === '/timetable' ? 'active' : '' ?>"><?= icon('clock') ?> <span>Class Timetable</span></a>
+                <a href="/leave/apply" class="nav-item <?= request_uri() === '/leave/apply' ? 'active' : '' ?>"><?= icon('file-signature') ?> <span>Apply Leave &amp; Outpass</span></a>
 
-                <div class="nav-section-title">CANTEEN &amp; MEAL SERVICES</div>
-                <a href="/canteen/menu" class="nav-item <?= request_uri() === '/canteen/menu' ? 'active' : '' ?>"><?= $svg['canteen'] ?> Canteen Food Menu</a>
-                <a href="/canteen/orders" class="nav-item <?= request_uri() === '/canteen/orders' ? 'active' : '' ?>"><?= $svg['order'] ?> My Canteen Orders</a>
-
-                <div class="nav-section-title">LIBRARY &amp; BOOK SERVICES</div>
-                <a href="/library/catalog" class="nav-item <?= request_uri() === '/library/catalog' || request_uri() === '/library' ? 'active' : '' ?>"><?= $svg['library'] ?> Library Catalog</a>
-                <a href="/library/my-books" class="nav-item <?= request_uri() === '/library/my-books' ? 'active' : '' ?>"><?= $svg['book'] ?> My Issued Books</a>
-                <a href="/library/history" class="nav-item <?= request_uri() === '/library/history' ? 'active' : '' ?>"><?= $svg['history'] ?> Monthly Book History</a>
-
-                <div class="nav-section-title">TRANSPORT &amp; FLEET SERVICES</div>
-                <a href="/transport/routes" class="nav-item <?= str_starts_with(request_uri(), '/transport/routes') || str_starts_with(request_uri(), '/transport/pay') ? 'active' : '' ?>"><?= $svg['transport'] ?> Transport &amp; Bus Routes</a>
-                <a href="/transport/history" class="nav-item <?= str_starts_with(request_uri(), '/transport/history') || str_starts_with(request_uri(), '/transport/receipt') ? 'active' : '' ?>"><?= $svg['receipt'] ?> My Transport Payments</a>
-
-                <div class="nav-section-title">HOSTEL &amp; ACCOMMODATION</div>
-                <a href="/hostel/booking" class="nav-item <?= str_starts_with(request_uri(), '/hostel/booking') || str_starts_with(request_uri(), '/hostel/pay') ? 'active' : '' ?>"><?= $svg['hostel'] ?> Hostel Booking &amp; Room</a>
-                <a href="/hostel/history" class="nav-item <?= request_uri() === '/hostel/history' ? 'active' : '' ?>"><?= $svg['receipt'] ?> My Hostel Payments</a>
-
-                <div class="nav-section-title">FINANCE &amp; ACCOUNTS</div>
-                <a href="/fee/payments" class="nav-item <?= request_uri() === '/fee/payments' ? 'active' : '' ?>"><?= $svg['receipt'] ?> My Fee Receipts</a>
-                <a href="/fee/pay/1" class="nav-item <?= (str_starts_with(request_uri(), '/fee/pay/') || request_uri() === '/fee/pay') ? 'active' : '' ?>"><?= $svg['money'] ?> Pay Fees &amp; Dues (QR)</a>
+                <div class="nav-section-title">MY FINANCE &amp; SERVICES</div>
+                <a href="/fee/payments" class="nav-item <?= request_uri() === '/fee/payments' ? 'active' : '' ?>"><?= icon('receipt') ?> <span>My Fee Receipts</span></a>
+                <a href="/fee/pay" class="nav-item <?= (str_starts_with(request_uri(), '/fee/pay/') || request_uri() === '/fee/pay') ? 'active' : '' ?>"><?= icon('credit-card') ?> <span>Pay Fees &amp; Dues (QR)</span></a>
+                <a href="/canteen" class="nav-item <?= request_uri() === '/canteen' ? 'active' : '' ?>"><?= icon('utensils') ?> <span>Canteen Menu</span></a>
+                <a href="/library" class="nav-item <?= request_uri() === '/library' ? 'active' : '' ?>"><?= icon('book-open') ?> <span>Library Catalog</span></a>
+                <a href="/hostel" class="nav-item <?= request_uri() === '/hostel' ? 'active' : '' ?>"><?= icon('building-2') ?> <span>Hostel Details</span></a>
+                <a href="/transport" class="nav-item <?= request_uri() === '/transport' ? 'active' : '' ?>"><?= icon('bus') ?> <span>Transport Routes</span></a>
+                <a href="/placement/portal" class="nav-item <?= request_uri() === '/placement/portal' ? 'active' : '' ?>"><?= icon('briefcase') ?> <span>Placement Portal</span></a>
 
                 <div class="nav-section-title">CAMPUS COMMUNICATION</div>
-                <a href="/announcements" class="nav-item <?= request_uri() === '/announcements' ? 'active' : '' ?>"><?= $svg['announcements'] ?> College Announcements</a>
-
+                <a href="/announcements" class="nav-item <?= request_uri() === '/announcements' ? 'active' : '' ?>"><?= icon('megaphone') ?> <span>College Announcements</span></a>
 
             <?php elseif ($r === 'parent'): ?>
                 <!-- Parent Portal Sidebar -->
                 <div class="nav-section-title">MY CHILD / WARD</div>
-                <a href="/profile" class="nav-item <?= request_uri() === '/profile' ? 'active' : '' ?>"><?= $svg['people'] ?> Child Profile &amp; Bio</a>
-                <a href="/attendance" class="nav-item <?= request_uri() === '/attendance' ? 'active' : '' ?>"><?= $svg['attendance'] ?> Ward Attendance</a>
-                <a href="/results" class="nav-item <?= request_uri() === '/results' ? 'active' : '' ?>"><?= $svg['results'] ?> Semester Results</a>
-                <a href="/admit-card" class="nav-item <?= request_uri() === '/admit-card' ? 'active' : '' ?>"><?= $svg['ticket'] ?> Exam Hall Ticket</a>
-                <a href="/timetable" class="nav-item <?= request_uri() === '/timetable' ? 'active' : '' ?>"><?= $svg['timetable'] ?> Class Timetable</a>
-                <a href="/leave/apply" class="nav-item <?= request_uri() === '/leave/apply' ? 'active' : '' ?>"><?= $svg['leave'] ?> Apply Ward Leave</a>
-
-                <div class="nav-section-title">HOSTEL &amp; ACCOMMODATION</div>
-                <a href="/hostel/details" class="nav-item <?= request_uri() === '/hostel/details' ? 'active' : '' ?>"><?= $svg['hostel'] ?> Ward Hostel Details</a>
-
-                <div class="nav-section-title">TRANSPORT &amp; FLEET SERVICES</div>
-                <a href="/transport/routes" class="nav-item <?= str_starts_with(request_uri(), '/transport/routes') || str_starts_with(request_uri(), '/transport/pay') ? 'active' : '' ?>"><?= $svg['transport'] ?> Transport &amp; Bus Routes</a>
-                <a href="/transport/history" class="nav-item <?= str_starts_with(request_uri(), '/transport/history') || str_starts_with(request_uri(), '/transport/receipt') ? 'active' : '' ?>"><?= $svg['receipt'] ?> Ward Transport Payments</a>
-
+                <a href="/profile" class="nav-item <?= request_uri() === '/profile' ? 'active' : '' ?>"><?= icon('graduation-cap') ?> <span>Child Profile &amp; Bio</span></a>
+                <a href="/attendance" class="nav-item <?= request_uri() === '/attendance' ? 'active' : '' ?>"><?= icon('calendar-check') ?> <span>Ward Attendance</span></a>
+                <a href="/results" class="nav-item <?= request_uri() === '/results' ? 'active' : '' ?>"><?= icon('file-spreadsheet') ?> <span>Semester Results</span></a>
+                <a href="/admit-card" class="nav-item <?= request_uri() === '/admit-card' ? 'active' : '' ?>"><?= icon('ticket') ?> <span>Exam Hall Ticket</span></a>
+                <a href="/timetable" class="nav-item <?= request_uri() === '/timetable' ? 'active' : '' ?>"><?= icon('clock') ?> <span>Class Timetable</span></a>
+                <a href="/leave/apply" class="nav-item <?= request_uri() === '/leave/apply' ? 'active' : '' ?>"><?= icon('file-signature') ?> <span>Apply Ward Leave</span></a>
 
                 <div class="nav-section-title">FEE &amp; PAYMENTS</div>
-                <a href="/fee/payments" class="nav-item <?= request_uri() === '/fee/payments' ? 'active' : '' ?>"><?= $svg['receipt'] ?> Fee Receipts &amp; Dues</a>
-                <a href="/fee/pay/1" class="nav-item <?= (str_starts_with(request_uri(), '/fee/pay/') || request_uri() === '/fee/pay') ? 'active' : '' ?>"><?= $svg['money'] ?> Pay Fees &amp; Dues (QR)</a>
+                <a href="/fee/payments" class="nav-item <?= request_uri() === '/fee/payments' ? 'active' : '' ?>"><?= icon('receipt') ?> <span>Fee Receipts &amp; Dues</span></a>
+                <a href="/fee/pay" class="nav-item <?= (str_starts_with(request_uri(), '/fee/pay/') || request_uri() === '/fee/pay') ? 'active' : '' ?>"><?= icon('credit-card') ?> <span>Pay Fees &amp; Dues (QR)</span></a>
 
                 <div class="nav-section-title">CAMPUS COMMUNICATION</div>
-                <a href="/announcements" class="nav-item <?= request_uri() === '/announcements' ? 'active' : '' ?>"><?= $svg['announcements'] ?> College Announcements</a>
-
-
+                <a href="/announcements" class="nav-item <?= request_uri() === '/announcements' ? 'active' : '' ?>"><?= icon('megaphone') ?> <span>College Announcements</span></a>
 
             <?php elseif (in_array($r, ['faculty', 'hod'])): ?>
                 <!-- Faculty & HOD Sidebar -->
                 <div class="nav-section-title">PEOPLE DIRECTORY</div>
-                <a href="/students" class="nav-item <?= request_uri() === '/students' ? 'active' : '' ?>"><?= $svg['people'] ?> Students Directory</a>
+                <a href="/students" class="nav-item"><?= icon('users') ?> <span>Students Directory</span></a>
                 <?php if ($r === 'hod'): ?>
-                    <a href="/faculty" class="nav-item <?= request_uri() === '/faculty' ? 'active' : '' ?>"><?= $svg['people'] ?> Faculty Directory</a>
+                    <a href="/faculty" class="nav-item"><?= icon('school') ?> <span>Faculty Directory</span></a>
                 <?php endif; ?>
 
                 <div class="nav-section-title">ACADEMIC MANAGEMENT</div>
-                <a href="/attendance" class="nav-item <?= request_uri() === '/attendance' ? 'active' : '' ?>"><?= $svg['attendance'] ?> Mark Attendance</a>
-                <?php if ($r === 'hod'): ?>
-                    <a href="/timetable" class="nav-item <?= request_uri() === '/timetable' ? 'active' : '' ?>"><?= $svg['timetable'] ?> Class &amp; Staff Timetables</a>
-                <?php else: ?>
-                    <a href="/staff-timetable" class="nav-item <?= request_uri() === '/staff-timetable' ? 'active' : '' ?>"><?= $svg['timetable'] ?> My Staff Timetable</a>
-                <?php endif; ?>
-                <a href="/marks/internal" class="nav-item <?= request_uri() === '/marks/internal' ? 'active' : '' ?>"><?= $svg['results'] ?> Internal CIA Marks</a>
-                <a href="/results" class="nav-item <?= request_uri() === '/results' ? 'active' : '' ?>"><?= $svg['results'] ?> Semester Results</a>
-                <a href="/leave/review" class="nav-item <?= request_uri() === '/leave/review' ? 'active' : '' ?>"><?= $svg['leave'] ?> Review Leaves &amp; Outpasses</a>
+                <a href="/attendance" class="nav-item"><?= icon('calendar-check') ?> <span>Mark Attendance</span></a>
+                <a href="/timetable" class="nav-item"><?= icon('clock') ?> <span>Class Timetable</span></a>
+                <a href="/marks/internal" class="nav-item"><?= icon('file-edit') ?> <span>Internal CIA Marks</span></a>
+                <a href="/results" class="nav-item"><?= icon('file-spreadsheet') ?> <span>Semester Results</span></a>
+                <a href="/leave/review" class="nav-item <?= request_uri() === '/leave/review' ? 'active' : '' ?>"><?= icon('file-signature') ?> <span>Review Leaves &amp; Outpasses</span></a>
 
                 <div class="nav-section-title">COMMUNICATION</div>
-                <a href="/announcements" class="nav-item <?= request_uri() === '/announcements' ? 'active' : '' ?>"><?= $svg['announcements'] ?> Announcements</a>
+                <a href="/announcements" class="nav-item"><?= icon('megaphone') ?> <span>Announcements</span></a>
 
             <?php elseif ($r === 'accounts_staff'): ?>
                 <!-- Accounts Staff Sidebar -->
                 <div class="nav-section-title">FINANCE & ACCOUNTS</div>
-                <a href="/accounts" class="nav-item <?= request_uri() === '/accounts' ? 'active' : '' ?>"><?= $svg['money'] ?> Accounts & Payroll</a>
-                <a href="/fee/categories" class="nav-item <?= request_uri() === '/fee/categories' ? 'active' : '' ?>"><?= $svg['receipt'] ?> Fee Categories</a>
-                <a href="/fee/structures" class="nav-item <?= request_uri() === '/fee/structures' ? 'active' : '' ?>"><?= $svg['money'] ?> Fee Structures</a>
-                <a href="/fee/payments" class="nav-item <?= request_uri() === '/fee/payments' ? 'active' : '' ?>"><?= $svg['receipt'] ?> Fee Payments & Receipts</a>
+                <a href="/accounts" class="nav-item"><?= icon('wallet') ?> <span>Accounts &amp; Payroll</span></a>
+                <a href="/fee/categories" class="nav-item"><?= icon('tag') ?> <span>Fee Categories</span></a>
+                <a href="/fee/structures" class="nav-item"><?= icon('dollar-sign') ?> <span>Fee Structures</span></a>
+                <a href="/fee/payments" class="nav-item"><?= icon('receipt') ?> <span>Fee Payments &amp; Receipts</span></a>
 
                 <div class="nav-section-title">REPORTS & ALERTS</div>
-                <a href="/reports/financial" class="nav-item <?= request_uri() === '/reports/financial' ? 'active' : '' ?>"><?= $svg['reports'] ?> Financial Reports</a>
-                <a href="/announcements" class="nav-item <?= request_uri() === '/announcements' ? 'active' : '' ?>"><?= $svg['announcements'] ?> Announcements</a>
+                <a href="/reports/financial" class="nav-item"><?= icon('bar-chart-3') ?> <span>Financial Reports</span></a>
+                <a href="/announcements" class="nav-item"><?= icon('megaphone') ?> <span>Announcements</span></a>
 
             <?php elseif ($r === 'librarian'): ?>
-                <!-- Librarian Sidebar Navigation -->
+                <!-- Librarian Sidebar -->
                 <div class="nav-section-title">LIBRARY OPERATIONS</div>
-                <a href="/library/catalog" class="nav-item <?= request_uri() === '/library/catalog' ? 'active' : '' ?>"><?= $svg['library'] ?> Library Catalog</a>
-                <a href="/library/issue" class="nav-item <?= request_uri() === '/library/issue' ? 'active' : '' ?>"><?= $svg['book'] ?> Issue / Return</a>
-                <a href="/library/reservations" class="nav-item <?= request_uri() === '/library/reservations' ? 'active' : '' ?>"><?= $svg['logs'] ?> Reservations</a>
-                <a href="/announcements" class="nav-item <?= request_uri() === '/announcements' ? 'active' : '' ?>"><?= $svg['announcements'] ?> Announcements</a>
-
-                <div class="nav-section-title">LIBRARY MANAGEMENT</div>
-                <a href="/library/catalog" class="nav-item"><?= $svg['book'] ?> Books &amp; Authors</a>
-                <a href="/library/members" class="nav-item <?= request_uri() === '/library/members' ? 'active' : '' ?>"><?= $svg['people'] ?> Registered Library Members</a>
-                <a href="/library/reports/students" class="nav-item <?= request_uri() === '/library/reports/students' ? 'active' : '' ?>"><?= $svg['people'] ?> Student Book History</a>
-
-                <div class="nav-section-title">REPORTS</div>
-                <a href="/library/reports/circulation" class="nav-item <?= request_uri() === '/library/reports/circulation' ? 'active' : '' ?>"><?= $svg['reports'] ?> Circulation Reports</a>
-                <a href="/library/reports/overdue" class="nav-item <?= request_uri() === '/library/reports/overdue' ? 'active' : '' ?>"><?= $svg['logs'] ?> Overdue Reports</a>
-                <a href="/library/reports/inventory" class="nav-item <?= request_uri() === '/library/reports/inventory' ? 'active' : '' ?>"><?= $svg['reports'] ?> Inventory Reports</a>
+                <a href="/library" class="nav-item"><?= icon('book-open') ?> <span>Library Catalog</span></a>
+                <a href="/announcements" class="nav-item"><?= icon('megaphone') ?> <span>Announcements</span></a>
 
             <?php elseif ($r === 'hostel_warden'): ?>
-                <!-- Hostel Warden Sidebar Navigation -->
+                <!-- Hostel Warden Sidebar -->
                 <div class="nav-section-title">HOSTEL OPERATIONS</div>
-                <a href="/hostel/management" class="nav-item <?= request_uri() === '/hostel/management' ? 'active' : '' ?>"><?= $svg['hostel'] ?> Hostel Management</a>
-                <a href="/leave/outpasses" class="nav-item <?= request_uri() === '/leave/outpasses' ? 'active' : '' ?>"><?= $svg['leave'] ?> Gate Outpasses &amp; Check-in</a>
-                <a href="/announcements" class="nav-item <?= request_uri() === '/announcements' ? 'active' : '' ?>"><?= $svg['announcements'] ?> Announcements</a>
+                <a href="/hostel" class="nav-item"><?= icon('building-2') ?> <span>Hostel Management</span></a>
+                <a href="/leave/outpasses" class="nav-item <?= request_uri() === '/leave/outpasses' ? 'active' : '' ?>"><?= icon('door-open') ?> <span>Outpasses &amp; Check-in</span></a>
+                <a href="/announcements" class="nav-item"><?= icon('megaphone') ?> <span>Announcements</span></a>
 
             <?php elseif ($r === 'transport_manager'): ?>
-                <!-- Transport Manager Sidebar Navigation -->
-                <div class="nav-section-title">TRANSPORT OPERATIONS</div>
-                <a href="/transport/routes" class="nav-item <?= request_uri() === '/transport/routes' ? 'active' : '' ?>"><?= $svg['transport'] ?> Transport &amp; Bus Routes</a>
-                <a href="/transport/accounts" class="nav-item <?= request_uri() === '/transport/accounts' ? 'active' : '' ?>"><?= $svg['receipt'] ?> Accounts / Transport Fees</a>
-                <a href="/transport/change-requests" class="nav-item <?= request_uri() === '/transport/change-requests' ? 'active' : '' ?>"><?= $svg['logs'] ?> Route Change Requests</a>
-                <a href="/transport/announcements" class="nav-item <?= request_uri() === '/transport/announcements' ? 'active' : '' ?>"><?= $svg['announcements'] ?> Announcements</a>
-
+                <!-- Transport Manager Sidebar -->
+                <div class="nav-section-title">TRANSPORT FLEET</div>
+                <a href="/transport" class="nav-item"><?= icon('bus') ?> <span>Transport &amp; Bus Routes</span></a>
+                <a href="/announcements" class="nav-item"><?= icon('megaphone') ?> <span>Announcements</span></a>
 
             <?php elseif ($r === 'canteen_manager'): ?>
-                <!-- Canteen Manager Sidebar Navigation -->
-                <div class="nav-section-title">CANTEEN MANAGEMENT</div>
-                <a href="/canteen/menu" class="nav-item <?= str_starts_with(request_uri(), '/canteen/menu') ? 'active' : '' ?>"><?= $svg['canteen'] ?> Food Menu &amp; Items</a>
-                <a href="/canteen/orders" class="nav-item <?= str_starts_with(request_uri(), '/canteen/orders') ? 'active' : '' ?>"><?= $svg['order'] ?> Student Orders</a>
-                <a href="/canteen/inventory" class="nav-item <?= str_starts_with(request_uri(), '/canteen/inventory') ? 'active' : '' ?>"><?= $svg['logs'] ?> Stock Management</a>
-
-                <div class="nav-section-title">SALES &amp; REPORTS</div>
-                <a href="/canteen/orders" class="nav-item <?= str_starts_with(request_uri(), '/canteen/orders') ? 'active' : '' ?>"><?= $svg['reports'] ?> Sales Overview</a>
-
-                <div class="nav-section-title">COMMUNICATION</div>
-                <a href="/announcements" class="nav-item <?= request_uri() === '/announcements' ? 'active' : '' ?>"><?= $svg['announcements'] ?> Announcements</a>
-
-
-            <?php elseif ($r === 'head_of_coe'): ?>
-                <!-- Head of COE / Exam Cell Sidebar -->
-                <div class="nav-section-title">EXAMINATIONS & SCHEDULING</div>
-                <a href="/exam-timetable" class="nav-item <?= request_uri() === '/exam-timetable' ? 'active' : '' ?>">🗓️ Exam Timetable</a>
-                <a href="/admit-cards/manage" class="nav-item <?= request_uri() === '/admit-cards/manage' ? 'active' : '' ?>">🎫 Hall Tickets & Eligibility</a>
-                <a href="/marks/internal" class="nav-item <?= request_uri() === '/marks/internal' ? 'active' : '' ?>"><?= $svg['results'] ?> Internal CIA Marks</a>
-                <a href="/results" class="nav-item <?= request_uri() === '/results' ? 'active' : '' ?>"><?= $svg['results'] ?> Semester Results Engine</a>
-
-                <div class="nav-section-title">PEOPLE DIRECTORY</div>
-                <a href="/students" class="nav-item <?= request_uri() === '/students' ? 'active' : '' ?>"><?= $svg['people'] ?> Students Directory</a>
-
-                <div class="nav-section-title">REPORTS & MESSAGES</div>
-                <a href="/reports/academic" class="nav-item <?= request_uri() === '/reports/academic' ? 'active' : '' ?>"><?= $svg['reports'] ?> Academic Reports</a>
-                <a href="/announcements" class="nav-item <?= request_uri() === '/announcements' ? 'active' : '' ?>"><?= $svg['announcements'] ?> Announcements</a>
-
-            <?php elseif ($r === 'tpo'): ?>
-                <!-- Training & Placement Officer Sidebar -->
-                <div class="nav-section-title">PLACEMENTS & DRIVES</div>
-                <a href="/dashboard" class="nav-item <?= request_uri() === '/dashboard' ? 'active' : '' ?>">💼 Placement Dashboard</a>
-                <a href="/placement/drives" class="nav-item <?= request_uri() === '/placement/drives' ? 'active' : '' ?>">📝 Company Drives</a>
-                <a href="/placement/companies" class="nav-item <?= request_uri() === '/placement/companies' ? 'active' : '' ?>">🏢 Recruiter Partners</a>
-                <a href="/placement/applications" class="nav-item <?= request_uri() === '/placement/applications' ? 'active' : '' ?>">👨‍🎓 Student Applications</a>
-
-                <div class="nav-section-title">TRAINING & COURSES</div>
-                <a href="/placement/trainings" class="nav-item <?= request_uri() === '/placement/trainings' ? 'active' : '' ?>">📚 Pre-Placement Training</a>
-
-                <div class="nav-section-title">REPORTS & MESSAGES</div>
-                <a href="/placement/reports" class="nav-item <?= request_uri() === '/placement/reports' ? 'active' : '' ?>">📈 Placement Reports</a>
-                <a href="/announcements" class="nav-item <?= request_uri() === '/announcements' ? 'active' : '' ?>"><?= $svg['announcements'] ?> Announcements</a>
+                <!-- Canteen Manager Sidebar -->
+                <div class="nav-section-title">CANTEEN OPERATIONS</div>
+                <a href="/canteen" class="nav-item"><?= icon('utensils') ?> <span>Canteen &amp; Mess Menu</span></a>
+                <a href="/announcements" class="nav-item"><?= icon('megaphone') ?> <span>Announcements</span></a>
 
             <?php else: ?>
-                <!-- Default / Admin Navigation -->
-                <div class="nav-section-title">ADMINISTRATION</div>
-                <a href="/students" class="nav-item <?= request_uri() === '/students' ? 'active' : '' ?>"><?= $svg['people'] ?> Students Directory</a>
-                <a href="/faculty" class="nav-item <?= request_uri() === '/faculty' ? 'active' : '' ?>"><?= $svg['people'] ?> Faculty Directory</a>
-                <a href="/academics/departments" class="nav-item <?= str_starts_with(request_uri(), '/academics') ? 'active' : '' ?>"><?= $svg['college'] ?> Departments &amp; Courses</a>
-                <a href="/attendance" class="nav-item <?= request_uri() === '/attendance' ? 'active' : '' ?>"><?= $svg['attendance'] ?> Attendance Operations</a>
-                <a href="/fee/payments" class="nav-item <?= str_starts_with(request_uri(), '/fee') ? 'active' : '' ?>"><?= $svg['receipt'] ?> Fee &amp; Financial Ledger</a>
-                <a href="/results" class="nav-item <?= request_uri() === '/results' ? 'active' : '' ?>"><?= $svg['results'] ?> Examination &amp; Results</a>
+                <!-- Super Admin / Admin Full Navigation -->
+                <div class="nav-section-title">MASTER DATA</div>
+                <a href="/master/colleges" class="nav-item"><?= icon('landmark') ?> <span>College Info</span></a>
+                <a href="/master/academic-years" class="nav-item"><?= icon('calendar') ?> <span>Academic Years</span></a>
+                <a href="/master/departments" class="nav-item"><?= icon('building') ?> <span>Departments</span></a>
+                <a href="/master/courses" class="nav-item"><?= icon('graduation-cap') ?> <span>Courses &amp; Semesters</span></a>
+                <a href="/master/sections" class="nav-item"><?= icon('layers') ?> <span>Sections</span></a>
+                <a href="/master/subjects" class="nav-item"><?= icon('book') ?> <span>Subjects</span></a>
 
-                <div class="nav-section-title">MODULES</div>
-                <a href="/canteen" class="nav-item <?= str_starts_with(request_uri(), '/canteen') ? 'active' : '' ?>"><?= $svg['canteen'] ?> Canteen Management</a>
-                <a href="/library" class="nav-item <?= str_starts_with(request_uri(), '/library') ? 'active' : '' ?>"><?= $svg['library'] ?> Library System</a>
-                <a href="/hostel" class="nav-item <?= str_starts_with(request_uri(), '/hostel') ? 'active' : '' ?>"><?= $svg['hostel'] ?> Hostel Administration</a>
-                <a href="/transport" class="nav-item <?= str_starts_with(request_uri(), '/transport') ? 'active' : '' ?>"><?= $svg['transport'] ?> Transport &amp; Fleet</a>
+                <div class="nav-section-title">PEOPLE</div>
+                <a href="/students" class="nav-item"><?= icon('users') ?> <span>Students Directory</span></a>
+                <a href="/faculty" class="nav-item"><?= icon('school') ?> <span>Faculty Directory</span></a>
+                <a href="/staff" class="nav-item"><?= icon('briefcase') ?> <span>Non-Faculty Staff</span></a>
 
-                <div class="nav-section-title">COMMUNICATION & SYSTEM</div>
-                <a href="/announcements" class="nav-item <?= request_uri() === '/announcements' ? 'active' : '' ?>"><?= $svg['announcements'] ?> Announcements</a>
-                <a href="/audit-logs" class="nav-item <?= request_uri() === '/audit-logs' ? 'active' : '' ?>"><?= $svg['logs'] ?> System Audit Logs</a>
+                <div class="nav-section-title">ACADEMICS</div>
+                <a href="/attendance" class="nav-item"><?= icon('calendar-check') ?> <span>Attendance Roster</span></a>
+                <a href="/timetable" class="nav-item"><?= icon('clock') ?> <span>Class Timetable</span></a>
+                <a href="/marks/internal" class="nav-item"><?= icon('file-edit') ?> <span>Internal CIA Marks</span></a>
+                <a href="/results" class="nav-item"><?= icon('file-spreadsheet') ?> <span>Semester Results</span></a>
+                <a href="/admit-cards/manage" class="nav-item"><?= icon('ticket') ?> <span>Exam Hall Tickets</span></a>
+                <a href="/leave/review" class="nav-item <?= request_uri() === '/leave/review' ? 'active' : '' ?>"><?= icon('file-signature') ?> <span>Leave &amp; Outpass Approvals</span></a>
 
-                <div class="nav-section-title">TRAINING & PLACEMENT</div>
-                <a href="/placement/drives" class="nav-item <?= str_starts_with(request_uri(), '/placement') ? 'active' : '' ?>">💼 Recruitment Drives</a>
+                <div class="nav-section-title">FINANCE &amp; FEES</div>
+                <a href="/fee/categories" class="nav-item"><?= icon('tag') ?> <span>Fee Categories</span></a>
+                <a href="/fee/structures" class="nav-item"><?= icon('dollar-sign') ?> <span>Fee Structures</span></a>
+                <a href="/fee/payments" class="nav-item"><?= icon('receipt') ?> <span>Fee Payments &amp; Receipts</span></a>
 
-                <div class="nav-section-title">SYSTEM CONFIG</div>
-                <a href="/settings/theme" class="nav-item <?= request_uri() === '/settings/theme' ? 'active' : '' ?>">🎨 Theme &amp; Branding</a>
-                <a href="/settings/roles" class="nav-item <?= request_uri() === '/settings/roles' ? 'active' : '' ?>">🔑 Role Permissions</a>
+                <div class="nav-section-title">FACILITIES &amp; OPERATIONS</div>
+                <a href="/accounts" class="nav-item"><?= icon('wallet') ?> <span>Accounts &amp; Payroll</span></a>
+                <a href="/library" class="nav-item"><?= icon('book-open') ?> <span>Library Catalog</span></a>
+                <a href="/hostel" class="nav-item"><?= icon('building-2') ?> <span>Hostel Management</span></a>
+                <a href="/transport" class="nav-item"><?= icon('bus') ?> <span>Transport &amp; Routes</span></a>
+                <a href="/canteen" class="nav-item"><?= icon('utensils') ?> <span>Canteen &amp; Mess Menu</span></a>
+
+                <div class="nav-section-title">COMMUNICATION &amp; REPORTS</div>
+                <a href="/reports/academic" class="nav-item"><?= icon('bar-chart-3') ?> <span>Academic Reports</span></a>
+                <a href="/reports/financial" class="nav-item"><?= icon('trending-up') ?> <span>Financial Reports</span></a>
+                <a href="/reports/attendance" class="nav-item"><?= icon('calendar-range') ?> <span>Attendance Audit</span></a>
+                <a href="/announcements" class="nav-item"><?= icon('megaphone') ?> <span>Announcements</span></a>
+                <a href="/audit-logs" class="nav-item"><?= icon('history') ?> <span>System Audit Logs</span></a>
             <?php endif; ?>
         </nav>
 
-        <div style="padding: 1rem 0.75rem; border-top: 1px solid rgba(255,255,255,0.1); margin-top: auto;">
-            <div style="display: flex; align-items: center; justify-content: space-between; font-size: 0.75rem; color: rgba(255,255,255,0.7);">
-                <div style="display: flex; align-items: center; gap: 0.5rem;">
-                    <div style="width: 8px; height: 8px; border-radius: 50%; background: #10b981;"></div>
-                    <span>System Active</span>
-                </div>
-                <span>v2.4 Pro</span>
-            </div>
+        <!-- Heritage Botanical & Architecture Non-Interactive Line-Art (Background Layer) -->
+        <div class="sidebar-botanical-bg" aria-hidden="true">
+            <svg viewBox="0 0 160 160" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg">
+                <!-- Classical University Arch & Pillars -->
+                <path d="M 15 155 L 15 80 Q 40 45 65 80 L 65 155" opacity="0.6"/>
+                <path d="M 25 155 L 25 85 Q 40 60 55 85 L 55 155" opacity="0.4"/>
+                <line x1="5" y1="155" x2="155" y2="155" opacity="0.5"/>
+                <!-- Delicate Botanical Stems & Leaves -->
+                <path d="M 50 150 Q 80 110 110 70 Q 130 40 145 20" opacity="0.8"/>
+                <path d="M 80 110 Q 65 95 60 85 Q 75 88 83 105" opacity="0.7"/>
+                <path d="M 98 85 Q 115 78 125 65 Q 118 85 102 83" opacity="0.7"/>
+                <path d="M 120 55 Q 105 45 100 35 Q 115 38 123 52" opacity="0.7"/>
+                <path d="M 135 32 Q 150 25 155 15 Q 145 30 137 30" opacity="0.7"/>
+                <!-- Small Heritage Laurel Accent -->
+                <path d="M 90 145 Q 120 135 140 115" opacity="0.5"/>
+                <path d="M 115 137 Q 128 128 135 118" opacity="0.4"/>
+            </svg>
         </div>
     </aside>
 
-    <!-- Main Content Area -->
+    <!-- Main Wrapper -->
     <div class="main-wrapper">
-        <!-- Top Navigation Header -->
         <header class="top-header">
-            <div style="display: flex; align-items: center; gap: 1rem; flex: 1; min-width: 0;">
-                <button class="hamburger-btn" id="sidebarToggle" aria-label="Toggle Navigation Sidebar">
-                    <span style="display: block; width: 18px; height: 2px; background: var(--text-primary);"></span>
-                    <span style="display: block; width: 18px; height: 2px; background: var(--text-primary);"></span>
-                    <span style="display: block; width: 18px; height: 2px; background: var(--text-primary);"></span>
-                </button>
-                <div class="header-breadcrumb" style="font-weight: 700; font-size: 1.05rem; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                    <?= e($title ?? 'Management ERP') ?>
-                </div>
-            </div>
+            <!-- Hamburger (mobile only) -->
+            <button class="hamburger-btn" id="hamburgerBtn" aria-label="Toggle navigation">
+                <span></span><span></span><span></span>
+            </button>
 
-            <div style="display: flex; align-items: center; gap: 1rem; flex-shrink: 0;">
-                <!-- Notification Bell -->
-                <a href="/announcements" style="position: relative; text-decoration: none; font-size: 1.2rem; cursor: pointer;" title="View Campus Circulars">
-                    🔔
-                    <span style="position: absolute; top: -4px; right: -6px; background: var(--danger); color: #fff; font-size: 0.65rem; font-weight: 800; border-radius: 50%; width: 15px; height: 15px; display: flex; align-items: center; justify-content: center;">1</span>
-                </a>
+            <!-- Page Title -->
+            <div class="header-title"><?= e($title ?? 'Dashboard') ?></div>
 
-                <!-- Theme Toggle Button -->
-                <button type="button" id="themeToggle" class="btn btn-sm btn-secondary" style="font-size: 0.75rem; padding: 0.35rem 0.75rem; border-radius: 20px; display: flex; align-items: center; gap: 0.35rem; white-space: nowrap;">
-                    <span id="themeIcon">☀️</span> <span id="themeLabel">Light</span>
-                </button>
-
-                <!-- User Profile Dropdown Badge -->
-                <div style="position: relative;">
-                    <button type="button" id="userProfileBtn" style="display: flex; align-items: center; gap: 0.6rem; background: var(--bg-main); padding: 0.35rem 0.85rem; border-radius: 30px; border: 1px solid var(--border-color); white-space: nowrap; cursor: pointer; color: inherit; box-shadow: 0 1px 3px rgba(0,0,0,0.04); font-family: inherit;">
-                        <?php if ($avatar = auth_avatar()): ?>
-                            <img src="<?= e($avatar) ?>" alt="<?= e(auth_name()) ?>" style="width: 28px; height: 28px; border-radius: 50%; object-fit: cover; flex-shrink: 0; border: 1.5px solid #2563eb;">
-                        <?php else: ?>
-                            <div style="width: 28px; height: 28px; border-radius: 50%; background: #2563eb; color: #fff; font-size: 0.75rem; font-weight: 800; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
-                                <?= strtoupper(substr(auth_name(), 0, 1)) ?>
-                            </div>
-                        <?php endif; ?>
-                        <div style="display: flex; flex-direction: column; text-align: left;">
-                            <span style="font-size: 0.8125rem; font-weight: 700; color: var(--text-primary); line-height: 1.15;"><?= e(auth_name()) ?></span>
-                            <span style="font-size: 0.68rem; color: var(--text-secondary); font-weight: 600; text-transform: capitalize;"><?= e(str_replace('_', ' ', auth_role() ?? 'User')) ?></span>
-                        </div>
-                        <span style="font-size: 0.65rem; color: var(--text-secondary); margin-left: 0.2rem;">▼</span>
+            <!-- Right: Notifications + Theme + Profile -->
+            <div class="user-profile" style="display: flex; align-items: center; gap: 0.75rem;">
+                <!-- Real-Time Notification Bell Dropdown -->
+                <div class="notif-dropdown-wrapper" style="position: relative;">
+                    <button id="notifBellBtn" onclick="toggleNotifDropdown()" title="Notifications" style="position: relative; background: var(--bg-main); border: 1px solid var(--border-color); color: var(--text-primary); width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s ease; box-shadow: var(--shadow-xs);">
+                        <?= icon('bell', 'icon-sm') ?>
+                        <span id="notifBadge" style="display: none; position: absolute; top: -4px; right: -4px; background: var(--danger); color: #fff; font-size: 0.65rem; font-weight: 800; border-radius: 10px; padding: 0.1rem 0.35rem; min-width: 16px; text-align: center; border: 2px solid var(--bg-surface); animation: pulse 2s infinite;">0</span>
                     </button>
 
-                    <!-- Dropdown Menu -->
-                    <div id="userProfileDropdown" style="display: none; position: absolute; right: 0; top: 118%; width: 230px; background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.15); z-index: 1000; overflow: hidden; padding: 0.5rem 0;">
-                        <!-- Header inside dropdown -->
-                        <div style="padding: 0.75rem 1rem; border-bottom: 1px solid var(--border-color); background: var(--bg-main);">
-                            <div style="font-size: 0.875rem; font-weight: 800; color: var(--text-primary);"><?= e(auth_name()) ?></div>
-                            <div style="font-size: 0.75rem; color: var(--accent-color); font-weight: 700; text-transform: capitalize; margin-top: 0.1rem;"><?= e(str_replace('_', ' ', auth_role() ?? 'User')) ?></div>
+                    <!-- Notifications Dropdown Panel -->
+                    <div id="notifDropdownMenu" style="display: none; position: absolute; right: 0; top: 125%; width: 340px; background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: 12px; box-shadow: var(--shadow-xl); z-index: 10000; overflow: hidden; text-align: left; backdrop-filter: blur(16px);">
+                        <div style="display: flex; align-items: center; justify-content: space-between; padding: 0.75rem 1rem; border-bottom: 1px solid var(--border-color); background: var(--bg-main);">
+                            <div style="font-size: 0.875rem; font-weight: 700; color: var(--text-primary); display: flex; align-items: center; gap: 0.45rem;">
+                                <?= icon('bell', 'icon-xs') ?> Notifications <span id="notifCountPill" class="badge badge-info" style="font-size: 0.6875rem; display: none;">0 new</span>
+                            </div>
+                            <button onclick="markAllNotificationsRead()" style="background: none; border: none; font-size: 0.75rem; color: var(--accent-color); font-weight: 600; cursor: pointer; padding: 0;">Mark all read</button>
                         </div>
 
-                        <div style="padding: 0.35rem 0;">
-                            <a href="/profile" style="display: flex; align-items: center; gap: 0.65rem; padding: 0.6rem 1rem; color: var(--text-primary); text-decoration: none; font-size: 0.8125rem; font-weight: 600;" onmouseover="this.style.background='var(--bg-main)'" onmouseout="this.style.background='transparent'">
-                                <span style="color: #6b21a8; font-size: 1rem;">👤</span> My Profile &amp; Documents
-                            </a>
-                            <a href="/change-password" style="display: flex; align-items: center; gap: 0.65rem; padding: 0.6rem 1rem; color: var(--text-primary); text-decoration: none; font-size: 0.8125rem; font-weight: 600;" onmouseover="this.style.background='var(--bg-main)'" onmouseout="this.style.background='transparent'">
-                                <span style="color: #d97706; font-size: 1rem;">🔒</span> Security &amp; Password
-                            </a>
+                        <!-- Notification List Container -->
+                        <div id="notifListContainer" style="max-height: 320px; overflow-y: auto; padding: 0.25rem 0;">
+                            <div style="padding: 1.5rem; text-align: center; color: var(--text-secondary); font-size: 0.8125rem;">
+                                Loading alerts...
+                            </div>
                         </div>
 
-                        <div style="border-top: 1px solid var(--border-color); padding-top: 0.35rem; margin-top: 0.25rem;">
-                            <a href="/logout" style="display: flex; align-items: center; gap: 0.65rem; padding: 0.65rem 1rem; color: #ef4444; text-decoration: none; font-size: 0.8125rem; font-weight: 700;" onmouseover="this.style.background='rgba(239, 68, 68, 0.08)'" onmouseout="this.style.background='transparent'">
-                                <span style="font-size: 1rem;">🚪</span> Logout
-                            </a>
+                        <div style="padding: 0.625rem 1rem; text-align: center; border-top: 1px solid var(--border-color); background: var(--bg-main);">
+                            <a href="/announcements" style="font-size: 0.75rem; color: var(--accent-color); font-weight: 600; text-decoration: none; display: inline-flex; align-items: center; gap: 0.35rem;">View All Campus Circulars <?= icon('arrow-right', 'icon-xs') ?></a>
                         </div>
                     </div>
                 </div>
 
+                <!-- Profile Dropdown -->
+                <div class="profile-dropdown-wrapper">
+                    <button id="profileDropdownBtn" onclick="toggleProfileDropdown()" style="display: flex; align-items: center; gap: 0.5rem; background: var(--bg-surface); border: 1px solid var(--border-color); padding: 0.25rem 0.625rem 0.25rem 0.35rem; border-radius: 20px; cursor: pointer; transition: all 0.2s ease; box-shadow: var(--shadow-xs);">
+                        <!-- Avatar -->
+                        <div style="width: 28px; height: 28px; border-radius: 50%; background: var(--bg-peach); border: 1px solid var(--orange-border); color: var(--orange-accent); display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0; box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8);">
+                            <?php if (!empty($_SESSION['photo_path'])): ?>
+                                <img src="<?= e($_SESSION['photo_path']) ?>" alt="" style="width:100%;height:100%;object-fit:cover;">
+                            <?php else: ?>
+                                <?= icon('user-round', 'icon-sm', ['style' => 'width: 15px; height: 15px; stroke-width: 1.85px;']) ?>
+                            <?php endif; ?>
+                        </div>
+                        <!-- Name/role hidden on small screens via CSS -->
+                        <div class="profile-name-text" style="text-align:left;line-height:1.2;">
+                            <div style="font-size:0.8125rem;font-weight:700;color:var(--text-primary);"><?= e($_SESSION['username'] ?? 'User') ?></div>
+                            <div class="profile-role-text" style="font-size:0.6875rem;color:var(--text-secondary);"><?= e($_SESSION['role_name'] ?? 'Role') ?></div>
+                        </div>
+                        <span class="profile-arrow" style="font-size:0.75rem;color:var(--text-secondary);"><?= icon('chevron-down', 'icon-xs') ?></span>
+                    </button>
 
+                    <!-- Dropdown Menu -->
+                    <div id="profileDropdownMenu" style="display:none; position: absolute; right: 0; top: 115%; width: 230px; background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: 12px; box-shadow: var(--shadow-xl); z-index: 9999; padding: 0.5rem 0; text-align: left; backdrop-filter: blur(16px);">
+                        <div style="padding:0.75rem 1rem;border-bottom:1px solid var(--border-color);border-radius:12px 12px 0 0;background:var(--bg-main);">
+                            <div style="font-size:0.875rem;font-weight:700;color:var(--text-primary);"><?= e($_SESSION['username'] ?? 'User') ?></div>
+                            <div style="font-size:0.75rem;color:var(--accent-color);font-weight:600;"><?= e($_SESSION['role_name'] ?? 'Role') ?></div>
+                        </div>
+                        <a href="/profile" style="display:flex;align-items:center;gap:0.625rem;padding:0.75rem 1rem;color:var(--text-primary);font-size:0.8125rem;font-weight:600;text-decoration:none;transition:background 0.15s ease;">
+                            <?= icon('user', 'icon-xs') ?> My Profile &amp; Documents
+                        </a>
+                        <a href="/change-password" style="display:flex;align-items:center;gap:0.625rem;padding:0.75rem 1rem;color:var(--text-primary);font-size:0.8125rem;font-weight:600;text-decoration:none;transition:background 0.15s ease;">
+                            <?= icon('lock', 'icon-xs') ?> Security &amp; Password
+                        </a>
+                        <div style="border-top:1px solid var(--border-color);margin:0.25rem 0;"></div>
+                        <a href="/logout" style="display:flex;align-items:center;gap:0.625rem;padding:0.75rem 1rem;color:var(--danger);font-size:0.8125rem;font-weight:700;text-decoration:none;transition:background 0.15s ease;">
+                            <?= icon('log-out', 'icon-xs') ?> Logout
+                        </a>
+                    </div>
+                </div>
             </div>
         </header>
 
-
-        <!-- Page Dynamic Body View -->
-        <main class="content-body" style="padding: 1.5rem; flex: 1;">
-            <?php if ($flashSuccess = flash_get('success')): ?>
-                <div class="alert alert-success" style="margin-bottom: 1rem;"><?= e($flashSuccess) ?></div>
-            <?php endif; ?>
-            <?php if ($flashError = flash_get('error')): ?>
-                <div class="alert alert-danger" style="margin-bottom: 1rem;"><?= e($flashError) ?></div>
-            <?php endif; ?>
-
-            <?= $content ?? '' ?>
+        <main class="content-area">
+            <?= $content ?>
         </main>
-
-        <footer style="padding: 1rem 1.5rem; border-top: 1px solid var(--border-color); background: var(--bg-surface); font-size: 0.75rem; color: var(--text-secondary); text-align: center;">
-            &copy; <?= date('Y') ?> Kuppam Engineering College — ERP &amp; Campus Governance Management System
-        </footer>
     </div>
 </div>
 
-<script>
-    function applyTheme(theme) {
-        document.documentElement.setAttribute('data-theme', theme);
-        localStorage.setItem('kec_theme', theme);
-        var themeIcon = document.getElementById('themeIcon');
-        var themeLabel = document.getElementById('themeLabel');
-        if (themeIcon) themeIcon.textContent = (theme === 'dark') ? '🌙' : '☀️';
-        if (themeLabel) themeLabel.textContent = (theme === 'dark') ? 'Dark' : 'Light';
-    }
+    <script>
+        /* ─── Lucide Icons Initialization & Refresh Helper ─── */
+        window.refreshIcons = function() {
+            if (typeof lucide !== 'undefined') {
+                lucide.createIcons();
+            }
+        };
 
-    document.addEventListener('DOMContentLoaded', function() {
-        var savedTheme = localStorage.getItem('kec_theme') || 'light';
-        applyTheme(savedTheme);
+        document.addEventListener('DOMContentLoaded', function() {
+            try { localStorage.removeItem('theme'); } catch(e) {}
+            refreshIcons();
+        });
 
-        var themeBtn = document.getElementById('themeToggle');
-        if (themeBtn) {
-            themeBtn.addEventListener('click', function() {
-                var currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
-                var newTheme = (currentTheme === 'dark') ? 'light' : 'dark';
-                applyTheme(newTheme);
-            });
+        /* ─── Mobile Sidebar ─── */
+        var _sidebar  = document.querySelector('.sidebar');
+        var _overlay  = document.getElementById('sidebarOverlay');
+        var _hambBtn  = document.getElementById('hamburgerBtn');
+
+        function toggleSidebar() {
+            _sidebar.classList.contains('open') ? closeSidebar() : openSidebar();
         }
 
-        var sidebarToggle = document.getElementById('sidebarToggle');
-        var sidebarOverlay = document.getElementById('sidebarOverlay');
-        var sidebar = document.querySelector('.sidebar');
-
-        if (sidebarToggle && sidebar && sidebarOverlay) {
-            sidebarToggle.addEventListener('click', function() {
-                sidebar.classList.toggle('active');
-                sidebarOverlay.classList.toggle('active');
-            });
-            sidebarOverlay.addEventListener('click', function() {
-                sidebar.classList.remove('active');
-                sidebarOverlay.classList.remove('active');
-            });
+        function openSidebar() {
+            _sidebar.classList.add('open');
+            _overlay.classList.add('visible');
+            _hambBtn.classList.add('open');
+            document.body.style.overflow = 'hidden';
         }
 
-        var userProfileBtn = document.getElementById('userProfileBtn');
-        var userProfileDropdown = document.getElementById('userProfileDropdown');
+        function closeSidebar() {
+            _sidebar.classList.remove('open');
+            _overlay.classList.remove('visible');
+            _hambBtn.classList.remove('open');
+            document.body.style.overflow = '';
+        }
 
-        if (userProfileBtn && userProfileDropdown) {
-            userProfileBtn.addEventListener('click', function(e) {
-                e.stopPropagation();
-                var isVis = (userProfileDropdown.style.display === 'block');
-                userProfileDropdown.style.display = isVis ? 'none' : 'block';
+        _hambBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            toggleSidebar();
+        });
+
+        _overlay.addEventListener('click', closeSidebar);
+
+        document.querySelectorAll('.nav-item').forEach(function(link) {
+            link.addEventListener('click', function() {
+                if (window.innerWidth <= 768) closeSidebar();
             });
-            document.addEventListener('click', function(e) {
-                if (!userProfileDropdown.contains(e.target) && !userProfileBtn.contains(e.target)) {
-                    userProfileDropdown.style.display = 'none';
+        });
+
+        window.addEventListener('resize', function() {
+            if (window.innerWidth > 768) closeSidebar();
+        });
+
+        /* ─── Profile Dropdown ─── */
+        function toggleProfileDropdown() {
+            const menu = document.getElementById('profileDropdownMenu');
+            if (menu) {
+                menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+            }
+        }
+
+        /* ─── Notification Bell & Dropdown ─── */
+        function toggleNotifDropdown() {
+            const menu = document.getElementById('notifDropdownMenu');
+            if (menu) {
+                const isOpen = menu.style.display === 'block';
+                menu.style.display = isOpen ? 'none' : 'block';
+                if (!isOpen) {
+                    loadNotifications();
                 }
-            });
+            }
         }
 
-        // Sidebar Navigation Scroll Memory & Active Item Auto-Scroll
-        var sidebarNav = document.querySelector('.sidebar-nav');
-        if (sidebarNav) {
-            var activeItem = sidebarNav.querySelector('.nav-item.active');
-            var savedScroll = sessionStorage.getItem('kec_sidebar_scroll');
+        function loadNotifications() {
+            fetch('/api/notifications/unread')
+                .then(r => r.json())
+                .then(data => {
+                    const badge = document.getElementById('notifBadge');
+                    const pill = document.getElementById('notifCountPill');
+                    const list = document.getElementById('notifListContainer');
+                    const count = data.count || 0;
 
-            if (savedScroll !== null) {
-                sidebarNav.scrollTop = parseInt(savedScroll, 10);
-            } else if (activeItem) {
-                activeItem.scrollIntoView({ block: 'center', behavior: 'instant' });
-            }
-
-            // Always ensure the active item is visible in viewport
-            if (activeItem) {
-                setTimeout(function() {
-                    var navRect = sidebarNav.getBoundingClientRect();
-                    var itemRect = activeItem.getBoundingClientRect();
-                    if (itemRect.top < navRect.top || itemRect.bottom > navRect.bottom) {
-                        activeItem.scrollIntoView({ block: 'center', behavior: 'instant' });
+                    if (badge) {
+                        if (count > 0) {
+                            badge.innerText = count > 99 ? '99+' : count;
+                            badge.style.display = 'block';
+                        } else {
+                            badge.style.display = 'none';
+                        }
                     }
-                }, 50);
+
+                    if (pill) {
+                        if (count > 0) {
+                            pill.innerText = count + ' new';
+                            pill.style.display = 'inline-block';
+                        } else {
+                            pill.style.display = 'none';
+                        }
+                    }
+
+                    if (list) {
+                        if (!data.items || data.items.length === 0) {
+                            list.innerHTML = `
+                                <div style="padding: 2rem 1rem; text-align: center; color: var(--text-secondary); font-size: 0.8125rem;">
+                                    <div style="font-size: 1.75rem; margin-bottom: 0.35rem; color: var(--accent-color);"><i data-lucide="sparkles"></i></div>
+                                    <div>All caught up! No unread notifications.</div>
+                                </div>
+                            `;
+                            refreshIcons();
+                            return;
+                        }
+
+                        let html = '';
+                        data.items.forEach(item => {
+                            const iconName = item.type === 'alert' ? 'alert-octagon' : (item.type === 'warning' ? 'alert-triangle' : (item.type === 'success' ? 'check-circle-2' : 'megaphone'));
+                            const link = item.link || '/announcements';
+                            html += `
+                                <div onclick="markNotificationRead(${item.id}, '${link}')" style="padding: 0.75rem 1rem; border-bottom: 1px solid var(--border-color); cursor: pointer; transition: background 0.15s ease; display: flex; gap: 0.75rem; align-items: flex-start; text-decoration: none; color: inherit;" onmouseover="this.style.background='var(--bg-main)'" onmouseout="this.style.background='transparent'">
+                                    <span style="font-size: 1.2rem; flex-shrink: 0; line-height: 1; color: var(--accent-color);"><i data-lucide="${iconName}"></i></span>
+                                    <div style="flex: 1; min-width: 0;">
+                                        <div style="display: flex; align-items: center; justify-content: space-between; gap: 0.5rem;">
+                                            <div style="font-size: 0.8125rem; font-weight: 700; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${escapeHtml(item.title)}</div>
+                                            <span style="font-size: 0.65rem; color: var(--text-secondary); white-space: nowrap;">${timeAgo(item.created_at)}</span>
+                                        </div>
+                                        <div style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.2rem; line-height: 1.35; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
+                                            ${escapeHtml(item.message)}
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+                        });
+                        list.innerHTML = html;
+                        refreshIcons();
+                    }
+                })
+                .catch(() => {});
+        }
+
+        function markNotificationRead(id, redirectUrl) {
+            fetch('/notifications/mark-read/' + id, { method: 'POST' })
+                .then(() => {
+                    loadNotifications();
+                    if (redirectUrl && redirectUrl !== '#') {
+                        window.location.href = redirectUrl;
+                    }
+                })
+                .catch(() => {
+                    if (redirectUrl && redirectUrl !== '#') window.location.href = redirectUrl;
+                });
+        }
+
+        function markAllNotificationsRead() {
+            fetch('/notifications/mark-all-read', { method: 'POST' })
+                .then(() => {
+                    loadNotifications();
+                });
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.innerText = text;
+            return div.innerHTML;
+        }
+
+        function timeAgo(dateStr) {
+            if (!dateStr) return '';
+            const d = new Date(dateStr);
+            const now = new Date();
+            const diff = Math.floor((now - d) / 1000);
+            if (diff < 60) return 'Just now';
+            if (diff < 3600) return Math.floor(diff / 60) + 'm ago';
+            if (diff < 86400) return Math.floor(diff / 3600) + 'h ago';
+            return Math.floor(diff / 86400) + 'd ago';
+        }
+
+        document.addEventListener('click', function(e) {
+            const pWrapper = document.querySelector('.profile-dropdown-wrapper');
+            if (pWrapper && !pWrapper.contains(e.target)) {
+                const pMenu = document.getElementById('profileDropdownMenu');
+                if (pMenu) pMenu.style.display = 'none';
             }
 
-            sidebarNav.addEventListener('scroll', function() {
-                sessionStorage.setItem('kec_sidebar_scroll', sidebarNav.scrollTop);
-            }, { passive: true });
-
-            var navItems = sidebarNav.querySelectorAll('.nav-item');
-            navItems.forEach(function(item) {
-                item.addEventListener('click', function() {
-                    sessionStorage.setItem('kec_sidebar_scroll', sidebarNav.scrollTop);
-                });
-            });
-        }
-    });
-</script>
-
-
-
+            const nWrapper = document.querySelector('.notif-dropdown-wrapper');
+            if (nWrapper && !nWrapper.contains(e.target)) {
+                const nMenu = document.getElementById('notifDropdownMenu');
+                if (nMenu) nMenu.style.display = 'none';
+            }
+        });
+    </script>
 </body>
 </html>

@@ -9,8 +9,8 @@
 <div class="page-split">
     <!-- Create Subject Panel -->
     <div class="card">
-        <h2 style="font-size: 1.125rem; font-weight: 700; color: var(--text-primary); margin-top: 0; margin-bottom: 1.25rem; display: flex; align-items: center; gap: 0.5rem;">
-            <span>➕</span> Add Subject
+        <h2 style="font-size: 1.125rem; font-weight: 800; color: var(--text-primary); margin-top: 0; margin-bottom: 1.25rem; display: flex; align-items: center; gap: 0.5rem;">
+            <?= icon('plus', 'icon-sm') ?> Add Subject
         </h2>
 
         <form method="POST" action="/master/subjects">
@@ -78,17 +78,17 @@
                 </div>
             </div>
 
-            <button type="submit" class="btn-primary" style="width: 100%;">Create Subject</button>
+            <button type="submit" class="btn-primary" style="width: 100%;"><?= icon('plus', 'icon-sm') ?> Create Subject</button>
         </form>
     </div>
 
     <!-- Subjects Directory Panel -->
     <div class="card">
-        <h2 style="font-size: 1.125rem; font-weight: 700; color: var(--text-primary); margin-top: 0; margin-bottom: 1.25rem; display: flex; align-items: center; gap: 0.5rem;">
-            <span>📚</span> Academic Curriculum & Subjects Directory
+        <h2 style="font-size: 1.125rem; font-weight: 800; color: var(--text-primary); margin-top: 0; margin-bottom: 1.25rem; display: flex; align-items: center; gap: 0.5rem;">
+            <?= icon('book-open', 'icon-sm') ?> Academic Curriculum &amp; Subjects Directory
         </h2>
 
-        <div style="overflow-x: auto;">
+        <div class="table-responsive">
             <table class="table">
                 <thead>
                     <tr>

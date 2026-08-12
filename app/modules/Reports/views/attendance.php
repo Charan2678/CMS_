@@ -1,11 +1,18 @@
-<div class="panel">
-    <div class="panel-header">
-        <h2 class="panel-title">Attendance Shortage & Audit Report</h2>
-        <span class="badge badge-warning">Shortage Threshold: &lt; 75%</span>
+<div class="card" style="margin-bottom: 2rem;">
+    <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem;">
+        <div>
+            <h2 style="font-size: 1.25rem; font-weight: 800; color: var(--text-primary); margin: 0; display: flex; align-items: center; gap: 0.5rem; letter-spacing: -0.015em;">
+                <?= icon('calendar-check', 'icon-md') ?> Attendance Shortage &amp; Audit Report
+            </h2>
+            <div style="font-size: 0.8125rem; color: var(--text-secondary); margin-top: 0.25rem;">
+                Audit student presence and identify students below mandatory attendance criteria
+            </div>
+        </div>
+        <span class="badge badge-warning"><?= icon('alert-triangle', 'icon-xs') ?> Shortage Threshold: &lt; 75%</span>
     </div>
 
     <!-- Section Filter -->
-    <form method="GET" action="/reports/attendance" style="display: grid; grid-template-columns: 2fr 1fr; gap: 1rem; align-items: end; margin-bottom: 1.5rem; max-width: 540px;">
+    <form method="GET" action="/reports/attendance" class="filter-bar" style="max-width: 540px;">
         <div>
             <label class="form-label">Select Section to Audit *</label>
             <select name="section_id" class="form-control" required>
@@ -19,44 +26,52 @@
         </div>
 
         <div>
-            <button type="submit" class="btn-primary" style="width: 100%; margin-top: 0;">Run Shortage Audit</button>
+            <button type="submit" class="btn-primary" style="width: 100%; margin-top: 0; display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem;">
+                <?= icon('filter', 'icon-xs') ?> Run Shortage Audit
+            </button>
         </div>
     </form>
 </div>
 
 <?php if ($sectionId > 0): ?>
-    <div class="panel">
-        <div class="panel-header">
-            <h3 class="panel-title">Students Deficient in Attendance (&lt; 75%)</h3>
+    <div class="card">
+        <div style="margin-bottom: 1.25rem;">
+            <h3 style="font-size: 1.125rem; font-weight: 800; color: var(--text-primary); margin: 0; display: flex; align-items: center; gap: 0.4rem;">
+                <?= icon('alert-circle', 'icon-sm') ?> Students Deficient in Attendance (&lt; 75%)
+            </h3>
         </div>
 
         <?php if (empty($shortageList)): ?>
-            <p style="color: #86efac; font-size: 0.875rem; font-weight: 600;">✅ Excellent! No students in this section currently fall below the 75% attendance threshold.</p>
+            <p style="color: var(--success); font-size: 0.875rem; font-weight: 600; display: flex; align-items: center; gap: 0.4rem; padding: 1rem 0;">
+                <?= icon('check-circle-2', 'icon-sm') ?> Excellent! No students in this section currently fall below the 75% attendance threshold.
+            </p>
         <?php else: ?>
-            <table style="width: 100%; border-collapse: collapse; font-size: 0.875rem;">
-                <thead>
-                    <tr style="border-bottom: 1px solid var(--border-color); text-align: left;">
-                        <th style="padding: 0.75rem;">Roll No</th>
-                        <th style="padding: 0.75rem;">Student Name</th>
-                        <th style="padding: 0.75rem;">Attended / Total Classes</th>
-                        <th style="padding: 0.75rem;">Attendance Percentage</th>
-                        <th style="padding: 0.75rem;">Action Required</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php foreach ($shortageList as $s): ?>
-                        <tr style="border-bottom: 1px solid var(--border-color);">
-                            <td style="padding: 0.75rem; font-weight: 700; color: #a5b4fc;"><?= e($s['roll_number']) ?></td>
-                            <td style="padding: 0.75rem; font-weight: 600;"><?= e($s['first_name'] . ' ' . $s['last_name']) ?></td>
-                            <td style="padding: 0.75rem; color: var(--text-secondary);"><?= e($s['present_classes']) ?> / <?= e($s['total_classes']) ?> Classes</td>
-                            <td style="padding: 0.75rem; font-weight: 700; color: #fca5a5;"><?= e($s['attendance_pct']) ?>%</td>
-                            <td style="padding: 0.75rem;">
-                                <span class="badge badge-danger">Condonation Warning Issued</span>
-                            </td>
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Roll No</th>
+                            <th>Student Name</th>
+                            <th>Attended / Total Classes</th>
+                            <th>Attendance Percentage</th>
+                            <th>Action Required</th>
                         </tr>
-                    <?php endforeach; ?>
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($shortageList as $s): ?>
+                            <tr>
+                                <td style="font-weight: 800; color: var(--accent-color);"><?= e($s['roll_number']) ?></td>
+                                <td style="font-weight: 700; color: var(--text-primary);"><?= e($s['first_name'] . ' ' . $s['last_name']) ?></td>
+                                <td style="color: var(--text-secondary);"><?= e($s['present_classes']) ?> / <?= e($s['total_classes']) ?> Classes</td>
+                                <td style="font-weight: 800; color: var(--danger);"><?= e($s['attendance_pct']) ?>%</td>
+                                <td>
+                                    <span class="badge badge-danger"><?= icon('alert-triangle', 'icon-xs') ?> Condonation Warning</span>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
         <?php endif; ?>
     </div>
 <?php endif; ?>

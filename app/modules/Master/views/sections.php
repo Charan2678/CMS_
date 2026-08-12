@@ -9,8 +9,8 @@
 <div class="page-split">
     <!-- Create Section Panel -->
     <div class="card">
-        <h2 style="font-size: 1.125rem; font-weight: 700; color: var(--text-primary); margin-top: 0; margin-bottom: 1.25rem; display: flex; align-items: center; gap: 0.5rem;">
-            <span>➕</span> Add Class Section
+        <h2 style="font-size: 1.125rem; font-weight: 800; color: var(--text-primary); margin-top: 0; margin-bottom: 1.25rem; display: flex; align-items: center; gap: 0.5rem;">
+            <?= icon('plus', 'icon-sm') ?> Add Class Section
         </h2>
 
         <form method="POST" action="/master/sections">
@@ -59,17 +59,17 @@
                 <input type="number" id="max_strength" name="max_strength" class="form-control" value="60" min="10" max="200">
             </div>
 
-            <button type="submit" class="btn-primary" style="width: 100%;">Create Section</button>
+            <button type="submit" class="btn-primary" style="width: 100%;"><?= icon('plus', 'icon-sm') ?> Create Section</button>
         </form>
     </div>
 
     <!-- Sections Directory Panel -->
     <div class="card">
-        <h2 style="font-size: 1.125rem; font-weight: 700; color: var(--text-primary); margin-top: 0; margin-bottom: 1.25rem; display: flex; align-items: center; gap: 0.5rem;">
-            <span>📑</span> Academic Sections & Batches Directory
+        <h2 style="font-size: 1.125rem; font-weight: 800; color: var(--text-primary); margin-top: 0; margin-bottom: 1.25rem; display: flex; align-items: center; gap: 0.5rem;">
+            <?= icon('layers', 'icon-sm') ?> Academic Sections &amp; Batches Directory
         </h2>
 
-        <div style="overflow-x: auto; width: 100%;">
+        <div class="table-responsive">
             <table class="table">
                 <thead>
                     <tr>
