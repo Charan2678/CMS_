@@ -510,7 +510,8 @@ class HostelService
             JOIN hostel_blocks hb ON hb.id = hbk.hostel_block_id
             JOIN hostel_rooms hr ON hr.id = hbk.hostel_room_id
             JOIN students s ON s.id = hbk.student_id
-            LEFT JOIN courses c ON c.id = s.course_id
+            LEFT JOIN student_academics sa ON sa.student_id = s.id AND sa.is_current = 1
+            LEFT JOIN courses c ON c.id = sa.course_id
             ORDER BY FIELD(hbk.booking_status, "payment_verification_pending", "payment_pending", "confirmed", "rejected", "cancelled"), hbk.id DESC
         ');
         $stmt->execute();
