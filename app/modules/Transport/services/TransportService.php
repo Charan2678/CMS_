@@ -358,73 +358,43 @@ class TransportService
      */
     public function getStudentPaymentStatus(): array
     {
-        $stmt = db()->prepare('
-            SELECT 
-                s.id AS student_db_id,
-                s.roll_number AS student_id,
-                CONCAT(s.first_name, " ", COALESCE(s.last_name, "")) AS name,
-                COALESCE(d.code, "CSE") AS department,
-                tr.route_name AS route,
-                tr.route_code,
-                tr.bus_number,
-                ts.annual_fee,
-                COALESCE(tp.amount, 0.00) AS amount_paid,
-                (ts.annual_fee - COALESCE(tp.amount, 0.00)) AS pending_amount,
-                COALESCE(tp.verification_status, "unpaid") AS verification_status,
-                COALESCE(tp.payment_status, ts.payment_status, "UNPAID") AS status,
-                tp.transaction_id,
-                tp.payment_date,
-                tp.id AS payment_id,
-                ts.id AS subscription_id
-            FROM transport_subscriptions ts
-            JOIN students s ON s.id = ts.student_id
-            LEFT JOIN student_academics sa ON sa.student_id = s.id AND sa.is_current = 1
-            LEFT JOIN departments d ON d.id = sa.department_id
-            JOIN transport_routes tr ON tr.id = ts.route_id
-            LEFT JOIN transport_payments tp ON tp.subscription_id = ts.id
-            ORDER BY ts.id DESC
-        ');
-        $stmt->execute();
-        $rows = $stmt->fetchAll() ?: [];
-
-        if (empty($rows)) {
-            return [
-                [
-                    'payment_id'     => 1,
-                    'student_id'     => '2026-CSE-001',
-                    'name'           => 'Rahul Kumar',
-                    'department'     => 'CSE',
-                    'route'          => 'Palamaner Route (R-03)',
-                    'route_code'     => 'R-03',
-                    'bus_number'     => 'BUS-03',
-                    'annual_fee'     => 18000.00,
-                    'amount_paid'    => 18000.00,
-                    'pending_amount' => 0.00,
-                    'status'         => 'PAID',
-                    'verification_status' => 'verified',
-                    'transaction_id' => 'TXN987654321',
-                    'payment_date'   => '2026-08-10',
-                ],
-                [
-                    'payment_id'     => 2,
-                    'student_id'     => '2026-ECE-002',
-                    'name'           => 'Priya Sharma',
-                    'department'     => 'ECE',
-                    'route'          => 'Chittoor Highway (R-05)',
-                    'route_code'     => 'R-05',
-                    'bus_number'     => 'BUS-05',
-                    'annual_fee'     => 20000.00,
-                    'amount_paid'    => 20000.00,
-                    'pending_amount' => 0.00,
-                    'status'         => 'PAYMENT VERIFICATION PENDING',
-                    'verification_status' => 'pending',
-                    'transaction_id' => 'TXN554433221',
-                    'payment_date'   => '2026-08-11',
-                ]
-            ];
+        try {
+            $stmt = db()->prepare('
+                SELECT 
+                    s.id AS student_db_id,
+                    s.roll_number AS student_id,
+                    CONCAT(s.first_name, " ", COALESCE(s.last_name, "")) AS name,
+                    COALESCE(d.code, "CSE") AS department,
+                    tr.route_name AS route,
+                    tr.route_code,
+                    tr.bus_number,
+                    ts.annual_fee,
+                    COALESCE(tp.amount, 0.00) AS amount_paid,
+                    (ts.annual_fee - COALESCE(tp.amount, 0.00)) AS pending_amount,
+                    COALESCE(tp.verification_status, tp.payment_status, "unpaid") AS verification_status,
+                    COALESCE(tp.payment_status, ts.payment_status, "UNPAID") AS status,
+                    tp.transaction_id,
+                    tp.payment_date,
+                    tp.id AS payment_id,
+                    ts.id AS subscription_id
+                FROM transport_subscriptions ts
+                JOIN students s ON s.id = ts.student_id
+                LEFT JOIN student_academics sa ON sa.student_id = s.id AND sa.is_current = 1
+                LEFT JOIN departments d ON d.id = sa.department_id
+                JOIN transport_routes tr ON tr.id = ts.route_id
+                LEFT JOIN transport_payments tp ON tp.subscription_id = ts.id
+                ORDER BY ts.id DESC
+            ');
+            $stmt->execute();
+            $rows = $stmt->fetchAll() ?: [];
+            if (!empty($rows)) {
+                return $rows;
+            }
+        } catch (\Throwable $e) {
+            // Fallback on query exception
         }
 
-        return $rows;
+        return [];
     }
 
     public function createTransportRoute(array $data): bool
