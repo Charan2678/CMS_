@@ -132,7 +132,7 @@ $borderRadius = $theme['border_radius'] ?? '8px';
 
                 <div class="nav-section-title">FINANCE &amp; ACCOUNTS</div>
                 <a href="/fee/payments" class="nav-item <?= request_uri() === '/fee/payments' ? 'active' : '' ?>"><?= $svg['receipt'] ?> My Fee Receipts</a>
-                <a href="/fee/pay/1" class="nav-item <?= str_starts_with(request_uri(), '/fee/pay') ? 'active' : '' ?>"><?= $svg['money'] ?> Pay Fees &amp; Dues (QR)</a>
+                <a href="/fee/pay/1" class="nav-item <?= (str_starts_with(request_uri(), '/fee/pay/') || request_uri() === '/fee/pay') ? 'active' : '' ?>"><?= $svg['money'] ?> Pay Fees &amp; Dues (QR)</a>
 
                 <div class="nav-section-title">CAMPUS COMMUNICATION</div>
                 <a href="/announcements" class="nav-item <?= request_uri() === '/announcements' ? 'active' : '' ?>"><?= $svg['announcements'] ?> College Announcements</a>
@@ -158,7 +158,7 @@ $borderRadius = $theme['border_radius'] ?? '8px';
 
                 <div class="nav-section-title">FEE &amp; PAYMENTS</div>
                 <a href="/fee/payments" class="nav-item <?= request_uri() === '/fee/payments' ? 'active' : '' ?>"><?= $svg['receipt'] ?> Fee Receipts &amp; Dues</a>
-                <a href="/fee/pay/1" class="nav-item <?= str_starts_with(request_uri(), '/fee/pay') ? 'active' : '' ?>"><?= $svg['money'] ?> Pay Fees &amp; Dues (QR)</a>
+                <a href="/fee/pay/1" class="nav-item <?= (str_starts_with(request_uri(), '/fee/pay/') || request_uri() === '/fee/pay') ? 'active' : '' ?>"><?= $svg['money'] ?> Pay Fees &amp; Dues (QR)</a>
 
                 <div class="nav-section-title">CAMPUS COMMUNICATION</div>
                 <a href="/announcements" class="nav-item <?= request_uri() === '/announcements' ? 'active' : '' ?>"><?= $svg['announcements'] ?> College Announcements</a>

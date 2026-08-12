@@ -1406,11 +1406,71 @@ CREATE TABLE `marks_revision_log` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 
+
+-- ============================================================
+-- BLOCK 27 — TRAINING & PLACEMENT MODULE
+-- Tables: companies, placement_drives, placement_applications, placement_trainings
+-- ============================================================
+
+CREATE TABLE IF NOT EXISTS `companies` (
+    `id`         INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    `name`       VARCHAR(150) NOT NULL,
+    `industry`   VARCHAR(100) DEFAULT NULL,
+    `website`    VARCHAR(255) DEFAULT NULL,
+    `hr_name`    VARCHAR(100) DEFAULT NULL,
+    `hr_email`   VARCHAR(150) DEFAULT NULL,
+    `hr_phone`   VARCHAR(30) DEFAULT NULL,
+    `status`     ENUM('active','inactive') NOT NULL DEFAULT 'active',
+    `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS `placement_drives` (
+    `id`               INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    `company_id`       INT UNSIGNED NOT NULL,
+    `title`            VARCHAR(200) NOT NULL,
+    `designation`      VARCHAR(150) NOT NULL,
+    `ctc_lpa`          DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+    `eligibility_cgpa` DECIMAL(4,2) NOT NULL DEFAULT 0.00,
+    `max_backlogs`     INT NOT NULL DEFAULT 0,
+    `drive_date`       DATE NOT NULL,
+    `location`         VARCHAR(150) NOT NULL DEFAULT 'On-Campus',
+    `status`           ENUM('scheduled','ongoing','completed','cancelled') NOT NULL DEFAULT 'scheduled',
+    `created_at`       DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    KEY `idx_pd_company` (`company_id`),
+    CONSTRAINT `fk_pd_company` FOREIGN KEY (`company_id`) REFERENCES `companies` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS `placement_applications` (
+    `id`         INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    `drive_id`   INT UNSIGNED NOT NULL,
+    `student_id` INT UNSIGNED NOT NULL,
+    `applied_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `status`     ENUM('applied','shortlisted','interviewed','selected','rejected') NOT NULL DEFAULT 'applied',
+    `remarks`    TEXT DEFAULT NULL,
+    UNIQUE KEY `uq_drive_student` (`drive_id`, `student_id`),
+    KEY `idx_pa_drive` (`drive_id`),
+    KEY `idx_pa_student` (`student_id`),
+    CONSTRAINT `fk_pa_drive` FOREIGN KEY (`drive_id`) REFERENCES `placement_drives` (`id`) ON DELETE CASCADE,
+    CONSTRAINT `fk_pa_student` FOREIGN KEY (`student_id`) REFERENCES `students` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS `placement_trainings` (
+    `id`             INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    `title`          VARCHAR(200) NOT NULL,
+    `trainer_name`   VARCHAR(100) NOT NULL,
+    `topic`          VARCHAR(150) NOT NULL,
+    `scheduled_date` DATETIME NOT NULL,
+    `venue`          VARCHAR(150) NOT NULL,
+    `target_year`    INT NOT NULL DEFAULT 4,
+    `created_at`     DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
 -- ============================================================
 SET FOREIGN_KEY_CHECKS = 1;
 -- ============================================================
 -- SCHEMA COMPLETE
--- Total tables : 58
--- Total FKs    : 86
+-- Total tables : 63
+-- Total FKs    : 90
 -- Normalization: 3NF verified
 -- ============================================================
