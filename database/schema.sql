@@ -790,7 +790,7 @@ CREATE TABLE `internal_marks` (
     `student_id`       INT UNSIGNED  NOT NULL,
     `subject_id`       INT UNSIGNED  NOT NULL,
     `academic_year_id` INT UNSIGNED  NOT NULL,
-    `exam_type`        ENUM('cia1','cia2','cia3','assignment','practical') NOT NULL,
+    `exam_type`        ENUM('cia1','cia2','cia3','cia4','assignment','practical') NOT NULL,
     `marks_obtained`   DECIMAL(5,2)  NOT NULL,
     `max_marks`        DECIMAL(5,2)  NOT NULL,
     `entered_by`       INT UNSIGNED  NOT NULL,
@@ -863,7 +863,9 @@ CREATE TABLE `results` (
 -- double-booking a section slot.
 CREATE TABLE `timetable` (
     `id`               INT UNSIGNED NOT NULL AUTO_INCREMENT,
-    `section_id`       INT UNSIGNED NOT NULL,
+    `timetable_type`   ENUM('STUDENT', 'STAFF') NOT NULL DEFAULT 'STUDENT',
+    `section_id`       INT UNSIGNED DEFAULT NULL,
+    `department_id`    INT UNSIGNED DEFAULT NULL,
     `academic_year_id` INT UNSIGNED NOT NULL,
     `day_of_week`      ENUM('monday','tuesday','wednesday','thursday','friday','saturday') NOT NULL,
     `period_number`    INT UNSIGNED NOT NULL,
@@ -872,11 +874,14 @@ CREATE TABLE `timetable` (
     `room_id`          INT UNSIGNED DEFAULT NULL,
     `start_time`       TIME         NOT NULL,
     `end_time`         TIME         NOT NULL,
+    `status`           ENUM('DRAFT', 'PUBLISHED') NOT NULL DEFAULT 'DRAFT',
+    `created_by`       INT UNSIGNED DEFAULT NULL,
+    `updated_by`       INT UNSIGNED DEFAULT NULL,
     `created_at`       DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (`id`),
-    UNIQUE KEY `uq_timetable_slot` (`section_id`, `academic_year_id`, `day_of_week`, `period_number`),
-    CONSTRAINT `fk_tt_section`
-        FOREIGN KEY (`section_id`) REFERENCES `sections` (`id`),
+    KEY `idx_tt_section` (`section_id`),
+    KEY `idx_tt_acyr`   (`academic_year_id`),
+    KEY `idx_tt_type`   (`timetable_type`),
     CONSTRAINT `fk_tt_acyr`
         FOREIGN KEY (`academic_year_id`) REFERENCES `academic_years` (`id`),
     CONSTRAINT `fk_tt_subject`
@@ -886,6 +891,20 @@ CREATE TABLE `timetable` (
     CONSTRAINT `fk_tt_room`
         FOREIGN KEY (`room_id`) REFERENCES `rooms` (`id`)
         ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE `timetable_publications` (
+    `id`               INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    `timetable_type`   ENUM('STUDENT', 'STAFF') NOT NULL DEFAULT 'STUDENT',
+    `academic_year_id` INT UNSIGNED NOT NULL,
+    `section_id`       INT UNSIGNED DEFAULT NULL,
+    `faculty_id`       INT UNSIGNED DEFAULT NULL,
+    `status`           ENUM('DRAFT', 'PUBLISHED') NOT NULL DEFAULT 'DRAFT',
+    `published_at`     DATETIME DEFAULT NULL,
+    `published_by`     INT UNSIGNED DEFAULT NULL,
+    `created_at`       DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE KEY `uq_pub_student` (`timetable_type`, `academic_year_id`, `section_id`),
+    UNIQUE KEY `uq_pub_staff`   (`timetable_type`, `academic_year_id`, `faculty_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 

@@ -45,6 +45,26 @@ try {
         echo "[✓] schema.sql executed successfully.\n";
     }
 
+    // 1.5. Execute migrations
+    $migrationDir = __DIR__ . '/migrations';
+    if (is_dir($migrationDir)) {
+        $migrationFiles = glob($migrationDir . '/*.sql');
+        sort($migrationFiles);
+        foreach ($migrationFiles as $migFile) {
+            $baseName = basename($migFile);
+            $pdo = getPdo($host, $port, $user, $pass, $dbName);
+            $sql = file_get_contents($migFile);
+            if (!empty(trim($sql))) {
+                try {
+                    $pdo->exec($sql);
+                    echo "[✓] Executed migration: $baseName\n";
+                } catch (Exception $e) {
+                    echo "[!] Migration note ($baseName): " . $e->getMessage() . "\n";
+                }
+            }
+        }
+    }
+
     // 2. Execute seeds
     $seedDir = __DIR__ . '/seeds';
     if (is_dir($seedDir)) {
