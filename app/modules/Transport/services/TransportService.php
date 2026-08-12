@@ -288,8 +288,8 @@ class TransportService
         $stmt = db()->prepare('
             SELECT tp.*, tr.route_name, tr.route_code, tr.bus_number, ts.academic_year
             FROM transport_payments tp
-            JOIN transport_routes tr ON tr.id = tp.route_id
             JOIN transport_subscriptions ts ON ts.id = tp.subscription_id
+            JOIN transport_routes tr ON tr.id = ts.route_id
             WHERE tp.student_id = :sid
             ORDER BY tp.id DESC
         ');
@@ -306,7 +306,8 @@ class TransportService
             SELECT tp.*, tr.route_name, tr.route_code, tr.bus_number, tr.bus_reg_number,
                    s.roll_number, s.first_name, s.last_name, d.name AS department_name
             FROM transport_payments tp
-            JOIN transport_routes tr ON tr.id = tp.route_id
+            JOIN transport_subscriptions ts ON ts.id = tp.subscription_id
+            JOIN transport_routes tr ON tr.id = ts.route_id
             JOIN students s ON s.id = tp.student_id
             LEFT JOIN student_academics sa ON sa.student_id = s.id AND sa.is_current = 1
             LEFT JOIN departments d ON d.id = sa.department_id
