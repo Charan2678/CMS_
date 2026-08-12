@@ -152,7 +152,7 @@ body {
     flex: 1;
     overflow-y: auto;
     overflow-x: hidden;
-    padding: 1rem 0.75rem;
+    padding: 1rem 0.75rem 2.5rem 0.75rem;
     -webkit-overflow-scrolling: touch;
 }
 

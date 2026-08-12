@@ -393,6 +393,41 @@ $svg = [
                 }
             });
         }
+
+        // Sidebar Navigation Scroll Memory & Active Item Auto-Scroll
+        var sidebarNav = document.querySelector('.sidebar-nav');
+        if (sidebarNav) {
+            var activeItem = sidebarNav.querySelector('.nav-item.active');
+            var savedScroll = sessionStorage.getItem('kec_sidebar_scroll');
+
+            if (savedScroll !== null) {
+                sidebarNav.scrollTop = parseInt(savedScroll, 10);
+            } else if (activeItem) {
+                activeItem.scrollIntoView({ block: 'center', behavior: 'instant' });
+            }
+
+            // Always ensure the active item is visible in viewport
+            if (activeItem) {
+                setTimeout(function() {
+                    var navRect = sidebarNav.getBoundingClientRect();
+                    var itemRect = activeItem.getBoundingClientRect();
+                    if (itemRect.top < navRect.top || itemRect.bottom > navRect.bottom) {
+                        activeItem.scrollIntoView({ block: 'center', behavior: 'instant' });
+                    }
+                }, 50);
+            }
+
+            sidebarNav.addEventListener('scroll', function() {
+                sessionStorage.setItem('kec_sidebar_scroll', sidebarNav.scrollTop);
+            }, { passive: true });
+
+            var navItems = sidebarNav.querySelectorAll('.nav-item');
+            navItems.forEach(function(item) {
+                item.addEventListener('click', function() {
+                    sessionStorage.setItem('kec_sidebar_scroll', sidebarNav.scrollTop);
+                });
+            });
+        }
     });
 </script>
 
