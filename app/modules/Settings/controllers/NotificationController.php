@@ -117,4 +117,37 @@ class NotificationController extends Controller
         $ok = $this->notificationService->markAllAsRead($userId);
         $this->json(['success' => $ok]);
     }
+
+    /**
+     * System Audit Logs — immutable activity trail.
+     */
+    public function auditLogs(): void
+    {
+        Permission::enforce('audit.view');
+
+        try {
+            $stmt = db()->prepare('
+                SELECT
+                    al.id,
+                    al.module,
+                    al.action,
+                    al.ip_address,
+                    al.created_at,
+                    u.username
+                FROM audit_logs al
+                LEFT JOIN users u ON u.id = al.user_id
+                ORDER BY al.created_at DESC
+                LIMIT 500
+            ');
+            $stmt->execute();
+            $logs = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+        } catch (\Throwable $e) {
+            $logs = [];
+        }
+
+        $this->render('Settings/views/audit_logs', [
+            'title' => 'System Audit Logs',
+            'logs'  => $logs,
+        ], 'layout');
+    }
 }

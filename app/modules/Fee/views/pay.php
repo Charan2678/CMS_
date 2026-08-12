@@ -52,18 +52,13 @@
             </div>
         </div>
 
-        <!-- Right: Payment Options Tabs -->
+        <!-- Right: Payment Options -->
         <div class="card" style="border-top: 4px solid var(--accent-color);">
-            <div style="display: flex; gap: 0.5rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.75rem; margin-bottom: 1.25rem;">
-                <button type="button" onclick="switchPayTab('upi')" id="tabBtnUpi" class="btn btn-sm btn-primary" style="font-weight: 700; font-size: 0.8125rem;">
-                    📱 UPI QR Scan &amp; Pay
-                </button>
-                <button type="button" onclick="switchPayTab('netbanking')" id="tabBtnNetbanking" class="btn btn-sm btn-secondary" style="font-weight: 700; font-size: 0.8125rem;">
-                    🏦 Netbanking / Cards
-                </button>
+            <div style="font-weight: 800; font-size: 1.05rem; color: var(--text-primary); border-bottom: 1px solid var(--border-color); padding-bottom: 0.75rem; margin-bottom: 1.25rem; display: flex; align-items: center; gap: 0.5rem;">
+                <span>📱</span> Official College UPI QR &amp; Fee Settlement
             </div>
 
-            <!-- Tab 1: Multi-QR UPI Section -->
+            <!-- Multi-QR UPI Section -->
             <div id="payTabUpi">
                 <div style="text-align: center; margin-bottom: 1.25rem;">
                     <div style="display: inline-block; background: #ffffff; padding: 1.25rem; border-radius: 16px; border: 2px solid var(--border-color); box-shadow: 0 10px 25px rgba(0,0,0,0.08); max-width: 270px; width: 100%;">
@@ -130,56 +125,7 @@
                     </button>
                 </form>
             </div>
-
-            <!-- Tab 2: Netbanking & Instant Card Gateway -->
-            <div id="payTabNetbanking" style="display: none;">
-                <form method="POST" action="/fee/instant-pay">
-                    <?= csrf_field() ?>
-                    <input type="hidden" name="student_fee_id" value="<?= $fee['id'] ?>">
-                    <input type="hidden" name="student_id" value="<?= $fee['student_id'] ?>">
-                    <input type="hidden" name="fee_type" value="<?= $feeType ?>">
-                    <input type="hidden" name="amount" value="<?= $dueBalance ?>">
-
-                    <div class="form-group" style="margin-bottom: 1rem;">
-                        <label class="form-label" style="font-weight: 700; font-size: 0.8125rem; display: block; margin-bottom: 0.35rem;">Select Payment Method</label>
-                        <select name="payment_method" class="form-control" style="width: 100%; padding: 0.6rem 0.75rem; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-surface); color: var(--text-primary); font-size: 0.8125rem;">
-                            <option value="netbanking">🏦 Netbanking (SBI, ICICI, HDFC, Axis, Canara)</option>
-                            <option value="debit_card">💳 Debit Card / RuPay</option>
-                            <option value="credit_card">💳 Credit Card (Visa / Mastercard)</option>
-                        </select>
-                    </div>
-
-                    <div style="background: rgba(16,185,129,0.08); border: 1px solid rgba(16,185,129,0.3); border-radius: 8px; padding: 1rem; margin-bottom: 1.5rem; font-size: 0.8125rem;">
-                        <div style="font-weight: 700; color: var(--success); margin-bottom: 0.25rem;">🔒 256-Bit SSL Encrypted Payment Gateway</div>
-                        <p style="color: var(--text-secondary); margin: 0; font-size: 0.75rem;">Instant online settlement will immediately update your fee balance and generate your downloadable PDF receipt.</p>
-                    </div>
-
-                    <button type="submit" class="btn btn-success" style="width: 100%; padding: 0.75rem; font-weight: 800; font-size: 0.9375rem;">
-                        💳 Pay ₹<?= number_format((float)$dueBalance, 2) ?> Instantly
-                    </button>
-                </form>
-            </div>
         </div>
     </div>
 </div>
 
-<script>
-function switchPayTab(tab) {
-    var upi = document.getElementById('payTabUpi');
-    var nb  = document.getElementById('payTabNetbanking');
-    var btnUpi = document.getElementById('tabBtnUpi');
-    var btnNb  = document.getElementById('tabBtnNetbanking');
-
-    if (tab === 'upi') {
-        upi.style.display = 'block';
-        nb.style.display  = 'none';
-        btnUpi.className  = 'btn btn-sm btn-primary';
-        btnNb.className   = 'btn btn-sm btn-secondary';
-    } else {
-        upi.style.display = 'none';
-        nb.style.display  = 'block';
-        btnUpi.className  = 'btn btn-sm btn-secondary';
-        btnNb.className   = 'btn btn-sm btn-primary';
-    }
-}
-</script>

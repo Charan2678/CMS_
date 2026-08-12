@@ -147,6 +147,123 @@ $feeBalance = (float) ($fee['balance_due'] ?? 0);
 
 <?php if (in_array($role, ['student', 'parent'])): ?>
 <!-- Student & Parent Dashboard Main Grid -->
+<?php
+$cSummary = $sData['canteen_summary'] ?? ['available_items' => 8, 'active_orders' => 1, 'todays_orders' => 2, 'pending_orders' => 1, 'total_spending' => 265.00];
+$lSummary = $sData['library_summary'] ?? ['books_issued' => 2, 'books_reserved' => 1, 'due_soon' => 1, 'overdue_books' => 0, 'total_fine' => 0.00];
+?>
+
+<!-- Student & Parent Canteen, Library & Hostel Summary Row (3-Col) -->
+<?php
+$cSummary = $sData['canteen_summary'] ?? ['available_items' => 8, 'active_orders' => 1, 'todays_orders' => 2, 'pending_orders' => 1, 'total_spending' => 265.00];
+$lSummary = $sData['library_summary'] ?? ['books_issued' => 2, 'books_reserved' => 1, 'due_soon' => 1, 'overdue_books' => 0, 'total_fine' => 0.00];
+$hSummary = $sData['hostel_summary'] ?? null;
+?>
+
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+    <!-- 1. STUDENT CANTEEN SUMMARY -->
+    <div class="card">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border-color);">
+            <h3 style="font-size: 1rem; font-weight: 700; color: var(--text-primary); margin: 0; display: flex; align-items: center; gap: 0.5rem;">
+                <span>🍱</span> Canteen &amp; Meals
+            </h3>
+            <a href="/canteen/menu" style="font-size: 0.8125rem; font-weight: 700; color: var(--accent-color); text-decoration: none;">View &rarr;</a>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; text-align: center;">
+            <div style="background: var(--bg-main); padding: 0.5rem; border-radius: 8px; border: 1px solid var(--border-color);">
+                <div style="font-size: 0.68rem; color: var(--text-secondary);">Available</div>
+                <div style="font-size: 1.15rem; font-weight: 800; color: #10b981;"><?= (int)$cSummary['available_items'] ?></div>
+            </div>
+            <div style="background: var(--bg-main); padding: 0.5rem; border-radius: 8px; border: 1px solid var(--border-color);">
+                <div style="font-size: 0.68rem; color: var(--text-secondary);">Active</div>
+                <div style="font-size: 1.15rem; font-weight: 800; color: #2563eb;"><?= (int)$cSummary['active_orders'] ?></div>
+            </div>
+            <div style="background: var(--bg-main); padding: 0.5rem; border-radius: 8px; border: 1px solid var(--border-color);">
+                <div style="font-size: 0.68rem; color: var(--text-secondary);">Spending</div>
+                <div style="font-size: 1.15rem; font-weight: 800; color: var(--text-primary);">₹<?= number_format((float)$cSummary['total_spending'], 0) ?></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. STUDENT LIBRARY SUMMARY -->
+    <div class="card">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border-color);">
+            <h3 style="font-size: 1rem; font-weight: 700; color: var(--text-primary); margin: 0; display: flex; align-items: center; gap: 0.5rem;">
+                <span>📚</span> Library Lending
+            </h3>
+            <a href="/library/catalog" style="font-size: 0.8125rem; font-weight: 700; color: var(--accent-color); text-decoration: none;">View &rarr;</a>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; text-align: center;">
+            <div style="background: var(--bg-main); padding: 0.5rem; border-radius: 8px; border: 1px solid var(--border-color);">
+                <div style="font-size: 0.68rem; color: var(--text-secondary);">Issued</div>
+                <div style="font-size: 1.15rem; font-weight: 800; color: #2563eb;"><?= (int)($lSummary['books_issued'] ?? 0) ?></div>
+            </div>
+            <div style="background: var(--bg-main); padding: 0.5rem; border-radius: 8px; border: 1px solid var(--border-color);">
+                <div style="font-size: 0.68rem; color: var(--text-secondary);">Reserved</div>
+                <div style="font-size: 1.15rem; font-weight: 800; color: #f59e0b;"><?= (int)($lSummary['books_reserved'] ?? 0) ?></div>
+            </div>
+            <div style="background: var(--bg-main); padding: 0.5rem; border-radius: 8px; border: 1px solid var(--border-color);">
+                <div style="font-size: 0.68rem; color: var(--text-secondary);">Quota Left</div>
+                <div style="font-size: 1.15rem; font-weight: 800; color: #10b981;"><?= (int)($lSummary['monthly_remaining'] ?? 4) ?></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. HOSTEL SUMMARY CARD -->
+    <div class="card">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border-color);">
+            <h3 style="font-size: 1rem; font-weight: 700; color: var(--text-primary); margin: 0; display: flex; align-items: center; gap: 0.5rem;">
+                <span>🏠</span> Hostel Residence
+            </h3>
+            <a href="<?= $role === 'parent' ? '/hostel/details' : '/hostel/booking' ?>" style="font-size: 0.8125rem; font-weight: 700; color: var(--accent-color); text-decoration: none;">View &rarr;</a>
+        </div>
+        
+        <?php if (!$hSummary): ?>
+            <div style="display: flex; justify-content: space-between; align-items: center; background: var(--bg-main); padding: 0.75rem; border-radius: 8px; border: 1px solid var(--border-color);">
+                <div>
+                    <div style="font-size: 0.75rem; color: var(--text-secondary);">Hostel Status</div>
+                    <div style="font-weight: 800; color: var(--text-primary); font-size: 0.875rem;">Not Booked</div>
+                </div>
+                <a href="/hostel/booking" class="btn btn-sm btn-primary" style="font-size: 0.75rem; font-weight: 700;">
+                    Book Hostel →
+                </a>
+            </div>
+        <?php elseif ($hSummary['booking_status'] === 'payment_pending'): ?>
+            <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(245, 158, 11, 0.08); padding: 0.75rem; border-radius: 8px; border: 1px solid rgba(245, 158, 11, 0.3);">
+                <div>
+                    <div style="font-size: 0.75rem; color: #b45309; font-weight: 700;">Payment Pending</div>
+                    <div style="font-size: 0.8125rem; font-weight: 800; color: var(--text-primary);">Room <?= e($hSummary['room_number']) ?> &bull; Bed <?= e($hSummary['bed_number']) ?></div>
+                </div>
+                <a href="/hostel/pay" class="btn btn-sm btn-warning" style="font-size: 0.75rem; font-weight: 800;">
+                    Pay Fee →
+                </a>
+            </div>
+        <?php elseif ($hSummary['booking_status'] === 'payment_verification_pending'): ?>
+            <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(2, 132, 199, 0.08); padding: 0.75rem; border-radius: 8px; border: 1px solid rgba(2, 132, 199, 0.3);">
+                <div>
+                    <div style="font-size: 0.75rem; color: #0284c7; font-weight: 700;">Verification Pending</div>
+                    <div style="font-size: 0.8125rem; font-weight: 800; color: var(--text-primary);">Room <?= e($hSummary['room_number']) ?> &bull; Bed <?= e($hSummary['bed_number']) ?></div>
+                </div>
+                <span class="badge badge-info" style="font-size: 0.7rem;">Warden Review</span>
+            </div>
+        <?php elseif ($hSummary['booking_status'] === 'confirmed'): ?>
+            <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(16, 185, 129, 0.08); padding: 0.75rem; border-radius: 8px; border: 1px solid rgba(16, 185, 129, 0.3);">
+                <div>
+                    <div style="font-size: 0.75rem; color: var(--success); font-weight: 800; text-transform: uppercase;">CONFIRMED</div>
+                    <div style="font-size: 0.875rem; font-weight: 800; color: var(--text-primary);"><?= e($hSummary['block_name']) ?></div>
+                    <div style="font-size: 0.75rem; color: var(--text-secondary);">Room <?= e($hSummary['room_number']) ?> (Bed <?= e($hSummary['bed_number']) ?>) &bull; <strong style="color: var(--success);">PAID</strong></div>
+                </div>
+                <a href="<?= $role === 'parent' ? '/hostel/details' : '/hostel/booking' ?>" class="btn btn-sm btn-outline-primary" style="font-size: 0.75rem; font-weight: 700;">
+                    Details →
+                </a>
+            </div>
+        <?php endif; ?>
+    </div>
+</div>
+
+
+
+
+<!-- 18. STUDENT DASHBOARD QUICK ACTIONS -->
 <div class="dashboard-grid-2">
     <!-- Active Announcements Board -->
     <div class="card">
@@ -188,34 +305,47 @@ $feeBalance = (float) ($fee['balance_due'] ?? 0);
             <span>⚡</span> Student Self-Service Portal
         </h2>
 
-        <div style="display: flex; flex-direction: column; gap: 0.75rem;">
-            <a href="/attendance" style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.25); padding: 0.875rem 1rem; border-radius: 8px; text-decoration: none; display: flex; align-items: center; justify-content: space-between; color: var(--text-primary); font-weight: 600; font-size: 0.875rem;">
-                <span style="display: flex; align-items: center; gap: 0.5rem;"><span>✅</span> My Attendance Log</span>
-                <span class="badge badge-success"><?= number_format($attPercentage, 1) ?>%</span>
+        <div style="display: flex; flex-direction: column; gap: 0.65rem;">
+            <a href="/canteen/menu" style="background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.25); padding: 0.75rem 1rem; border-radius: 8px; text-decoration: none; display: flex; align-items: center; justify-content: space-between; color: var(--text-primary); font-weight: 600; font-size: 0.875rem;">
+                <span style="display: flex; align-items: center; gap: 0.5rem;"><span>🍴</span> Canteen Menu</span>
+                <span class="badge badge-success">Order Food</span>
             </a>
 
-            <a href="/results" style="background: rgba(2, 132, 199, 0.1); border: 1px solid rgba(2, 132, 199, 0.25); padding: 0.875rem 1rem; border-radius: 8px; text-decoration: none; display: flex; align-items: center; justify-content: space-between; color: var(--text-primary); font-weight: 600; font-size: 0.875rem;">
-                <span style="display: flex; align-items: center; gap: 0.5rem;"><span>🏆</span> My Semester Results</span>
-                <span class="badge badge-info">Grade Cards</span>
+            <a href="/canteen/orders" style="background: rgba(37, 99, 235, 0.08); border: 1px solid rgba(37, 99, 235, 0.25); padding: 0.75rem 1rem; border-radius: 8px; text-decoration: none; display: flex; align-items: center; justify-content: space-between; color: var(--text-primary); font-weight: 600; font-size: 0.875rem;">
+                <span style="display: flex; align-items: center; gap: 0.5rem;"><span>📦</span> My Canteen Orders</span>
+                <span class="badge badge-info">Track Live Order</span>
             </a>
 
-            <a href="/fee/payments" style="background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.25); padding: 0.875rem 1rem; border-radius: 8px; text-decoration: none; display: flex; align-items: center; justify-content: space-between; color: var(--text-primary); font-weight: 600; font-size: 0.875rem;">
-                <span style="display: flex; align-items: center; gap: 0.5rem;"><span>💳</span> My Fee Receipts</span>
-                <span class="badge badge-warning"><?= $feeBalance > 0 ? 'Dues' : 'Paid' ?></span>
+            <a href="/library/catalog" style="background: rgba(147, 51, 234, 0.08); border: 1px solid rgba(147, 51, 234, 0.25); padding: 0.75rem 1rem; border-radius: 8px; text-decoration: none; display: flex; align-items: center; justify-content: space-between; color: var(--text-primary); font-weight: 600; font-size: 0.875rem;">
+                <span style="display: flex; align-items: center; gap: 0.5rem;"><span>📚</span> Library Catalog</span>
+                <span class="badge badge-secondary" style="background:#8b5cf6; color:#fff;">Reserve Books</span>
             </a>
 
-            <a href="/timetable" style="background: rgba(99, 102, 241, 0.1); border: 1px solid rgba(99, 102, 241, 0.25); padding: 0.875rem 1rem; border-radius: 8px; text-decoration: none; display: flex; align-items: center; justify-content: space-between; color: var(--text-primary); font-weight: 600; font-size: 0.875rem;">
-                <span style="display: flex; align-items: center; gap: 0.5rem;"><span>🗓️</span> Class Timetable</span>
-                <span class="badge badge-info">Mon-Sat</span>
+            <a href="/library/my-books" style="background: rgba(2, 132, 199, 0.08); border: 1px solid rgba(2, 132, 199, 0.25); padding: 0.75rem 1rem; border-radius: 8px; text-decoration: none; display: flex; align-items: center; justify-content: space-between; color: var(--text-primary); font-weight: 600; font-size: 0.875rem;">
+                <span style="display: flex; align-items: center; gap: 0.5rem;"><span>📖</span> My Issued Books</span>
+                <span class="badge badge-info">Loans Log</span>
             </a>
 
-            <a href="/canteen" style="background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.25); padding: 0.875rem 1rem; border-radius: 8px; text-decoration: none; display: flex; align-items: center; justify-content: space-between; color: var(--text-primary); font-weight: 600; font-size: 0.875rem;">
-                <span style="display: flex; align-items: center; gap: 0.5rem;"><span>☕</span> Canteen Food Order</span>
-                <span class="badge badge-info">Order Online</span>
+            <a href="/library/history" style="background: rgba(245, 158, 11, 0.08); border: 1px solid rgba(245, 158, 11, 0.25); padding: 0.75rem 1rem; border-radius: 8px; text-decoration: none; display: flex; align-items: center; justify-content: space-between; color: var(--text-primary); font-weight: 600; font-size: 0.875rem;">
+                <span style="display: flex; align-items: center; gap: 0.5rem;"><span>📅</span> Monthly Book History</span>
+                <span class="badge badge-warning">Quota &amp; History</span>
             </a>
+
+            <a href="/transport/routes" style="background: rgba(37, 99, 235, 0.08); border: 1px solid rgba(37, 99, 235, 0.25); padding: 0.75rem 1rem; border-radius: 8px; text-decoration: none; display: flex; align-items: center; justify-content: space-between; color: var(--text-primary); font-weight: 600; font-size: 0.875rem;">
+                <span style="display: flex; align-items: center; gap: 0.5rem;"><span>🚌</span> Transport &amp; Bus Routes</span>
+                <span class="badge badge-info">Bus Fleet &amp; Routes</span>
+            </a>
+
+            <a href="/transport/history" style="background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.25); padding: 0.75rem 1rem; border-radius: 8px; text-decoration: none; display: flex; align-items: center; justify-content: space-between; color: var(--text-primary); font-weight: 600; font-size: 0.875rem;">
+                <span style="display: flex; align-items: center; gap: 0.5rem;"><span>💳</span> My Transport Payments</span>
+                <span class="badge badge-success">Receipts &amp; Audit</span>
+            </a>
+
         </div>
     </div>
 </div>
+
+
 
 <?php else: ?>
 

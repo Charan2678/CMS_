@@ -58,7 +58,11 @@ class AuthService
             } elseif ($targetRoleType === 'parent') {
                 $isValidRole = ($userRoleCode === 'parent');
             } elseif ($targetRoleType === 'staff') {
-                $isValidRole = in_array($userRoleCode, ['staff', 'faculty', 'hod'], true);
+                $isValidRole = in_array($userRoleCode, [
+                    'staff', 'faculty', 'hod',
+                    'accounts_staff', 'librarian', 'hostel_warden',
+                    'transport_manager', 'canteen_manager',
+                ], true);
             }
 
             if (!$isValidRole) {

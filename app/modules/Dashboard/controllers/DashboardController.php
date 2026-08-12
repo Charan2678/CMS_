@@ -29,6 +29,19 @@ class DashboardController extends Controller
         $role   = auth_role();
         $userId = auth_id();
 
+        // Redirect specialized staff roles to their respective module dashboards
+        if ($role === 'librarian') {
+            $this->redirect('/library');
+        } elseif ($role === 'canteen_manager') {
+            $this->redirect('/canteen');
+        } elseif ($role === 'transport_manager') {
+            $this->redirect('/transport');
+        } elseif ($role === 'hostel_warden') {
+            $this->redirect('/hostel');
+        } elseif ($role === 'accounts_staff') {
+            $this->redirect('/accounts');
+        }
+
         // System-wide metric counts with error-resilient fallbacks
         try {
             $studentCount = (int) db()->query("SELECT COUNT(*) FROM students WHERE status = 'active'")->fetchColumn();
@@ -148,18 +161,32 @@ class DashboardController extends Controller
                     $allResults = [];
                 }
 
-                $canteenOrders = $canteenService->getUserOrders($userId);
+                $libraryService   = new \App\Modules\Library\services\LibraryService();
+                $transportService = new \App\Modules\Transport\services\TransportService();
+                $hostelService    = new \App\Modules\Hostel\services\HostelService();
+                $canteenOrders    = $canteenService->getUserOrders($userId);
+                $canteenSummary   = $canteenService->getStudentCanteenSummary($userId);
+                $librarySummary   = $libraryService->getStudentBookSummary($studentId ?: 1);
+                $transportSummary = $transportService->getStudentTransportSummary($studentId ?: 1);
+                $hostelSummary    = $hostelService->getStudentActiveBooking($studentId ?: 1);
 
                 $studentData = [
-                    'student_id'    => $studentId,
-                    'ward_info'     => $wardInfo,
-                    'attendance'    => $attSummary,
-                    'fee'           => $feeSummary,
-                    'timetable'     => $timetable,
-                    'all_results'   => $allResults,
-                    'announcements' => $announcements,
-                    'canteen'       => $canteenOrders,
+                    'student_id'        => $studentId,
+                    'ward_info'         => $wardInfo,
+                    'attendance'        => $attSummary,
+                    'fee'               => $feeSummary,
+                    'timetable'         => $timetable,
+                    'all_results'       => $allResults,
+                    'announcements'     => $announcements,
+                    'canteen'           => $canteenOrders,
+                    'canteen_summary'   => $canteenSummary,
+                    'library_summary'   => $librarySummary,
+                    'transport_summary' => $transportSummary,
+                    'hostel_summary'    => $hostelSummary,
                 ];
+
+
+
             } catch (\Throwable $e) {
                 $studentData = [];
             }

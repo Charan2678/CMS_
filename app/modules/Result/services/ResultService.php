@@ -17,6 +17,34 @@ class ResultService
         $this->notifSvc = new NotificationService();
     }
 
+    // ─── 0. Period Configuration (single source of truth) ────────────────
+    /**
+     * Returns the full daily schedule structure.
+     *
+     * Each entry is either a 'period' or a 'break'.
+     * Edit the 'start' / 'end' values here to update timings college-wide.
+     *
+     * Structure:
+     *   P1 → P2 → Morning Break → P3 → P4 → Lunch Break → P5 → P6 → P7 → P8
+     *
+     * @return array<int, array{type: string, number: int|null, label: string, start: string, end: string}>
+     */
+    public static function getPeriodConfig(): array
+    {
+        return [
+            ['type' => 'period', 'number' => 1, 'label' => 'Period 1',      'start' => '09:00', 'end' => '09:55'],
+            ['type' => 'period', 'number' => 2, 'label' => 'Period 2',      'start' => '09:55', 'end' => '10:50'],
+            ['type' => 'break',  'number' => null, 'label' => 'Morning Break', 'start' => '10:50', 'end' => '11:05'],
+            ['type' => 'period', 'number' => 3, 'label' => 'Period 3',      'start' => '11:05', 'end' => '12:00'],
+            ['type' => 'period', 'number' => 4, 'label' => 'Period 4',      'start' => '12:00', 'end' => '12:55'],
+            ['type' => 'break',  'number' => null, 'label' => 'Lunch Break',   'start' => '12:55', 'end' => '13:40'],
+            ['type' => 'period', 'number' => 5, 'label' => 'Period 5',      'start' => '13:40', 'end' => '14:35'],
+            ['type' => 'period', 'number' => 6, 'label' => 'Period 6',      'start' => '14:35', 'end' => '15:30'],
+            ['type' => 'period', 'number' => 7, 'label' => 'Period 7',      'start' => '15:30', 'end' => '16:25'],
+            ['type' => 'period', 'number' => 8, 'label' => 'Period 8',      'start' => '16:25', 'end' => '17:20'],
+        ];
+    }
+
     // ─── 1. Timetable Scheduling ──────────────────────────────
     public function getTimetableForSection(int $sectionId, int $academicYearId): array
     {
@@ -456,5 +484,163 @@ class ResultService
             'info' => $ac,
             'grid' => $grid
         ];
+    }
+
+    // ─── 6. Full Examination Results Dashboard ────────────────
+    /**
+     * Fetch all mid + semester examination results for a student, grouped by academic year.
+     *
+     * Returns:
+     *   [
+     *     [
+     *       'academic_year_id'   => int,
+     *       'academic_year_name' => string,
+     *       'mid_exams'          => [
+     *           'cia1' => ['label'=>'Mid Examination 1','published'=>bool,'subjects'=>[...],'summary'=>[...]],
+     *           'cia2' => [...],
+     *           'cia3' => [...],
+     *           'cia4' => [...],
+     *       ],
+     *       'semester_results' => [  // each published semester result for this AY
+     *           [ ...existing $semResults row with 'subjects' sub-array... ],
+     *       ],
+     *     ],
+     *     ...
+     *   ]
+     */
+    public function getStudentFullExamResults(int $studentId): array
+    {
+        // ── 1. Fetch all academic year placements for this student ──────────
+        $placementStmt = db()->prepare('
+            SELECT
+                sa.academic_year_id,
+                sa.semester_id,
+                sa.course_id,
+                ay.name  AS academic_year_name,
+                sem.number AS semester_number,
+                sem.name   AS semester_name,
+                c.name     AS course_name
+            FROM student_academics sa
+            JOIN academic_years ay  ON ay.id  = sa.academic_year_id
+            JOIN semesters      sem ON sem.id  = sa.semester_id
+            JOIN courses        c   ON c.id   = sa.course_id
+            WHERE sa.student_id = :student_id
+            ORDER BY ay.start_date DESC, sem.number ASC
+        ');
+        $placementStmt->execute([':student_id' => $studentId]);
+        $placements = $placementStmt->fetchAll() ?: [];
+
+        if (empty($placements)) {
+            return [];
+        }
+
+        // ── 2. Collect unique academic years (preserve order) ──────────────
+        $academicYears = [];
+        foreach ($placements as $pl) {
+            $ayId = (int) $pl['academic_year_id'];
+            if (!isset($academicYears[$ayId])) {
+                $academicYears[$ayId] = [
+                    'academic_year_id'   => $ayId,
+                    'academic_year_name' => $pl['academic_year_name'],
+                    'mid_exams'          => [],
+                    'semester_results'   => [],
+                ];
+            }
+        }
+
+        // ── 3. Mid Examination definitions ────────────────────────────────
+        $midDefs = [
+            'cia1' => 'Mid Examination 1',
+            'cia2' => 'Mid Examination 2',
+            'cia3' => 'Mid Examination 3',
+            'cia4' => 'Mid Examination 4',
+        ];
+
+        // ── 4. Fetch mid exam data for each academic year ──────────────────
+        foreach (array_keys($academicYears) as $ayId) {
+            foreach ($midDefs as $examType => $examLabel) {
+                // Fetch marks for this student, AY, and exam type
+                $midStmt = db()->prepare('
+                    SELECT
+                        im.subject_id,
+                        im.marks_obtained,
+                        im.max_marks,
+                        sub.code  AS subject_code,
+                        sub.name  AS subject_name,
+                        sub.type  AS subject_type,
+                        sub.pass_internal_marks
+                    FROM internal_marks im
+                    JOIN subjects sub ON sub.id = im.subject_id
+                    WHERE im.student_id      = :student_id
+                      AND im.academic_year_id = :ay_id
+                      AND im.exam_type        = :exam_type
+                    ORDER BY sub.code ASC
+                ');
+                $midStmt->execute([
+                    ':student_id' => $studentId,
+                    ':ay_id'      => $ayId,
+                    ':exam_type'  => $examType,
+                ]);
+                $rows = $midStmt->fetchAll() ?: [];
+
+                $published   = !empty($rows);
+                $subjects    = [];
+                $totalObt    = 0.0;
+                $totalMax    = 0.0;
+                $passedCount = 0;
+                $failedCount = 0;
+
+                foreach ($rows as $row) {
+                    $obt      = (float) $row['marks_obtained'];
+                    $max      = (float) $row['max_marks'];
+                    $passMin  = (float) ($row['pass_internal_marks'] ?? 0);
+                    $pct      = $max > 0 ? ($obt / $max) * 100 : 0.0;
+                    $passed   = ($passMin > 0) ? ($obt >= $passMin) : ($pct >= 40.0);
+
+                    $subjects[] = [
+                        'subject_code'   => $row['subject_code'],
+                        'subject_name'   => $row['subject_name'],
+                        'marks_obtained' => $obt,
+                        'max_marks'      => $max,
+                        'percentage'     => round($pct, 1),
+                        'result'         => $passed ? 'PASS' : 'FAIL',
+                    ];
+
+                    $totalObt += $obt;
+                    $totalMax += $max;
+                    if ($passed) $passedCount++; else $failedCount++;
+                }
+
+                $overallPct = $totalMax > 0 ? round(($totalObt / $totalMax) * 100, 2) : 0.0;
+
+                $academicYears[$ayId]['mid_exams'][$examType] = [
+                    'label'           => $examLabel,
+                    'exam_type'       => $examType,
+                    'published'       => $published,
+                    'subjects'        => $subjects,
+                    'summary'         => [
+                        'total_subjects' => count($subjects),
+                        'passed'         => $passedCount,
+                        'failed'         => $failedCount,
+                        'total_obtained' => $totalObt,
+                        'total_max'      => $totalMax,
+                        'percentage'     => $overallPct,
+                        'overall_result' => ($failedCount === 0 && $published) ? 'PASS' : ($published ? 'FAIL' : 'NOT_PUBLISHED'),
+                    ],
+                ];
+            }
+        }
+
+        // ── 5. Fetch semester results (reuse existing logic) ───────────────
+        $semResults = $this->getStudentAllSemesterResults($studentId);
+
+        foreach ($semResults as $sr) {
+            $ayId = (int) $sr['academic_year_id'];
+            if (isset($academicYears[$ayId])) {
+                $academicYears[$ayId]['semester_results'][] = $sr;
+            }
+        }
+
+        return array_values($academicYears);
     }
 }

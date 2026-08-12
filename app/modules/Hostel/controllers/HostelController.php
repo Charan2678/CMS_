@@ -20,7 +20,28 @@ class HostelController extends Controller
         $this->studentService = new StudentService();
     }
 
+    /**
+     * Warden Overview Dashboard ONLY.
+     */
     public function index(): void
+    {
+        $canManage = Permission::has('hostel.manage') || Permission::has('hostel.allocate');
+
+        $stats        = $this->hostelService->getStatistics(1);
+        $blockSummary = $this->hostelService->getBlockSummary();
+
+        $this->render('Hostel/views/index', [
+            'title'        => 'Hostel Dashboard — Kuppam Engineering College',
+            'stats'        => $stats,
+            'blockSummary' => $blockSummary,
+            'canManage'    => $canManage,
+        ], 'layout');
+    }
+
+    /**
+     * Dedicated Hostel Management Page (Rooms, Blocks & Student Allocation).
+     */
+    public function management(): void
     {
         $canManage   = Permission::has('hostel.manage') || Permission::has('hostel.allocate');
         $canAllocate = Permission::has('hostel.allocate') || Permission::has('hostel.manage');
@@ -91,50 +112,232 @@ class HostelController extends Controller
                     } else {
                         $error = 'Failed to vacate allocation.';
                     }
+                } elseif ($action === 'verify_booking') {
+                    $bookingId = (int) $this->input('booking_id');
+                    $subAction = $this->input('sub_action'); // confirm or reject
+                    $reason    = $this->input('rejection_reason');
+                    $res = $this->hostelService->processWardenBookingAction($bookingId, $subAction, $reason, auth_id());
+                    if ($res['success']) {
+                        $success = $res['message'];
+                    } else {
+                        $error = $res['message'];
+                    }
+                } elseif ($action === 'update_qr_settings') {
+                    $qrData = [
+                        'qr_image'     => $this->input('qr_image', '/assets/images/hostel_qr.png'),
+                        'upi_id'       => $this->input('upi_id', 'kec.hostel@upi'),
+                        'payee_name'   => $this->input('payee_name', 'Kuppam Engineering College Hostel Account'),
+                        'instructions' => $this->input('instructions', 'Scan with GPay/PhonePe to pay fee.'),
+                    ];
+                    if ($this->hostelService->updatePaymentSettings(1, $qrData)) {
+                        $success = 'Hostel Payment QR & UPI settings updated successfully!';
+                    } else {
+                        $error = 'Failed to update payment settings.';
+                    }
                 }
             }
         }
 
-        $blocks      = $this->hostelService->getHostelBlocks(1);
-        $rooms       = $this->hostelService->getRooms(1);
-        $allocations = $this->hostelService->getHostelAllocations();
-        $students    = $this->studentService->getStudents(1, 1, 100)['data'] ?? [];
+        $blocks          = $this->hostelService->getHostelBlocks(1);
+        $rooms           = $this->hostelService->getRooms(1);
+        $allocations     = $this->hostelService->getHostelAllocations();
+        $bookingRequests = $this->hostelService->getWardenBookingRequests(1);
+        $paymentSettings = $this->hostelService->getPaymentSettings(1);
+        $students        = $this->studentService->getStudents(1, 1, 100)['data'] ?? [];
 
-        $myStudentId = null;
-        $isStudentOrParent = false;
-        if (is_authenticated()) {
-            $user = auth_user();
-            if ($user && $user['linked_type'] === 'student') {
-                $myStudentId = (int) $user['linked_id'];
-                $isStudentOrParent = true;
-            } elseif ($user && $user['linked_type'] === 'parent') {
-                $myStudentId = (int) (session('active_ward_id') ?? 1);
-                $isStudentOrParent = true;
-            }
-        }
-
-        $myAllocation = null;
-        if ($myStudentId) {
-            foreach ($allocations as $a) {
-                if ((int)$a['student_id'] === $myStudentId && $a['status'] === 'active') {
-                    $myAllocation = $a;
-                    break;
-                }
-            }
-        }
-
-        $this->render('Hostel/views/index', [
-            'title'             => 'Hostel Management & Resident Allocations',
-            'blocks'            => $blocks,
-            'rooms'             => $rooms,
-            'allocations'       => $allocations,
-            'students'          => $students,
-            'myAllocation'      => $myAllocation,
-            'isStudentOrParent' => $isStudentOrParent,
-            'canManage'         => $canManage,
-            'canAllocate'       => $canAllocate,
-            'error'             => $error,
-            'success'           => $success,
+        $this->render('Hostel/views/management', [
+            'title'           => 'Hostel Management & Resident Allocations',
+            'blocks'          => $blocks,
+            'rooms'           => $rooms,
+            'allocations'     => $allocations,
+            'bookingRequests' => $bookingRequests,
+            'paymentSettings' => $paymentSettings,
+            'students'        => $students,
+            'canManage'       => $canManage,
+            'canAllocate'     => $canAllocate,
+            'error'           => $error,
+            'success'         => $success,
         ], 'layout');
     }
+
+    /**
+     * Student — Hostel & Room Booking Page.
+     */
+    public function booking(): void
+    {
+        if (!is_authenticated()) {
+            $this->redirect('/login');
+        }
+
+        $studentId = $this->getStudentId();
+        $error     = null;
+        $success   = null;
+
+        if ($this->isPost()) {
+            if (!csrf_verify($this->input('_csrf_token'))) {
+                $error = 'Invalid security token.';
+            } else {
+                $action = $this->input('_action', 'select_bed');
+
+                if ($action === 'change_hostel') {
+                    $bookingId = (int) $this->input('booking_id');
+                    $res = $this->hostelService->cancelOrChangeBooking($studentId, $bookingId);
+                    if ($res['success']) {
+                        flash('success', $res['message']);
+                        $this->redirect('/hostel/booking');
+                        return;
+                    } else {
+                        $error = $res['message'];
+                    }
+                } else {
+                    $blockId   = (int) $this->input('hostel_block_id');
+                    $roomId    = (int) $this->input('hostel_room_id');
+                    $bedNumber = (int) $this->input('bed_number');
+                    $fee       = (float) $this->input('hostel_fee', '25000.00');
+
+                    if (!$blockId || !$roomId || !$bedNumber) {
+                        $error = 'Please select a hostel block, room, and an available bed.';
+                    } else {
+                        $res = $this->hostelService->createStudentBooking($studentId, $blockId, $roomId, $bedNumber, $fee);
+                        if ($res['success']) {
+                            flash('success', $res['message']);
+                            $this->redirect('/hostel/pay');
+                            return;
+                        } else {
+                            $error = $res['message'];
+                        }
+                    }
+                }
+            }
+        }
+
+
+        $activeBooking = $this->hostelService->getStudentActiveBooking($studentId);
+        $hostels       = $this->hostelService->getAvailableHostels(1);
+        
+        $selectedBlockId = (int) ($this->input('block_id') ?: ($hostels[0]['id'] ?? 1));
+        $rooms           = $this->hostelService->getRoomsForBlock($selectedBlockId);
+        $studentProfile  = $this->studentService->getStudentProfile($studentId);
+
+        $this->render('Hostel/views/booking', [
+            'title'           => 'Hostel & Room Booking',
+            'activeBooking'   => $activeBooking,
+            'hostels'         => $hostels,
+            'selectedBlockId' => $selectedBlockId,
+            'rooms'           => $rooms,
+            'studentProfile'  => $studentProfile,
+            'error'           => $error,
+            'success'         => $success,
+        ], 'layout');
+    }
+
+    /**
+     * Student — Hostel Fee Payment Page (QR Code).
+     */
+    public function pay(): void
+    {
+        if (!is_authenticated()) {
+            $this->redirect('/login');
+        }
+
+        $studentId     = $this->getStudentId();
+        $activeBooking = $this->hostelService->getStudentActiveBooking($studentId);
+
+        if (!$activeBooking) {
+            flash('error', 'Please select a hostel room and bed first before proceeding to payment.');
+            $this->redirect('/hostel/booking');
+            return;
+        }
+
+        $error   = null;
+        $success = null;
+
+        if ($this->isPost()) {
+            if (!csrf_verify($this->input('_csrf_token'))) {
+                $error = 'Invalid security token.';
+            } else {
+                $txnId  = trim((string) $this->input('transaction_id'));
+                $pDate  = $this->input('payment_date', date('Y-m-d'));
+                $amount = (float) $this->input('amount', (string) ($activeBooking['hostel_fee'] ?? '25000.00'));
+
+
+                if (empty($txnId)) {
+                    $error = 'Transaction ID / UTR Number is required for verification.';
+                } else {
+                    $res = $this->hostelService->submitBookingPayment($studentId, (int)$activeBooking['id'], $txnId, $pDate, $amount);
+                    if ($res['success']) {
+                        flash('success', $res['message']);
+                        $this->redirect('/hostel/booking');
+                        return;
+                    } else {
+                        $error = $res['message'];
+                    }
+                }
+            }
+        }
+
+        $paymentSettings = $this->hostelService->getPaymentSettings(1);
+        $studentProfile  = $this->studentService->getStudentProfile($studentId);
+
+        $this->render('Hostel/views/pay', [
+            'title'           => 'Hostel Fee Payment (QR Code)',
+            'booking'         => $activeBooking,
+            'paymentSettings' => $paymentSettings,
+            'studentProfile'  => $studentProfile,
+            'error'           => $error,
+            'success'         => $success,
+        ], 'layout');
+    }
+
+    /**
+     * Student — My Hostel Payment History.
+     */
+    public function history(): void
+    {
+        if (!is_authenticated()) {
+            $this->redirect('/login');
+        }
+
+        $studentId = $this->getStudentId();
+        $history   = $this->hostelService->getStudentBookingHistory($studentId);
+
+        $this->render('Hostel/views/history', [
+            'title'   => 'My Hostel Payments & Booking History',
+            'history' => $history,
+        ], 'layout');
+    }
+
+    /**
+     * Parent Portal — Ward Hostel Details & Payment Status.
+     */
+    public function parentView(): void
+    {
+        if (!is_authenticated()) {
+            $this->redirect('/login');
+        }
+
+        $studentId     = $this->getStudentId();
+        $hostelDetails = $this->hostelService->getWardHostelDetails($studentId);
+        $history       = $this->hostelService->getStudentBookingHistory($studentId);
+        $studentProfile= $this->studentService->getStudentProfile($studentId);
+
+        $this->render('Hostel/views/parent', [
+            'title'          => 'Ward Hostel Details & Fees',
+            'hostelDetails'  => $hostelDetails,
+            'history'        => $history,
+            'studentProfile' => $studentProfile,
+        ], 'layout');
+    }
+
+    /**
+     * Helper to resolve active student ID (handles Parent login ward ID).
+     */
+    private function getStudentId(): int
+    {
+        if (auth_role() === 'parent' && !empty($_SESSION['parent_ward_id'])) {
+            return (int) $_SESSION['parent_ward_id'];
+        }
+        return (int) ($_SESSION['linked_id'] ?? 1);
+    }
 }
+

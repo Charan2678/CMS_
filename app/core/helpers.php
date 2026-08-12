@@ -275,6 +275,64 @@ function auth_role(): ?string
 }
 
 /**
+ * Get the currently logged-in user's display name.
+ */
+function auth_name(): string
+{
+    if (!empty($_SESSION['name'])) {
+        return (string) $_SESSION['name'];
+    }
+
+    if (!empty($_SESSION['linked_type']) && !empty($_SESSION['linked_id'])) {
+        $linkedType = $_SESSION['linked_type'];
+        $linkedId   = (int) $_SESSION['linked_id'];
+        $tbl        = match($linkedType) {
+            'student' => 'students',
+            'faculty' => 'faculty',
+            'staff'   => 'staff',
+            default   => null
+        };
+        if ($tbl) {
+            try {
+                $stmt = db()->prepare("SELECT first_name, last_name FROM {$tbl} WHERE id = :id LIMIT 1");
+                $stmt->execute([':id' => $linkedId]);
+                $row = $stmt->fetch();
+                if ($row && !empty($row['first_name'])) {
+                    $_SESSION['name'] = trim($row['first_name'] . ' ' . ($row['last_name'] ?? ''));
+                    return $_SESSION['name'];
+                }
+            } catch (\Throwable $e) {}
+        }
+    }
+
+    $username = (string) ($_SESSION['username'] ?? 'User');
+    if (preg_match('/^[0-9]{4}-[A-Z]+-[0-9]+/i', $username)) {
+        try {
+            $stmt = db()->prepare("SELECT first_name, last_name FROM students WHERE roll_number = :roll LIMIT 1");
+            $stmt->execute([':roll' => $username]);
+            $row = $stmt->fetch();
+            if ($row && !empty($row['first_name'])) {
+                $_SESSION['name'] = trim($row['first_name'] . ' ' . ($row['last_name'] ?? ''));
+                return $_SESSION['name'];
+            }
+        } catch (\Throwable $e) {}
+    }
+
+    return $username;
+}
+
+/**
+ * Get the currently logged-in user's avatar image URL if available.
+ */
+function auth_avatar(): ?string
+{
+    return $_SESSION['profile_photo'] ?? $_SESSION['avatar'] ?? null;
+}
+
+
+
+
+/**
  * Get the currently logged-in user array.
  */
 function auth_user(): ?array

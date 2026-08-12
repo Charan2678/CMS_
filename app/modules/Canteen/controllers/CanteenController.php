@@ -17,7 +17,38 @@ class CanteenController extends Controller
         $this->canteenService = new CanteenService();
     }
 
+    /**
+     * High-Level Overview Canteen Dashboard ONLY.
+     */
     public function index(): void
+    {
+        $canManage = Permission::has('canteen.manage');
+
+        $stats        = $this->canteenService->getStatistics(1);
+        $salesSum     = $this->canteenService->getSalesOverview();
+        $orderStatus  = $this->canteenService->getOrderStatusSummary();
+        $menuSum      = $this->canteenService->getMenuOverview();
+        $invSum       = $this->canteenService->getInventorySummary();
+        $recentOrders = $this->canteenService->getRecentOrdersSummary();
+        $popularItems = $this->canteenService->getPopularFoodItems();
+
+        $this->render('Canteen/views/index', [
+            'title'        => 'Canteen Dashboard — Kuppam Engineering College',
+            'stats'        => $stats,
+            'salesSum'     => $salesSum,
+            'orderStatus'  => $orderStatus,
+            'menuSum'      => $menuSum,
+            'invSum'       => $invSum,
+            'recentOrders' => $recentOrders,
+            'popularItems' => $popularItems,
+            'canManage'    => $canManage,
+        ], 'layout');
+    }
+
+    /**
+     * Dedicated Canteen & Mess Menu Management Page.
+     */
+    public function menu(): void
     {
         $canManage = Permission::has('canteen.manage');
 
@@ -35,7 +66,6 @@ class CanteenController extends Controller
                     if (!$userId) {
                         $error = 'You must be logged in to place an order.';
                     } else {
-                        // Check if cart JSON or single item
                         $cartJson = $this->input('cart_json');
                         $cartItems = [];
 
@@ -64,17 +94,6 @@ class CanteenController extends Controller
                         } else {
                             $error = $res['message'];
                         }
-                    }
-                } elseif ($action === 'update_order_status') {
-                    Permission::enforce('canteen.manage');
-                    $orderId   = (int) $this->input('order_id');
-                    $status    = $this->input('order_status');
-                    $payStatus = $this->input('payment_status'); // optional
-
-                    if ($this->canteenService->updateOrderStatus($orderId, $status, $payStatus)) {
-                        $success = 'Order status updated successfully.';
-                    } else {
-                        $error = 'Failed to update order status.';
                     }
                 } else {
                     Permission::enforce('canteen.manage');
@@ -105,14 +124,84 @@ class CanteenController extends Controller
         $myOrders  = $userId ? $this->canteenService->getUserOrders((int)$userId) : [];
         $allOrders = $canManage ? $this->canteenService->getAllOrders(1) : [];
 
-        $this->render('Canteen/views/index', [
-            'title'     => 'Canteen & Mess Menu',
+        $this->render('Canteen/views/menu', [
+            'title'     => 'Canteen & Mess Menu Management',
             'items'     => $items,
             'myOrders'  => $myOrders,
             'allOrders' => $allOrders,
             'canManage' => $canManage,
             'error'     => $error,
             'success'   => $success,
+        ], 'layout');
+    }
+
+    /**
+     * Dedicated Orders & Sales Page.
+     */
+    /**
+     * Dedicated Orders & Sales / Student Order Tracking Page.
+     */
+    public function orders(): void
+    {
+        if (!is_authenticated()) {
+            $this->redirect('/login');
+        }
+
+        $canManage = Permission::has('canteen.manage');
+        $userId    = auth_id();
+
+        $error   = null;
+        $success = null;
+
+        if ($this->isPost() && $canManage) {
+            if (!csrf_verify($this->input('_csrf_token'))) {
+                $error = 'Invalid security token.';
+            } else {
+                $orderId   = (int) $this->input('order_id');
+                $status    = $this->input('order_status');
+                $payStatus = $this->input('payment_status');
+
+                if ($this->canteenService->updateOrderStatus($orderId, $status, $payStatus)) {
+                    $success = 'Order status updated successfully.';
+                } else {
+                    $error = 'Failed to update order status.';
+                }
+            }
+        }
+
+        if ($canManage) {
+            $allOrders = $this->canteenService->getAllOrders(1);
+            $salesSum  = $this->canteenService->getSalesOverview();
+        } else {
+            $allOrders = $userId ? $this->canteenService->getUserOrders((int)$userId) : [];
+            $salesSum  = [];
+        }
+
+        $this->render('Canteen/views/orders', [
+            'title'     => $canManage ? 'Orders & Sales Management' : 'My Canteen Orders & Status',
+            'allOrders' => $allOrders,
+            'salesSum'  => $salesSum,
+            'canManage' => $canManage,
+            'error'     => $error,
+            'success'   => $success,
+        ], 'layout');
+    }
+
+
+    /**
+     * Dedicated Inventory / Stock Page.
+     */
+    public function inventory(): void
+    {
+        Permission::enforce('canteen.manage');
+
+        $invSum = $this->canteenService->getInventorySummary();
+        $items  = $this->canteenService->getCanteenItems(1);
+
+        $this->render('Canteen/views/inventory', [
+            'title'  => 'Canteen Inventory & Stock Management',
+            'invSum' => $invSum,
+            'items'  => $items,
         ], 'layout');
     }
 }

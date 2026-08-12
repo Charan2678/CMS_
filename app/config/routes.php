@@ -38,12 +38,51 @@ Router::post('/leave/outpass-checkin', [LeaveController::class, 'outpasses']);
 // ─── Facilities & Operations Routes ─────────────────────────
 Router::get('/library',    [LibraryController::class, 'index']);
 Router::post('/library',   [LibraryController::class, 'index']);
-Router::get('/hostel',     [HostelController::class, 'index']);
-Router::post('/hostel',    [HostelController::class, 'index']);
-Router::get('/transport',  [TransportController::class, 'index']);
-Router::post('/transport', [TransportController::class, 'index']);
-Router::get('/canteen',    [CanteenController::class, 'index']);
-Router::post('/canteen',   [CanteenController::class, 'index']);
+Router::get('/hostel',                    [HostelController::class, 'index']);
+Router::post('/hostel',                   [HostelController::class, 'index']);
+Router::get('/warden/dashboard',          [HostelController::class, 'index']);
+Router::get('/hostel/management',         [HostelController::class, 'management']);
+Router::post('/hostel/management',        [HostelController::class, 'management']);
+Router::get('/warden/hostel-management',  [HostelController::class, 'management']);
+Router::get('/warden/outpasses',          [LeaveController::class, 'outpasses']);
+Router::get('/warden/announcements',       [NotificationController::class, 'announcements']);
+
+Router::get('/hostel/booking',            [HostelController::class, 'booking']);
+Router::post('/hostel/booking',           [HostelController::class, 'booking']);
+Router::get('/hostel/pay',                [HostelController::class, 'pay']);
+Router::post('/hostel/pay',               [HostelController::class, 'pay']);
+Router::get('/hostel/history',            [HostelController::class, 'history']);
+Router::get('/hostel/details',            [HostelController::class, 'parentView']);
+
+
+Router::get('/transport',                   [TransportController::class, 'index']);
+Router::post('/transport',                  [TransportController::class, 'index']);
+Router::get('/transport/dashboard',         [TransportController::class, 'index']);
+Router::get('/transport/routes',            [TransportController::class, 'routes']);
+Router::post('/transport/routes',           [TransportController::class, 'routes']);
+Router::get('/transport/pay',               [TransportController::class, 'pay']);
+Router::post('/transport/pay',              [TransportController::class, 'pay']);
+Router::get('/transport/history',           [TransportController::class, 'history']);
+Router::get('/transport/receipt/{id}',      [TransportController::class, 'receipt']);
+Router::get('/transport/accounts',          [TransportController::class, 'accounts']);
+Router::post('/transport/accounts',         [TransportController::class, 'accounts']);
+Router::get('/transport/change-requests',   [TransportController::class, 'changeRequests']);
+Router::post('/transport/change-requests',  [TransportController::class, 'changeRequests']);
+Router::get('/transport/announcements',     [NotificationController::class, 'announcements']);
+
+
+
+Router::get('/canteen',                   [CanteenController::class, 'index']);
+Router::post('/canteen',                  [CanteenController::class, 'index']);
+Router::get('/canteen/dashboard',         [CanteenController::class, 'index']);
+Router::get('/canteen/menu',              [CanteenController::class, 'menu']);
+Router::post('/canteen/menu',             [CanteenController::class, 'menu']);
+Router::get('/canteen/orders',            [CanteenController::class, 'orders']);
+Router::post('/canteen/orders',           [CanteenController::class, 'orders']);
+Router::get('/canteen/inventory',         [CanteenController::class, 'inventory']);
+Router::post('/canteen/inventory',        [CanteenController::class, 'inventory']);
+Router::get('/canteen/announcements',     [NotificationController::class, 'announcements']);
+
 Router::get('/accounts',   [AccountsController::class, 'index']);
 
 // ─── Notifications & Audit Routes ────────────────────────────
@@ -53,6 +92,27 @@ Router::get('/audit-logs',                    [NotificationController::class, 'a
 Router::get('/api/notifications/unread',      [NotificationController::class, 'getUnread']);
 Router::post('/notifications/mark-read/{id}', [NotificationController::class, 'markRead']);
 Router::post('/notifications/mark-all-read',  [NotificationController::class, 'markAllRead']);
+
+// ─── Dedicated Library Module Routes ─────────────────────────
+Router::get('/library',                       [LibraryController::class, 'index']);
+Router::post('/library',                      [LibraryController::class, 'index']);
+Router::get('/library/catalog',               [LibraryController::class, 'catalog']);
+Router::post('/library/catalog',              [LibraryController::class, 'catalog']);
+Router::get('/library/issue',                 [LibraryController::class, 'issue']);
+Router::post('/library/issue',                [LibraryController::class, 'issue']);
+Router::get('/library/reservations',          [LibraryController::class, 'reservations']);
+Router::get('/library/members',               [LibraryController::class, 'members']);
+Router::get('/library/reports/circulation',   [LibraryController::class, 'circulationReport']);
+Router::get('/library/reports/overdue',       [LibraryController::class, 'overdueReport']);
+Router::get('/library/reports/inventory',     [LibraryController::class, 'inventoryReport']);
+Router::get('/library/reports/students',      [LibraryController::class, 'studentReport']);
+Router::get('/library/my-books',              [LibraryController::class, 'myBooks']);
+Router::get('/library/history',               [LibraryController::class, 'history']);
+Router::get('/library/reserve/{id}',          [LibraryController::class, 'reserveBook']);
+
+
+
+
 
 // ─── Reports Routes ──────────────────────────────────────────
 Router::get('/reports/academic',   [ReportController::class, 'academic']);

@@ -79,8 +79,8 @@
                 </div>
 
                 <div class="form-group" style="margin-bottom: 1rem;">
-                    <label class="form-label" for="period_number">Period Number (1-6) *</label>
-                    <input type="number" id="period_number" name="period_number" class="form-control" min="1" max="6" value="1" required>
+                    <label class="form-label" for="period_number">Period Number (1–8) *</label>
+                    <input type="number" id="period_number" name="period_number" class="form-control" min="1" max="8" value="1" required>
                 </div>
 
                 <div class="form-group" style="margin-bottom: 1rem;">
@@ -117,30 +117,70 @@
             $days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
             ?>
             <div style="overflow-x: auto; width: 100%;">
-                <table class="table">
+                <table class="table" style="border-collapse: collapse; min-width: 800px;">
                     <thead>
                         <tr>
-                            <th>Day</th>
-                            <?php for ($p = 1; $p <= 6; $p++): ?>
-                                <th style="text-align: center;">Period <?= $p ?></th>
-                            <?php endfor; ?>
+                            <th style="text-align:left; min-width:70px; font-size:0.75rem; text-transform:uppercase; letter-spacing:0.04em;">Day</th>
+                            <?php foreach ($periodConfig as $col): ?>
+                                <?php if ($col['type'] === 'break'): ?>
+                                    <th style="
+                                        min-width: 90px;
+                                        background: rgba(234,179,8,0.14);
+                                        border-left: 2px dashed rgba(234,179,8,0.5);
+                                        border-right: 2px dashed rgba(234,179,8,0.5);
+                                        color: #92710a;
+                                        font-size: 0.65rem;
+                                        font-weight: 800;
+                                        text-transform: uppercase;
+                                        letter-spacing: 0.05em;
+                                        text-align: center;
+                                        padding: 0.5rem 0.25rem;
+                                    ">
+                                        <?= ($col['label'] === 'Morning Break') ? '☕' : '🍽️' ?><br>
+                                        <?= e($col['label']) ?><br>
+                                        <span style="font-weight:500; font-size:0.6rem; opacity:0.8;"><?= e($col['start']) ?>–<?= e($col['end']) ?></span>
+                                    </th>
+                                <?php else: ?>
+                                    <th style="text-align:center; min-width:105px; font-size:0.75rem; padding:0.5rem 0.25rem;">
+                                        <?= e($col['label']) ?><br>
+                                        <span style="font-weight:500; font-size:0.62rem; color:var(--text-secondary);"><?= e($col['start']) ?>–<?= e($col['end']) ?></span>
+                                    </th>
+                                <?php endif; ?>
+                            <?php endforeach; ?>
                         </tr>
                     </thead>
                     <tbody>
                         <?php foreach ($days as $day): ?>
                             <tr>
-                                <td style="font-weight: 800; text-transform: uppercase; color: var(--accent-color);"><?= substr($day, 0, 3) ?></td>
-                                <?php for ($p = 1; $p <= 6; $p++): ?>
-                                    <?php $slot = $grid[$day][$p] ?? null; ?>
-                                    <td style="text-align: center; background: <?= $slot ? 'rgba(2, 132, 199, 0.12)' : 'var(--bg-main)' ?>; border: 1px solid var(--border-color); padding: 0.625rem 0.35rem;">
-                                        <?php if ($slot): ?>
-                                            <strong style="color: var(--text-primary); display: block; font-size: 0.8125rem;"><?= e($slot['subject_code']) ?></strong>
-                                            <span style="font-size: 0.6875rem; color: var(--accent-color); font-weight: 700;"><?= e($slot['faculty_last_name']) ?></span>
-                                        <?php else: ?>
-                                            <span style="color: var(--text-secondary); opacity: 0.4;">—</span>
-                                        <?php endif; ?>
-                                    </td>
-                                <?php endfor; ?>
+                                <td style="font-weight: 800; text-transform: uppercase; color: var(--accent-color); font-size:0.8rem; white-space:nowrap;"><?= substr($day, 0, 3) ?></td>
+                                <?php foreach ($periodConfig as $col): ?>
+                                    <?php if ($col['type'] === 'break'): ?>
+                                        <td style="
+                                            background: rgba(234,179,8,0.09);
+                                            border-left: 2px dashed rgba(234,179,8,0.4);
+                                            border-right: 2px dashed rgba(234,179,8,0.4);
+                                            text-align: center;
+                                            padding: 0.35rem;
+                                            font-size: 0.65rem;
+                                            font-weight: 700;
+                                            color: #92710a;
+                                            text-transform: uppercase;
+                                            letter-spacing: 0.04em;
+                                        ">
+                                            <?= ($col['label'] === 'Morning Break') ? '☕' : '🍽️' ?>
+                                        </td>
+                                    <?php else: ?>
+                                        <?php $slot = $grid[$day][$col['number']] ?? null; ?>
+                                        <td style="text-align: center; background: <?= $slot ? 'rgba(2,132,199,0.12)' : 'var(--bg-main)' ?>; border: 1px solid var(--border-color); padding: 0.5rem 0.25rem;">
+                                            <?php if ($slot): ?>
+                                                <strong style="color: var(--text-primary); display: block; font-size: 0.75rem;"><?= e($slot['subject_code']) ?></strong>
+                                                <span style="font-size: 0.65rem; color: var(--accent-color); font-weight: 700;"><?= e($slot['faculty_last_name']) ?></span>
+                                            <?php else: ?>
+                                                <span style="color: var(--text-secondary); opacity: 0.35; font-size: 0.75rem;">—</span>
+                                            <?php endif; ?>
+                                        </td>
+                                    <?php endif; ?>
+                                <?php endforeach; ?>
                             </tr>
                         <?php endforeach; ?>
                     </tbody>

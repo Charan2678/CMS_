@@ -1,3 +1,17 @@
+<div style="margin-bottom: 1.5rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
+    <div>
+        <h1 style="font-size: 1.35rem; font-weight: 800; color: var(--text-primary); margin: 0;">
+            Student Profile: <?= e($student['first_name'] . ' ' . $student['last_name']) ?>
+        </h1>
+        <div style="font-size: 0.8125rem; color: var(--text-secondary); margin-top: 0.25rem;">
+            Roll No: <?= e($student['roll_number']) ?> — Adm No: <?= e($student['admission_number']) ?>
+        </div>
+    </div>
+    <a href="/students" class="btn btn-secondary" style="font-size: 0.8125rem; display: inline-flex; align-items: center; gap: 0.35rem; text-decoration: none;">
+        &larr; Back to Students Directory
+    </a>
+</div>
+
 <div style="display: grid; grid-template-columns: 1fr 3fr; gap: 1.5rem;">
     <!-- Sidebar Card -->
     <div class="panel" style="text-align: center;">

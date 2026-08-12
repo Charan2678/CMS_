@@ -94,6 +94,7 @@ class ResultController extends Controller
             'sectionId'      => $sectionId,
             'academicYearId' => $academicYearId,
             'grid'           => $grid,
+            'periodConfig'   => ResultService::getPeriodConfig(),
             'error'          => $error,
             'success'        => $success,
         ], 'layout');
@@ -113,6 +114,7 @@ class ResultController extends Controller
             'title'           => 'My Class Timetable',
             'studentAcademic' => $res['info'],
             'grid'            => $res['grid'],
+            'periodConfig'    => ResultService::getPeriodConfig(),
         ], 'layout');
     }
 
@@ -263,16 +265,22 @@ class ResultController extends Controller
 
     /**
      * View Semester Results & Marksheets for Logged-In Student.
+     * Now extended to show Mid + Semester results across all academic years.
      */
     public function studentResults(): void
     {
-        $userId = auth_id();
+        $userId    = auth_id();
         $studentId = $userId ? $this->attendanceService->getStudentIdFromUser($userId) : null;
 
+        // Full examination dashboard data (mid exams + semester results per AY)
+        $examData  = $studentId ? $this->resultService->getStudentFullExamResults($studentId) : [];
+
+        // Keep old $semesters for backward-compat (any partial references elsewhere)
         $semesters = $studentId ? $this->resultService->getStudentAllSemesterResults($studentId) : [];
 
         $this->render('Result/views/student_results', [
-            'title'     => 'My Semester Results',
+            'title'     => 'My Examination Results & Marksheets',
+            'examData'  => $examData,
             'semesters' => $semesters,
         ], 'layout');
     }

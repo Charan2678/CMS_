@@ -166,7 +166,9 @@ class StudentController extends Controller
     }
 
     /**
-     * Interactive My Profile self-service portal for logged in student.
+     * My Profile page — works for all roles.
+     * Students/Parents get the full profile & document center.
+     * Admin/Staff/Faculty get a general account profile page.
      */
     public function myProfile(): void
     {
@@ -174,15 +176,92 @@ class StudentController extends Controller
             $this->redirect('/login');
         }
 
-        $userId    = auth_id();
-        $attSvc    = new \App\Modules\Attendance\services\AttendanceService();
-        $studentId = $attSvc->getStudentIdFromUser($userId);
+        $userId   = auth_id();
+        $roleType = auth_role();
 
-        if (!$studentId) {
-            flash('error', 'No linked student record found for your user account.');
-            $this->redirect('/dashboard');
+        // ── Student / Parent: full profile & document center ──
+        if (in_array($roleType, ['student', 'parent'])) {
+            $attSvc    = new \App\Modules\Attendance\services\AttendanceService();
+            $studentId = $attSvc->getStudentIdFromUser($userId);
+
+            if (!$studentId) {
+                flash('error', 'No linked student record found for your user account.');
+                $this->redirect('/dashboard');
+                return;
+            }
+
+            $error   = null;
+            $success = null;
+
+            if ($this->isPost()) {
+                if (!csrf_verify($this->input('_csrf_token'))) {
+                    $error = 'Security token invalid. Please refresh and try again.';
+                } else {
+                    $action = $this->input('_action', 'update_profile');
+
+                    if ($action === 'update_profile') {
+                        if ($this->studentService->updateStudentProfile($studentId, $_POST)) {
+                            $success = 'Personal & contact details updated successfully!';
+                        } else {
+                            $error = 'Failed to update personal details.';
+                        }
+                    } elseif ($action === 'save_guardian') {
+                        if ($this->studentService->saveGuardianDetails($studentId, $_POST)) {
+                            $success = 'Parent & guardian information saved successfully!';
+                        } else {
+                            $error = 'Failed to save guardian information.';
+                        }
+                    } elseif ($action === 'upload_document') {
+                        $docType = $this->input('document_type', 'other');
+                        $docName = $this->input('document_name', 'Student Document');
+                        $res     = $this->studentService->uploadStudentDocument($studentId, $docType, $docName, $_FILES['document_file'] ?? []);
+                        if ($res['success']) {
+                            $success = $res['message'];
+                        } else {
+                            $error = $res['message'];
+                        }
+                    } elseif ($action === 'upload_photo') {
+                        $res = $this->studentService->uploadProfilePhoto($studentId, $_FILES['profile_photo'] ?? []);
+                        if ($res['success']) {
+                            $success = $res['message'];
+                        } else {
+                            $error = $res['message'];
+                        }
+                    } elseif ($action === 'change_password') {
+                        $currPass = $this->input('current_password', '');
+                        $newPass  = $this->input('new_password', '');
+                        $confPass = $this->input('confirm_password', '');
+                        if ($newPass !== $confPass) {
+                            $error = 'New password and confirmation password do not match.';
+                        } else {
+                            $authSvc = new \App\Modules\Authentication\services\AuthService();
+                            $res     = $authSvc->changePassword($userId, $currPass, $newPass);
+                            if ($res['success']) {
+                                $success = $res['message'];
+                            } else {
+                                $error = $res['message'];
+                            }
+                        }
+                    }
+                }
+            }
+
+            $student  = $this->studentService->getStudentProfile($studentId);
+            $isParent = ($roleType === 'parent');
+            $title    = $isParent
+                ? 'Child Profile: ' . trim(($student['first_name'] ?? '') . ' ' . ($student['last_name'] ?? ''))
+                : 'My Profile & Document Center';
+
+            $this->render('Student/views/profile', [
+                'title'   => $title,
+                'student' => $student,
+                'error'   => $error,
+                'success' => $success,
+            ], 'layout');
+            return;
         }
 
+        // ── Admin / Staff / Faculty: general account profile ──
         $error   = null;
         $success = null;
 
@@ -190,66 +269,34 @@ class StudentController extends Controller
             if (!csrf_verify($this->input('_csrf_token'))) {
                 $error = 'Security token invalid. Please refresh and try again.';
             } else {
-                $action = $this->input('_action', 'update_profile');
+                $currPass = $this->input('current_password', '');
+                $newPass  = $this->input('new_password', '');
+                $confPass = $this->input('confirm_password', '');
 
-                if ($action === 'update_profile') {
-                    if ($this->studentService->updateStudentProfile($studentId, $_POST)) {
-                        $success = 'Personal & contact details updated successfully!';
-                    } else {
-                        $error = 'Failed to update personal details.';
-                    }
-                } elseif ($action === 'save_guardian') {
-                    if ($this->studentService->saveGuardianDetails($studentId, $_POST)) {
-                        $success = 'Parent & guardian information saved successfully!';
-                    } else {
-                        $error = 'Failed to save guardian information.';
-                    }
-                } elseif ($action === 'upload_document') {
-                    $docType = $this->input('document_type', 'other');
-                    $docName = $this->input('document_name', 'Student Document');
-                    $res     = $this->studentService->uploadStudentDocument($studentId, $docType, $docName, $_FILES['document_file'] ?? []);
-
+                if ($newPass !== $confPass) {
+                    $error = 'New password and confirmation do not match.';
+                } elseif (strlen($newPass) < 8) {
+                    $error = 'New password must be at least 8 characters.';
+                } else {
+                    $authSvc = new \App\Modules\Authentication\services\AuthService();
+                    $res     = $authSvc->changePassword($userId, $currPass, $newPass);
                     if ($res['success']) {
                         $success = $res['message'];
                     } else {
                         $error = $res['message'];
-                    }
-                } elseif ($action === 'upload_photo') {
-                    $res = $this->studentService->uploadProfilePhoto($studentId, $_FILES['profile_photo'] ?? []);
-                    if ($res['success']) {
-                        $success = $res['message'];
-                    } else {
-                        $error = $res['message'];
-                    }
-                } elseif ($action === 'change_password') {
-                    $currPass = $this->input('current_password', '');
-                    $newPass  = $this->input('new_password', '');
-                    $confPass = $this->input('confirm_password', '');
-
-                    if ($newPass !== $confPass) {
-                        $error = 'New password and confirmation password do not match.';
-                    } else {
-                        $authSvc = new \App\Modules\Authentication\services\AuthService();
-                        $res     = $authSvc->changePassword($userId, $currPass, $newPass);
-                        if ($res['success']) {
-                            $success = $res['message'];
-                        } else {
-                            $error = $res['message'];
-                        }
                     }
                 }
             }
         }
 
-        $student = $this->studentService->getStudentProfile($studentId);
-        $isParent = auth_role() === 'parent';
-        $title = $isParent ? 'Child Profile: ' . trim(($student['first_name'] ?? '') . ' ' . ($student['last_name'] ?? '')) : 'My Profile & Document Center';
-
-        $this->render('Student/views/profile', [
-            'title'   => $title,
-            'student' => $student,
-            'error'   => $error,
-            'success' => $success,
+        $this->render('Student/views/account_profile', [
+            'title'    => 'My Account',
+            'username' => $_SESSION['username'] ?? '',
+            'email'    => $_SESSION['email'] ?? '',
+            'roleName' => $_SESSION['role_name'] ?? ucfirst($roleType),
+            'userId'   => $userId,
+            'error'    => $error,
+            'success'  => $success,
         ], 'layout');
     }
 }

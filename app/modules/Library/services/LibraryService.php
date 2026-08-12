@@ -35,17 +35,53 @@ class LibraryService
         ]);
     }
 
+    /**
+     * Calculate how many books a student has taken/reserved during a specific calendar month.
+     * Note: Returning a book does NOT reduce this count.
+     */
+    public function getStudentMonthlyCount(int $studentId, ?string $yearMonth = null): int
+    {
+        if (empty($yearMonth)) {
+            $yearMonth = date('Y-m');
+        }
+        $startDate = $yearMonth . '-01';
+        $endDate   = date('Y-m-t', strtotime($startDate));
+
+        $stmt = db()->prepare('
+            SELECT COUNT(*) 
+            FROM book_issues 
+            WHERE issued_to_type = "student" AND issued_to_id = :sid
+              AND issued_date >= :start_date AND issued_date <= :end_date
+        ');
+        $stmt->execute([
+            ':sid'        => $studentId,
+            ':start_date' => $startDate,
+            ':end_date'   => $endDate,
+        ]);
+        return (int) $stmt->fetchColumn();
+    }
+
     public function issueBook(array $data): array
     {
-        $bookId = (int) $data['book_id'];
-        $toType = $data['issued_to_type'] ?? 'student';
-        $toId   = (int) $data['issued_to_id'];
+        $bookId  = (int) $data['book_id'];
+        $toType  = $data['issued_to_type'] ?? 'student';
+        $toId    = (int) $data['issued_to_id'];
         $dueDays = (int) ($data['due_days'] ?? 14);
 
-        $bStmt = db()->prepare('SELECT available_copies, title FROM books WHERE id = :id FOR UPDATE');
-        
+        // Enforce 4-book monthly limit for students
+        if ($toType === 'student') {
+            $takenThisMonth = $this->getStudentMonthlyCount($toId);
+            if ($takenThisMonth >= 4) {
+                return [
+                    'success' => false,
+                    'message' => "Cannot issue this book. The student has reached the maximum limit of 4 books for this month. (Books taken: {$takenThisMonth} / 4)"
+                ];
+            }
+        }
+
         db()->beginTransaction();
         try {
+            $bStmt = db()->prepare('SELECT available_copies, title FROM books WHERE id = :id FOR UPDATE');
             $bStmt->execute([':id' => $bookId]);
             $book = $bStmt->fetch();
 
@@ -54,26 +90,27 @@ class LibraryService
                 return ['success' => false, 'message' => 'This book has zero available copies in the library inventory.'];
             }
 
-            $issueDate = date('Y-m-d');
-            $dueDate   = date('Y-m-d', strtotime("+{$dueDays} days"));
+            $issuedDate = date('Y-m-d');
+            $dueDate    = date('Y-m-d', strtotime("+{$dueDays} days"));
+            $issuerId   = auth_id() ?: null;
 
             $insStmt = db()->prepare('
                 INSERT INTO book_issues (
-                    book_id, issued_to_type, issued_to_id, issue_date, due_date, status, created_at
+                    book_id, issued_to_type, issued_to_id, issued_by, issued_date, due_date, status, created_at
                 ) VALUES (
-                    :book_id, :to_type, :to_id, :issue_date, :due_date, "issued", NOW()
+                    :book_id, :to_type, :to_id, :issued_by, :issued_date, :due_date, "issued", NOW()
                 )
             ');
             $insStmt->execute([
-                ':book_id'    => $bookId,
-                ':to_type'    => $toType,
-                ':to_id'      => $toId,
-                ':issue_date' => $issueDate,
-                ':due_date'   => $dueDate,
+                ':book_id'     => $bookId,
+                ':to_type'     => $toType,
+                ':to_id'       => $toId,
+                ':issued_by'   => $issuerId,
+                ':issued_date' => $issuedDate,
+                ':due_date'    => $dueDate,
             ]);
 
-            // Decrement copies
-            $decStmt = db()->prepare('UPDATE books SET available_copies = available_copies - 1 WHERE id = :id');
+            $decStmt = db()->prepare('UPDATE books SET available_copies = GREATEST(0, available_copies - 1) WHERE id = :id');
             $decStmt->execute([':id' => $bookId]);
 
             db()->commit();
@@ -84,6 +121,94 @@ class LibraryService
         }
     }
 
+    /**
+     * Reserve / Book a library book by a student with 4-book monthly quota enforcement.
+     */
+    public function reserveBook(int $bookId, int $studentId): array
+    {
+        // Enforce 4-book monthly limit
+        $takenThisMonth = $this->getStudentMonthlyCount($studentId);
+        if ($takenThisMonth >= 4) {
+            return [
+                'success' => false,
+                'message' => "Monthly Book Limit Reached! You can take a maximum of 4 books per month. (Books taken this month: {$takenThisMonth} / 4)"
+            ];
+        }
+
+        db()->beginTransaction();
+        try {
+            $bStmt = db()->prepare('SELECT available_copies, title FROM books WHERE id = :id FOR UPDATE');
+            $bStmt->execute([':id' => $bookId]);
+            $book = $bStmt->fetch();
+
+            if (!$book || (int)$book['available_copies'] < 1) {
+                db()->rollBack();
+                return ['success' => false, 'message' => 'Sorry, this book has no available copies for reservation currently.'];
+            }
+
+            // Check existing active reservation
+            $chkStmt = db()->prepare('
+                SELECT id FROM book_issues 
+                WHERE book_id = :bid AND issued_to_type = "student" AND issued_to_id = :sid AND status IN ("reserved", "issued")
+                LIMIT 1
+            ');
+            $chkStmt->execute([':bid' => $bookId, ':sid' => $studentId]);
+            if ($chkStmt->fetch()) {
+                db()->rollBack();
+                return ['success' => false, 'message' => "You already have an active reservation or issued copy for '{$book['title']}'."];
+            }
+
+            $issuedDate = date('Y-m-d');
+            $dueDate    = date('Y-m-d', strtotime('+14 days'));
+            $issuerId   = auth_id() ?: null;
+
+            $insStmt = db()->prepare('
+                INSERT INTO book_issues (
+                    book_id, issued_to_type, issued_to_id, issued_by, issued_date, due_date, status, created_at
+                ) VALUES (
+                    :book_id, "student", :to_id, :issued_by, :issued_date, :due_date, "reserved", NOW()
+                )
+            ');
+            $insStmt->execute([
+                ':book_id'     => $bookId,
+                ':to_id'       => $studentId,
+                ':issued_by'   => $issuerId,
+                ':issued_date' => $issuedDate,
+                ':due_date'    => $dueDate,
+            ]);
+
+            $issueId = (int) db()->lastInsertId();
+
+            // Decrement copies
+            $decStmt = db()->prepare('UPDATE books SET available_copies = GREATEST(0, available_copies - 1) WHERE id = :id');
+            $decStmt->execute([':id' => $bookId]);
+
+            db()->commit();
+
+            return [
+                'success'       => true,
+                'message'       => "Book '{$book['title']}' reserved successfully! Please collect from the library desk.",
+                'issue_id'      => $issueId,
+                'expected_date' => $dueDate,
+            ];
+        } catch (Exception $e) {
+            db()->rollBack();
+            return ['success' => false, 'message' => 'Failed to reserve book: ' . $e->getMessage()];
+        }
+    }
+
+    /**
+     * Approve reservation / Issue reserved book by Librarian.
+     */
+    public function approveReservation(int $issueId): bool
+    {
+        $stmt = db()->prepare('UPDATE book_issues SET status = "issued", issued_date = CURDATE() WHERE id = :id AND status = "reserved"');
+        return $stmt->execute([':id' => $issueId]);
+    }
+
+    /**
+     * Return book without fine penalty calculation.
+     */
     public function returnBook(int $issueId): array
     {
         db()->beginTransaction();
@@ -102,27 +227,20 @@ class LibraryService
                 return ['success' => false, 'message' => 'Book has already been returned.'];
             }
 
-            // Calculate overdue fine (₹5 per day overdue)
-            $dueDate = strtotime($issue['due_date']);
-            $today   = strtotime(date('Y-m-d'));
-            $overdueDays = max(0, (int) floor(($today - $dueDate) / 86400));
-            $fineAmount = (float) ($overdueDays * 5.00);
-
             $upStmt = db()->prepare('
                 UPDATE book_issues
-                SET status = "returned", returned_date = NOW(), fine_amount = :fine
+                SET status = "returned", returned_date = NOW()
                 WHERE id = :id
             ');
-            $upStmt->execute([':fine' => $fineAmount, ':id' => $issueId]);
+            $upStmt->execute([':id' => $issueId]);
 
-            // Increment copies
+            // Increment available copies
             $incStmt = db()->prepare('UPDATE books SET available_copies = available_copies + 1 WHERE id = :id');
             $incStmt->execute([':id' => $issue['book_id']]);
 
             db()->commit();
 
-            $fineMsg = $fineAmount > 0 ? " (Overdue fine assessed: ₹" . number_format($fineAmount, 2) . " for {$overdueDays} overdue days)" : "";
-            return ['success' => true, 'message' => "Book returned successfully to library catalogue!{$fineMsg}"];
+            return ['success' => true, 'message' => "Book returned successfully to library catalogue!"];
         } catch (Exception $e) {
             db()->rollBack();
             return ['success' => false, 'message' => 'Failed to return book: ' . $e->getMessage()];
@@ -132,7 +250,7 @@ class LibraryService
     public function getBookIssues(): array
     {
         $stmt = db()->prepare('
-            SELECT bi.*, b.title AS book_title, b.isbn, s.roll_number, s.first_name, s.last_name
+            SELECT bi.*, b.title AS book_title, b.isbn, b.author, s.roll_number, s.first_name, s.last_name
             FROM book_issues bi
             JOIN books b ON b.id = bi.book_id
             LEFT JOIN students s ON bi.issued_to_type = "student" AND s.id = bi.issued_to_id
@@ -140,5 +258,209 @@ class LibraryService
         ');
         $stmt->execute();
         return $stmt->fetchAll() ?: [];
+    }
+
+    /**
+     * Get Student Issued & Reserved Books (No fine details).
+     */
+    public function getStudentIssuedBooks(int $studentId): array
+    {
+        $stmt = db()->prepare('
+            SELECT bi.*, b.title AS book_title, b.author, b.category, b.isbn
+            FROM book_issues bi
+            JOIN books b ON b.id = bi.book_id
+            WHERE bi.issued_to_type = "student" AND bi.issued_to_id = :sid
+            ORDER BY bi.id DESC
+        ');
+        $stmt->execute([':sid' => $studentId]);
+        return $stmt->fetchAll() ?: [];
+    }
+
+    /**
+     * Get Student Month-wise Library History.
+     */
+    public function getStudentMonthlyHistory(int $studentId, ?string $yearMonth = null): array
+    {
+        if (empty($yearMonth)) {
+            $yearMonth = date('Y-m');
+        }
+
+        $startDate = $yearMonth . '-01';
+        $endDate   = date('Y-m-t', strtotime($startDate));
+
+        $stmt = db()->prepare('
+            SELECT bi.*, b.title AS book_title, b.author, b.category, b.isbn
+            FROM book_issues bi
+            JOIN books b ON b.id = bi.book_id
+            WHERE bi.issued_to_type = "student" AND bi.issued_to_id = :sid
+              AND bi.issued_date >= :start_date AND bi.issued_date <= :end_date
+            ORDER BY bi.issued_date DESC, bi.id DESC
+        ');
+        $stmt->execute([
+            ':sid'        => $studentId,
+            ':start_date' => $startDate,
+            ':end_date'   => $endDate,
+        ]);
+        $history = $stmt->fetchAll() ?: [];
+
+        // Build list of distinct available months for dropdown
+        $mStmt = db()->prepare('
+            SELECT DISTINCT DATE_FORMAT(issued_date, "%Y-%m") AS month_key,
+                   DATE_FORMAT(issued_date, "%M %Y") AS month_name,
+                   COUNT(*) AS total_books
+            FROM book_issues
+            WHERE issued_to_type = "student" AND issued_to_id = :sid
+            GROUP BY month_key, month_name
+            ORDER BY month_key DESC
+        ');
+        $mStmt->execute([':sid' => $studentId]);
+        $availableMonths = $mStmt->fetchAll() ?: [];
+
+        if (empty($availableMonths)) {
+            $availableMonths = [
+                ['month_key' => date('Y-m'), 'month_name' => date('F Y'), 'total_books' => count($history)]
+            ];
+        }
+
+        $takenThisMonth = count($history);
+
+        return [
+            'selected_month'   => $yearMonth,
+            'history'          => $history,
+            'available_months' => $availableMonths,
+            'monthly_taken'    => $takenThisMonth,
+            'monthly_limit'    => 4,
+            'monthly_remaining'=> max(0, 4 - $takenThisMonth),
+        ];
+    }
+
+    /**
+     * Get Student Library Summary with 4-Book Monthly Quota.
+     */
+    public function getStudentBookSummary(int $studentId): array
+    {
+        try {
+            $stmt = db()->prepare('
+                SELECT 
+                    SUM(CASE WHEN status = "issued" THEN 1 ELSE 0 END) AS books_issued,
+                    SUM(CASE WHEN status = "reserved" THEN 1 ELSE 0 END) AS books_reserved,
+                    SUM(CASE WHEN status = "issued" AND due_date BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL 3 DAY) THEN 1 ELSE 0 END) AS due_soon,
+                    SUM(CASE WHEN status = "overdue" OR (status = "issued" AND due_date < CURDATE()) THEN 1 ELSE 0 END) AS overdue_books
+                FROM book_issues
+                WHERE issued_to_type = "student" AND issued_to_id = :sid
+            ');
+            $stmt->execute([':sid' => $studentId]);
+            $row = $stmt->fetch() ?: [];
+
+            $monthlyTaken = $this->getStudentMonthlyCount($studentId);
+
+            return [
+                'books_issued'      => (int)($row['books_issued'] ?? 0),
+                'books_reserved'    => (int)($row['books_reserved'] ?? 0),
+                'due_soon'          => (int)($row['due_soon'] ?? 0),
+                'overdue_books'     => (int)($row['overdue_books'] ?? 0),
+                'monthly_taken'     => $monthlyTaken,
+                'monthly_limit'     => 4,
+                'monthly_remaining' => max(0, 4 - $monthlyTaken),
+            ];
+        } catch (\Throwable $e) {
+            return [
+                'books_issued'      => 0,
+                'books_reserved'    => 0,
+                'due_soon'          => 0,
+                'overdue_books'     => 0,
+                'monthly_taken'     => 0,
+                'monthly_limit'     => 4,
+                'monthly_remaining' => 4,
+            ];
+        }
+    }
+
+    public function getStatistics(int $collegeId = 1): array
+    {
+        try {
+            $stmt = db()->query('SELECT COALESCE(SUM(total_copies), 0) as total_copies, COALESCE(SUM(available_copies), 0) as available_copies FROM books');
+            $bookTotals = $stmt->fetch() ?: ['total_copies' => 0, 'available_copies' => 0];
+
+            $stmt = db()->query("SELECT COUNT(*) FROM book_issues WHERE status IN ('issued', 'overdue')");
+            $issuedCount = (int) $stmt->fetchColumn();
+
+            $stmt = db()->query("SELECT COUNT(*) FROM book_issues WHERE status = 'overdue' OR (status = 'issued' AND due_date < CURDATE())");
+            $overdueCount = (int) $stmt->fetchColumn();
+
+            $stmt = db()->query("SELECT (SELECT COUNT(*) FROM students) + (SELECT COUNT(*) FROM faculty) AS members");
+            $registeredMembers = (int) $stmt->fetchColumn();
+
+            $stmt = db()->query("SELECT COUNT(*) FROM book_issues WHERE status = 'issued' AND due_date = CURDATE()");
+            $dueTodayCount = (int) $stmt->fetchColumn();
+
+            return [
+                'total_books'        => (int) $bookTotals['total_copies'],
+                'available_books'    => (int) $bookTotals['available_copies'],
+                'issued_books'       => $issuedCount,
+                'overdue_books'      => $overdueCount,
+                'registered_members' => $registeredMembers,
+                'due_today'          => $dueTodayCount,
+            ];
+        } catch (\Throwable $e) {
+            return [
+                'total_books'        => 0,
+                'available_books'    => 0,
+                'issued_books'       => 0,
+                'overdue_books'      => 0,
+                'registered_members' => 0,
+                'due_today'          => 0,
+            ];
+        }
+    }
+
+    public function getOverdueBooks(): array
+    {
+        $stmt = db()->prepare('
+            SELECT bi.*, b.title AS book_title, b.author, s.roll_number, s.first_name, s.last_name, s.mobile, s.email,
+                   DATEDIFF(CURDATE(), bi.due_date) AS days_overdue
+            FROM book_issues bi
+            JOIN books b ON b.id = bi.book_id
+            JOIN students s ON bi.issued_to_type = "student" AND s.id = bi.issued_to_id
+            WHERE bi.status = "overdue" OR (bi.status = "issued" AND bi.due_date < CURDATE())
+            ORDER BY bi.due_date ASC
+        ');
+        $stmt->execute();
+        return $stmt->fetchAll() ?: [];
+    }
+
+    public function getPopularBooks(): array
+    {
+        $stmt = db()->prepare('
+            SELECT b.*, COUNT(bi.id) AS borrow_count
+            FROM books b
+            LEFT JOIN book_issues bi ON bi.book_id = b.id
+            GROUP BY b.id
+            ORDER BY borrow_count DESC, b.id ASC
+            LIMIT 5
+        ');
+        $stmt->execute();
+        return $stmt->fetchAll() ?: [];
+    }
+
+    public function getDepartmentUsage(): array
+    {
+        try {
+            $stmt = db()->query('
+                SELECT d.code, d.name,
+                       COUNT(DISTINCT s.id) AS active_members,
+                       COUNT(DISTINCT bi.id) AS books_issued
+                FROM departments d
+                LEFT JOIN courses c ON c.department_id = d.id
+                LEFT JOIN student_academics sa ON sa.department_id = d.id
+                LEFT JOIN students s ON s.id = sa.student_id
+                LEFT JOIN book_issues bi ON bi.issued_to_type = "student" AND bi.issued_to_id = s.id AND bi.status = "issued"
+                GROUP BY d.id
+                ORDER BY d.id ASC
+            ');
+            return $stmt->fetchAll() ?: [];
+        } catch (\Throwable $e) {
+            return [];
+        }
     }
 }

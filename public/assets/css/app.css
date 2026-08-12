@@ -174,17 +174,18 @@ body {
 .nav-item {
     display: flex;
     align-items: center;
-    padding: 0.5rem 0.75rem;
+    padding: 0.6rem 0.85rem;
     color: rgba(255,255,255,0.88);
     text-decoration: none;
-    border-radius: 0.5rem;
+    border-radius: 0.6rem;
     font-size: 0.8125rem;
     font-weight: 500;
-    margin-bottom: 0.125rem;
-    transition: all 0.15s ease;
+    margin-bottom: 0.2rem;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    position: relative;
 }
 
 .nav-svg-icon {
@@ -192,22 +193,42 @@ body {
     height: 18px;
     stroke: currentColor;
     fill: none;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
     flex-shrink: 0;
-    margin-right: 0.625rem;
+    margin-right: 0.65rem;
     display: inline-block;
     vertical-align: middle;
-    transition: transform 0.2s ease;
+    transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), stroke 0.25s ease;
 }
 
-.nav-item:hover { background: var(--sidebar-hover-bg); color: #ffffff; }
-.nav-item:hover .nav-svg-icon { transform: scale(1.1); }
+.nav-item:hover { 
+    background: rgba(255, 255, 255, 0.15); 
+    color: #ffffff; 
+    transform: translateX(4px);
+}
+
+.nav-item:hover .nav-svg-icon { 
+    transform: scale(1.18); 
+}
+
 .nav-item.active {
-    background: var(--sidebar-active-bg);
+    background: rgba(255, 255, 255, 0.22);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
     color: #ffffff;
     font-weight: 700;
-    border-left: 3px solid #ffffff;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    border-left: 4px solid #ffffff;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
+    transform: translateX(2px);
 }
+
+.nav-item.active .nav-svg-icon {
+    transform: scale(1.1);
+    stroke-width: 2.3;
+}
+
 
 /* ============================================================
    MOBILE OVERLAY
