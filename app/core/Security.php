@@ -29,7 +29,7 @@ class Security
     }
 
     /**
-     * Check if a user/IP is currently locked out due to excessive failed attempts.
+     * Check if a specific user account is currently locked out due to excessive failed attempts.
      */
     public static function isLockedOut(string $username, string $ip): bool
     {
@@ -38,16 +38,31 @@ class Security
 
         $stmt = db()->prepare('
             SELECT COUNT(*) FROM login_history
-            WHERE (user_id = (SELECT id FROM users WHERE username = :u LIMIT 1) OR ip_address = :ip)
+            WHERE user_id = (SELECT id FROM users WHERE username = :u OR email = :u LIMIT 1)
               AND status = "failed"
               AND attempted_at >= DATE_SUB(NOW(), INTERVAL :secs SECOND)
         ');
         $stmt->bindValue(':u', $username);
-        $stmt->bindValue(':ip', $ip);
         $stmt->bindValue(':secs', $lockoutSecs, \PDO::PARAM_INT);
         $stmt->execute();
 
         return ((int) $stmt->fetchColumn()) >= $maxAttempts;
+    }
+
+    /**
+     * Clear failed login attempts for a user after a successful login.
+     */
+    public static function clearFailedAttempts(int $userId): void
+    {
+        try {
+            $stmt = db()->prepare('
+                DELETE FROM login_history
+                WHERE user_id = :user_id AND status = "failed"
+            ');
+            $stmt->execute([':user_id' => $userId]);
+        } catch (\Exception $e) {
+            // Fail silently
+        }
     }
 
     /**
@@ -56,6 +71,10 @@ class Security
     public static function recordLoginAttempt(?int $userId, string $ip, string $userAgent, string $status): void
     {
         try {
+            if ($status === 'success' && $userId && $userId > 0) {
+                self::clearFailedAttempts($userId);
+            }
+
             $stmt = db()->prepare('
                 INSERT INTO login_history (user_id, ip_address, user_agent, status, attempted_at)
                 VALUES (:user_id, :ip, :ua, :status, NOW())
