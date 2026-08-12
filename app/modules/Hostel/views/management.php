@@ -3,7 +3,9 @@
         <h1 style="font-size: 1.35rem; font-weight: 800; color: var(--text-primary); margin: 0;">🏢 Hostel Management &amp; Resident Allocations</h1>
         <p style="color: var(--text-secondary); font-size: 0.8125rem; margin: 0.25rem 0 0 0;">Manage hostel blocks, student booking verification, payment QR, and resident bed allocations</p>
     </div>
-    <a href="/hostel" class="btn btn-secondary" style="font-size: 0.8125rem;">&larr; Back to Hostel Overview</a>
+    <a href="/hostel" style="display: inline-flex; align-items: center; gap: 0.5rem; text-decoration: none; padding: 0.45rem 1rem; border-radius: 20px; font-weight: 700; font-size: 0.85rem; background: rgba(2, 132, 199, 0.05); border: 1.5px solid #0284c7; color: #0284c7; transition: all 0.2s ease;">
+        ← Back to Hostel Overview
+    </a>
 </div>
 
 <?php if (!empty($error)): ?>

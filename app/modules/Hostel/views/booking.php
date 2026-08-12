@@ -17,7 +17,10 @@ $ab = $activeBooking ?? null;
                 Select your hostel block, room, and available bed for Academic Year 2026-2027.
             </p>
         </div>
-        <div style="display: flex; gap: 0.5rem;">
+        <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
+            <a href="/hostel" style="display: inline-flex; align-items: center; gap: 0.5rem; text-decoration: none; padding: 0.45rem 1rem; border-radius: 20px; font-weight: 700; font-size: 0.85rem; background: rgba(2, 132, 199, 0.05); border: 1.5px solid #0284c7; color: #0284c7; transition: all 0.2s ease;">
+                ← Back to Hostel Overview
+            </a>
             <a href="/hostel/history" class="btn btn-sm btn-outline-secondary" style="font-size: 0.75rem; font-weight: 700;">
                 📜 Booking &amp; Payment History
             </a>

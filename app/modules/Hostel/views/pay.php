@@ -19,8 +19,8 @@ $fee = (float)($bk['hostel_fee'] ?? 25000.00);
                 Scan official Hostel UPI QR Code and submit your bank transaction UTR reference.
             </p>
         </div>
-        <a href="/hostel/booking" class="btn btn-sm btn-outline-secondary" style="font-weight: 700; font-size: 0.75rem;">
-            ← Back to Booking
+        <a href="/hostel" style="display: inline-flex; align-items: center; gap: 0.5rem; text-decoration: none; padding: 0.45rem 1rem; border-radius: 20px; font-weight: 700; font-size: 0.85rem; background: rgba(2, 132, 199, 0.05); border: 1.5px solid #0284c7; color: #0284c7; transition: all 0.2s ease;">
+            ← Back to Hostel Overview
         </a>
     </div>
 
