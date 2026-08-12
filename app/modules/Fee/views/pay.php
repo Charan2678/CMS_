@@ -8,7 +8,7 @@
                 Kuppam Engineering College Official Online Fee Payment Portal
             </p>
         </div>
-        <a href="/fee/payments" class="btn btn-secondary" style="font-size: 0.8125rem;">&larr; Back to Dues Ledger</a>
+        <a href="/fee/payments" class="btn btn-secondary" style="font-size: 0.8125rem;">&larr; Back to Fee &amp; Financial Ledger</a>
     </div>
 
     <div style="display: grid; grid-template-columns: 1.2fr 1.8fr; gap: 1.5rem;">

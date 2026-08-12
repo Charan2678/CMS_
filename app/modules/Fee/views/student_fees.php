@@ -1,9 +1,14 @@
-<div class="page-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+<div class="page-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
     <div>
-        <h1 class="page-title" style="font-size: 1.75rem; font-weight: 700; color: var(--text-primary); margin: 0;">My Fee Receipts & Dues Ledger</h1>
+        <h1 class="page-title" style="font-size: 1.75rem; font-weight: 700; color: var(--text-primary); margin: 0;">My Fee Receipts &amp; Dues Ledger</h1>
         <p style="color: var(--text-secondary); font-size: 0.875rem; margin-top: 0.25rem;">
             View your institutional fee statements, payment records, and official downloadable receipts.
         </p>
+    </div>
+    <div>
+        <a href="/dashboard" class="btn-secondary" style="display: inline-flex; align-items: center; gap: 0.5rem; text-decoration: none; padding: 0.5rem 1rem; border-radius: 8px; font-weight: 600; font-size: 0.875rem; background: var(--bg-main); border: 1px solid var(--border-color); color: var(--text-primary); transition: all 0.2s ease;">
+            <span>←</span> Back to Dashboard
+        </a>
     </div>
 </div>
 

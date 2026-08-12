@@ -1,3 +1,19 @@
+<div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+    <div>
+        <h1 style="font-size: 1.5rem; font-weight: 800; color: var(--text-primary); margin: 0; display: flex; align-items: center; gap: 0.5rem;">
+            <span>📋</span> Fee Structures &amp; Fee Schedules
+        </h1>
+        <p style="color: var(--text-secondary); font-size: 0.85rem; margin: 0.25rem 0 0 0;">
+            Configure academic fee structures by program, semester, and batch.
+        </p>
+    </div>
+    <div>
+        <a href="/fee/payments" class="btn-secondary" style="display: inline-flex; align-items: center; gap: 0.5rem; text-decoration: none; padding: 0.5rem 1rem; border-radius: 8px; font-weight: 600; font-size: 0.875rem; background: var(--bg-main); border: 1px solid var(--border-color); color: var(--text-primary); transition: all 0.2s ease;">
+            <span>←</span> Back to Fee &amp; Financial Ledger
+        </a>
+    </div>
+</div>
+
 <?php if (!empty($error)): ?>
     <div class="alert alert-danger" style="margin-bottom: 1.5rem;"><?= e($error) ?></div>
 <?php endif; ?>
