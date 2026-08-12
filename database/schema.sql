@@ -952,6 +952,29 @@ CREATE TABLE `hostel_allocations` (
         FOREIGN KEY (`allotted_by`) REFERENCES `users` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+CREATE TABLE IF NOT EXISTS `hostel_bookings` (
+    `id`               INT UNSIGNED     NOT NULL AUTO_INCREMENT,
+    `student_id`       INT UNSIGNED     NOT NULL,
+    `hostel_block_id`   INT UNSIGNED     NOT NULL,
+    `hostel_room_id`   INT UNSIGNED     NOT NULL,
+    `bed_number`       INT UNSIGNED     NOT NULL DEFAULT 1,
+    `academic_year`    VARCHAR(20)     NOT NULL DEFAULT '2026-2027',
+    `semester`         VARCHAR(20)     NOT NULL DEFAULT 'Semester 1',
+    `hostel_fee`       DECIMAL(10,2)    NOT NULL DEFAULT 25000.00,
+    `payment_status`   ENUM('unpaid', 'paid', 'failed') NOT NULL DEFAULT 'unpaid',
+    `payment_txn_id`   VARCHAR(100)     DEFAULT NULL,
+    `payment_date`     DATETIME         DEFAULT NULL,
+    `booking_status`   ENUM('payment_pending', 'payment_verification_pending', 'confirmed', 'approved', 'rejected', 'cancelled') NOT NULL DEFAULT 'payment_pending',
+    `rejection_reason` TEXT             DEFAULT NULL,
+    `verified_by`      INT UNSIGNED     DEFAULT NULL,
+    `verified_at`      DATETIME         DEFAULT NULL,
+    `created_at`       DATETIME         NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at`       DATETIME         NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (`id`),
+    KEY `idx_hbk_student` (`student_id`),
+    KEY `idx_hbk_room`    (`hostel_room_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 CREATE TABLE `books` (
     `id`               INT UNSIGNED     NOT NULL AUTO_INCREMENT,
     `college_id`       INT UNSIGNED     NOT NULL,
@@ -1017,20 +1040,30 @@ CREATE TABLE `vehicles` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE `transport_routes` (
-    `id`           INT UNSIGNED     NOT NULL AUTO_INCREMENT,
-    `college_id`   INT UNSIGNED     NOT NULL,
-    `vehicle_id`   INT UNSIGNED     NOT NULL,
-    `route_name`   VARCHAR(150)     NOT NULL,
-    `start_point`  VARCHAR(150),
-    `end_point`    VARCHAR(150),
-    `distance_km`  DECIMAL(6,2)     DEFAULT NULL,
-    `monthly_fee`  DECIMAL(8,2)     NOT NULL DEFAULT 0.00,
-    `status`       TINYINT UNSIGNED NOT NULL DEFAULT 1,
+    `id`              INT UNSIGNED     NOT NULL AUTO_INCREMENT,
+    `college_id`      INT UNSIGNED     NOT NULL DEFAULT 1,
+    `vehicle_id`      INT UNSIGNED     DEFAULT NULL,
+    `route_code`      VARCHAR(50)      NOT NULL DEFAULT 'RT-01',
+    `route_name`      VARCHAR(150)     NOT NULL,
+    `bus_number`      VARCHAR(50)      NOT NULL DEFAULT 'BUS-01',
+    `bus_reg_number`  VARCHAR(50)      DEFAULT 'KA-01-EQ-1234',
+    `bus_type`        VARCHAR(50)      DEFAULT 'AC Deluxe Bus',
+    `driver_name`     VARCHAR(150)     DEFAULT 'Ramesh Kumar',
+    `driver_contact`  VARCHAR(20)      DEFAULT '+91 98765 43210',
+    `start_point`     VARCHAR(150)     DEFAULT 'Central Bus Terminal',
+    `end_point`       VARCHAR(150)     DEFAULT 'College Main Campus',
+    `pickup_point`    VARCHAR(150)     DEFAULT 'Central Bus Terminal',
+    `pickup_time`     TIME             DEFAULT '07:30:00',
+    `drop_point`      VARCHAR(150)     DEFAULT 'College Main Campus',
+    `drop_time`       TIME             DEFAULT '16:30:00',
+    `distance_km`     DECIMAL(6,2)     DEFAULT 15.50,
+    `monthly_fee`     DECIMAL(8,2)     NOT NULL DEFAULT 1200.00,
+    `annual_fee`      DECIMAL(10,2)    NOT NULL DEFAULT 12000.00,
+    `capacity`        INT UNSIGNED     NOT NULL DEFAULT 40,
+    `available_seats` INT UNSIGNED     NOT NULL DEFAULT 40,
+    `status`          TINYINT UNSIGNED NOT NULL DEFAULT 1,
     PRIMARY KEY (`id`),
-    CONSTRAINT `fk_tr_college`
-        FOREIGN KEY (`college_id`) REFERENCES `colleges` (`id`),
-    CONSTRAINT `fk_tr_vehicle`
-        FOREIGN KEY (`vehicle_id`) REFERENCES `vehicles` (`id`)
+    KEY `idx_tr_college` (`college_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- One student, one route per academic year enforced by UNIQUE.
@@ -1051,6 +1084,70 @@ CREATE TABLE `transport_allocations` (
         FOREIGN KEY (`route_id`) REFERENCES `transport_routes` (`id`),
     CONSTRAINT `fk_ta_acyr`
         FOREIGN KEY (`academic_year_id`) REFERENCES `academic_years` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS `transport_subscriptions` (
+    `id`                   INT UNSIGNED     NOT NULL AUTO_INCREMENT,
+    `student_id`           INT UNSIGNED     NOT NULL,
+    `route_id`             INT UNSIGNED     NOT NULL,
+    `pickup_point`         VARCHAR(150)     DEFAULT NULL,
+    `pickup_time`          VARCHAR(30)      DEFAULT '07:15 AM',
+    `drop_point`           VARCHAR(150)     DEFAULT NULL,
+    `drop_time`            VARCHAR(30)      DEFAULT '08:30 AM',
+    `academic_year`        VARCHAR(20)      NOT NULL DEFAULT '2026-2027',
+    `annual_fee`           DECIMAL(10,2)    NOT NULL DEFAULT 12000.00,
+    `payment_status`       ENUM('unpaid', 'pending', 'paid', 'failed') NOT NULL DEFAULT 'unpaid',
+    `subscription_status`  ENUM('active', 'pending', 'cancelled', 'transferred', 'payment_pending') NOT NULL DEFAULT 'active',
+    `created_at`           DATETIME         NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at`           DATETIME         NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (`id`),
+    KEY `idx_ts_student` (`student_id`),
+    KEY `idx_ts_route`   (`route_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS `transport_payments` (
+    `id`               INT UNSIGNED     NOT NULL AUTO_INCREMENT,
+    `subscription_id`  INT UNSIGNED     NOT NULL,
+    `student_id`       INT UNSIGNED     NOT NULL,
+    `transaction_id`   VARCHAR(100)     NOT NULL,
+    `payment_date`     DATE             NOT NULL,
+    `amount`           DECIMAL(10,2)    NOT NULL,
+    `payment_status`   ENUM('pending', 'paid', 'rejected') NOT NULL DEFAULT 'pending',
+    `verified_by`      INT UNSIGNED     DEFAULT NULL,
+    `remarks`          TEXT             DEFAULT NULL,
+    `created_at`       DATETIME         NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (`id`),
+    KEY `idx_tp_sub`     (`subscription_id`),
+    KEY `idx_tp_student` (`student_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS `transport_change_requests` (
+    `id`               INT UNSIGNED     NOT NULL AUTO_INCREMENT,
+    `student_id`       INT UNSIGNED     NOT NULL,
+    `current_route_id` INT UNSIGNED     NOT NULL,
+    `new_route_id`     INT UNSIGNED     NOT NULL,
+    `status`           ENUM('pending', 'approved', 'rejected') NOT NULL DEFAULT 'pending',
+    `transaction_id`   VARCHAR(100)     DEFAULT NULL,
+    `payment_date`     DATE             DEFAULT NULL,
+    `amount`           DECIMAL(10,2)    DEFAULT NULL,
+    `payment_status`   ENUM('unpaid', 'paid') DEFAULT 'unpaid',
+    `reviewed_by`      INT UNSIGNED     DEFAULT NULL,
+    `rejection_reason` TEXT             DEFAULT NULL,
+    `created_at`       DATETIME         NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (`id`),
+    KEY `idx_tcr_student` (`student_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS `transport_stops` (
+    `id`          INT UNSIGNED     NOT NULL AUTO_INCREMENT,
+    `route_id`    INT UNSIGNED     NOT NULL,
+    `stop_name`   VARCHAR(150)     NOT NULL,
+    `stop_order`  INT UNSIGNED     NOT NULL DEFAULT 1,
+    `pickup_time` TIME             DEFAULT '07:30:00',
+    `drop_time`   TIME             DEFAULT '16:30:00',
+    `fee`         DECIMAL(8,2)     NOT NULL DEFAULT 1200.00,
+    PRIMARY KEY (`id`),
+    KEY `idx_tstop_route` (`route_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 

@@ -112,7 +112,40 @@ VALUES
 (2, 2, 'mother', 'Sarah Smith', '9999922222', 'parent.jane@kuppam.edu.in', 'Professor', 800000.00, 1)
 ON DUPLICATE KEY UPDATE `name` = VALUES(`name`);
 
--- 11. Role Permissions Safeguard
+-- 11. Hostel Seed Data
+INSERT INTO `hostel_blocks` (`id`, `college_id`, `name`, `type`, `total_rooms`, `status`)
+VALUES
+(1, 1, 'Visvesvaraya Boys Hostel', 'boys', 50, 1),
+(2, 1, 'Kalpana Chawla Girls Hostel', 'girls', 40, 1)
+ON DUPLICATE KEY UPDATE `name` = VALUES(`name`);
+
+INSERT INTO `hostel_rooms` (`id`, `hostel_block_id`, `room_number`, `floor`, `capacity`, `type`, `monthly_rent`, `status`)
+VALUES
+(1, 1, '101', 1, 2, 'double', 3500.00, 'available'),
+(2, 1, '102', 1, 2, 'double', 3500.00, 'available'),
+(3, 2, 'G01', 1, 2, 'double', 3800.00, 'available')
+ON DUPLICATE KEY UPDATE `room_number` = VALUES(`room_number`);
+
+-- 12. Library Books Seed Data
+INSERT INTO `books` (`id`, `college_id`, `title`, `author`, `isbn`, `publisher`, `category`, `total_copies`, `available_copies`, `status`)
+VALUES
+(1, 1, 'Introduction to Algorithms', 'Thomas H. Cormen', '9780262033848', 'MIT Press', 'Computer Science', 10, 10, 1),
+(2, 1, 'Clean Code', 'Robert C. Martin', '9780132350884', 'Prentice Hall', 'Software Engineering', 8, 8, 1),
+(3, 1, 'Database System Concepts', 'Abraham Silberschatz', '9780073523323', 'McGraw-Hill', 'Computer Science', 6, 6, 1)
+ON DUPLICATE KEY UPDATE `title` = VALUES(`title`);
+
+-- 13. Transport Seed Data
+INSERT INTO `vehicles` (`id`, `college_id`, `registration_number`, `type`, `capacity`, `driver_name`, `driver_mobile`, `status`)
+VALUES
+(1, 1, 'KA-01-EQ-1234', 'bus', 40, 'Ramesh Kumar', '9876543210', 'active')
+ON DUPLICATE KEY UPDATE `registration_number` = VALUES(`registration_number`);
+
+INSERT INTO `transport_routes` (`id`, `college_id`, `vehicle_id`, `route_name`, `start_point`, `end_point`, `distance_km`, `monthly_fee`, `status`)
+VALUES
+(1, 1, 1, 'Route 1 - City Express', 'Main Station', 'Campus Gate', 15.5, 1200.00, 1)
+ON DUPLICATE KEY UPDATE `route_name` = VALUES(`route_name`);
+
+-- 14. Role Permissions Safeguard
 INSERT INTO `role_permissions` (`role_id`, `permission_id`, `granted`)
 SELECT 1, id, 1 FROM permissions
 ON DUPLICATE KEY UPDATE granted = 1;

@@ -13,6 +13,12 @@ define('PUBLIC_PATH',  BASE_PATH . '/public');
 
 require_once BASE_PATH . '/vendor/autoload.php';
 
+require_once BASE_PATH . '/app/core/Environment.php';
+\App\Core\Environment::load(BASE_PATH . '/.env');
+
+$dbConfig = require CONFIG_PATH . '/database.php';
+\App\Core\Database::configure($dbConfig);
+
 // Mock active session for CLI / Testing environment if session is uninitialized
 if (session_status() === PHP_SESSION_NONE) {
     @session_start();

@@ -65,7 +65,7 @@ class LibraryService
     {
         $bookId  = (int) $data['book_id'];
         $toType  = $data['issued_to_type'] ?? 'student';
-        $toId    = (int) $data['issued_to_id'];
+        $toId    = (int) ($data['issued_to_id'] ?? $data['student_id'] ?? 0);
         $dueDays = (int) ($data['due_days'] ?? 14);
 
         // Enforce 4-book monthly limit for students
@@ -92,7 +92,7 @@ class LibraryService
 
             $issuedDate = date('Y-m-d');
             $dueDate    = date('Y-m-d', strtotime("+{$dueDays} days"));
-            $issuerId   = auth_id() ?: null;
+            $issuerId   = (int) ($data['issued_by'] ?? auth_id() ?? 1);
 
             $insStmt = db()->prepare('
                 INSERT INTO book_issues (
