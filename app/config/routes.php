@@ -128,6 +128,7 @@ Router::get('/fee/assign',       [FeeController::class, 'assign']);
 Router::post('/fee/assign',      [FeeController::class, 'assign']);
 Router::get('/fee/payments',     [FeeController::class, 'payments']);
 Router::post('/fee/payments',    [FeeController::class, 'payments']);
+Router::get('/fee/pay',          [FeeController::class, 'pay']);
 Router::get('/fee/pay/{id}',     [FeeController::class, 'pay']);
 Router::post('/fee/submit-utr',  [FeeController::class, 'submitUtr']);
 Router::post('/fee/instant-pay', [FeeController::class, 'instantPay']);
