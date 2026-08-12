@@ -143,7 +143,11 @@ $svg = [
 
                 <div class="nav-section-title">ACADEMIC MANAGEMENT</div>
                 <a href="/attendance" class="nav-item <?= request_uri() === '/attendance' ? 'active' : '' ?>"><?= $svg['attendance'] ?> Mark Attendance</a>
-                <a href="/timetable" class="nav-item <?= request_uri() === '/timetable' ? 'active' : '' ?>"><?= $svg['timetable'] ?> Class Timetable</a>
+                <?php if ($r === 'hod'): ?>
+                    <a href="/timetable" class="nav-item <?= request_uri() === '/timetable' ? 'active' : '' ?>"><?= $svg['timetable'] ?> Class &amp; Staff Timetables</a>
+                <?php else: ?>
+                    <a href="/staff-timetable" class="nav-item <?= request_uri() === '/staff-timetable' ? 'active' : '' ?>"><?= $svg['timetable'] ?> My Staff Timetable</a>
+                <?php endif; ?>
                 <a href="/marks/internal" class="nav-item <?= request_uri() === '/marks/internal' ? 'active' : '' ?>"><?= $svg['results'] ?> Internal CIA Marks</a>
                 <a href="/results" class="nav-item <?= request_uri() === '/results' ? 'active' : '' ?>"><?= $svg['results'] ?> Semester Results</a>
                 <a href="/leave/review" class="nav-item <?= request_uri() === '/leave/review' ? 'active' : '' ?>"><?= $svg['leave'] ?> Review Leaves &amp; Outpasses</a>

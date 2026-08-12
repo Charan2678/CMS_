@@ -33,10 +33,19 @@ class ResultController extends Controller
     /**
      * Timetable Grid Scheduler / Student Timetable View.
      */
+    /**
+     * HOD Class & Staff Timetable Scheduler / Management.
+     */
     public function timetable(): void
     {
+        // 1. Role Redirects for View-Only Users
         if (in_array(auth_role(), ['student', 'parent'], true)) {
             $this->studentTimetable();
+            return;
+        }
+
+        if (auth_role() === 'faculty' && !Permission::has('timetable.manage')) {
+            $this->staffTimetable();
             return;
         }
 
@@ -45,31 +54,75 @@ class ResultController extends Controller
         $error   = null;
         $success = null;
 
+        $type           = strtolower(query('type', $this->input('type', 'student')));
         $sectionId      = (int) query('section_id', $this->input('section_id', '0'));
+        $facultyId      = (int) query('faculty_id', $this->input('faculty_id', '0'));
+        $departmentId   = (int) query('department_id', $this->input('department_id', '0'));
         $academicYearId = (int) query('academic_year_id', $this->input('academic_year_id', '0'));
 
         if ($this->isPost()) {
             if (!csrf_verify($this->input('_csrf_token'))) {
                 $error = 'Invalid security token.';
             } else {
-                $data = [
-                    'section_id'       => (int) $this->input('section_id'),
-                    'academic_year_id' => (int) $this->input('academic_year_id'),
-                    'day_of_week'      => $this->input('day_of_week'),
-                    'period_number'    => (int) $this->input('period_number'),
-                    'subject_id'       => (int) $this->input('subject_id'),
-                    'faculty_id'       => (int) $this->input('faculty_id'),
-                    'start_time'       => $this->input('start_time', '09:00:00'),
-                    'end_time'         => $this->input('end_time', '10:00:00'),
-                ];
+                $action = $this->input('_action', '');
 
-                if (empty($data['section_id']) || empty($data['subject_id']) || empty($data['faculty_id'])) {
-                    $error = 'Section, Subject, and Faculty are required.';
-                } else {
-                    if ($this->resultService->saveTimetableSlot($data)) {
-                        $success = 'Timetable slot allocated successfully.';
+                if ($action === 'delete') {
+                    $slotId = (int) $this->input('slot_id', '0');
+                    if ($slotId > 0 && $this->resultService->deleteTimetableSlot($slotId)) {
+                        $success = 'Timetable slot deleted successfully.';
                     } else {
-                        $error = 'Failed to allocate timetable slot.';
+                        $error = 'Failed to delete timetable slot.';
+                    }
+                } elseif ($action === 'publish') {
+                    $secId = (int) $this->input('section_id');
+                    $ayId  = (int) $this->input('academic_year_id');
+                    if ($secId > 0 && $ayId > 0 && $this->resultService->publishTimetable('STUDENT', $ayId, $secId, null, auth_id() ?? 1)) {
+                        $success = '🎓 Student Timetable published successfully! It is now visible to students.';
+                    } else {
+                        $error = 'Please select a Section and Academic Year to publish.';
+                    }
+                } elseif ($action === 'unpublish') {
+                    $secId = (int) $this->input('section_id');
+                    $ayId  = (int) $this->input('academic_year_id');
+                    if ($secId > 0 && $ayId > 0 && $this->resultService->unpublishTimetable('STUDENT', $ayId, $secId, null)) {
+                        $success = 'Student Timetable set to DRAFT (unpublished).';
+                    } else {
+                        $error = 'Failed to unpublish timetable.';
+                    }
+                } elseif ($action === 'publish_staff') {
+                    $facId = (int) $this->input('faculty_id');
+                    $ayId  = (int) $this->input('academic_year_id');
+                    if ($facId > 0 && $ayId > 0 && $this->resultService->publishTimetable('STAFF', $ayId, null, $facId, auth_id() ?? 1)) {
+                        $success = '👨‍🏫 Staff Timetable published successfully! It is now visible to the faculty member.';
+                    } else {
+                        $error = 'Please select a Faculty member and Academic Year to publish.';
+                    }
+                } elseif ($action === 'unpublish_staff') {
+                    $facId = (int) $this->input('faculty_id');
+                    $ayId  = (int) $this->input('academic_year_id');
+                    if ($facId > 0 && $ayId > 0 && $this->resultService->unpublishTimetable('STAFF', $ayId, null, $facId)) {
+                        $success = 'Staff Timetable set to DRAFT (unpublished).';
+                    } else {
+                        $error = 'Failed to unpublish staff timetable.';
+                    }
+                } else {
+                    // Slot Allocation
+                    $data = [
+                        'section_id'       => (int) $this->input('section_id'),
+                        'academic_year_id' => (int) $this->input('academic_year_id'),
+                        'day_of_week'      => $this->input('day_of_week'),
+                        'period_number'    => (int) $this->input('period_number'),
+                        'subject_id'       => (int) $this->input('subject_id'),
+                        'faculty_id'       => (int) $this->input('faculty_id'),
+                        'room_id'          => $this->input('room_id'),
+                        'timetable_type'   => ($type === 'staff') ? 'STAFF' : 'STUDENT',
+                    ];
+
+                    $res = $this->resultService->saveTimetableSlotWithValidation($data);
+                    if ($res['success']) {
+                        $success = $res['message'];
+                    } else {
+                        $error = $res['message'];
                     }
                 }
             }
@@ -77,23 +130,54 @@ class ResultController extends Controller
 
         $sections      = $this->masterService->getSections();
         $academicYears = $this->masterService->getAcademicYears(1);
+        $departments   = $this->masterService->getDepartments();
         $subjects      = $this->masterService->getSubjects();
         $facultyList   = $this->facultyService->getAllFaculty();
+        $rooms         = $this->masterService->getRooms();
+
+        // Ensure current academic year is default if non selected
+        if ($academicYearId === 0 && !empty($academicYears)) {
+            foreach ($academicYears as $ay) {
+                if (!empty($ay['is_current'])) {
+                    $academicYearId = (int) $ay['id'];
+                    break;
+                }
+            }
+            if ($academicYearId === 0) {
+                $academicYearId = (int) $academicYears[0]['id'];
+            }
+        }
 
         $grid = [];
-        if ($sectionId > 0 && $academicYearId > 0) {
-            $grid = $this->resultService->getTimetableForSection($sectionId, $academicYearId);
+        $pubStatus = 'DRAFT';
+
+        if ($type === 'staff') {
+            if ($facultyId > 0 && $academicYearId > 0) {
+                $grid = $this->resultService->getTimetableForFaculty($facultyId, $academicYearId, false);
+                $pubStatus = $this->resultService->getPublicationStatus('STAFF', $academicYearId, null, $facultyId);
+            }
+        } else {
+            if ($sectionId > 0 && $academicYearId > 0) {
+                $grid = $this->resultService->getTimetableForSection($sectionId, $academicYearId, false);
+                $pubStatus = $this->resultService->getPublicationStatus('STUDENT', $academicYearId, $sectionId, null);
+            }
         }
 
         $this->render('Result/views/timetable', [
-            'title'          => 'Class Timetable Scheduler',
+            'title'          => 'Timetable Management (Student & Staff)',
+            'type'           => $type,
             'sections'       => $sections,
             'academicYears'  => $academicYears,
+            'departments'    => $departments,
             'subjects'       => $subjects,
             'facultyList'    => $facultyList,
+            'rooms'          => $rooms,
             'sectionId'      => $sectionId,
+            'facultyId'      => $facultyId,
+            'departmentId'   => $departmentId,
             'academicYearId' => $academicYearId,
             'grid'           => $grid,
+            'pubStatus'      => $pubStatus,
             'periodConfig'   => ResultService::getPeriodConfig(),
             'error'          => $error,
             'success'        => $success,
@@ -101,20 +185,49 @@ class ResultController extends Controller
     }
 
     /**
-     * View Timetable for Student.
+     * View Timetable for Student (View-only).
      */
     public function studentTimetable(): void
     {
         $userId = auth_id();
         $studentId = $userId ? $this->attendanceService->getStudentIdFromUser($userId) : null;
 
-        $res = $studentId ? $this->resultService->getStudentTimetable($studentId) : ['info' => null, 'grid' => []];
+        $res = $studentId ? $this->resultService->getStudentTimetable($studentId) : ['info' => null, 'grid' => [], 'is_published' => false];
 
         $this->render('Result/views/student_timetable', [
             'title'           => 'My Class Timetable',
             'studentAcademic' => $res['info'],
             'grid'            => $res['grid'],
+            'is_published'    => $res['is_published'] ?? false,
             'periodConfig'    => ResultService::getPeriodConfig(),
+        ], 'layout');
+    }
+
+    /**
+     * View Personal Staff Timetable for Faculty (View-only).
+     */
+    public function staffTimetable(): void
+    {
+        $userId = auth_id();
+
+        $facStmt = db()->prepare('SELECT id FROM faculty WHERE user_id = :uid LIMIT 1');
+        $facStmt->execute([':uid' => $userId]);
+        $facultyId = (int) ($facStmt->fetchColumn() ?: 0);
+
+        if (!$facultyId) {
+            $uStmt = db()->prepare('SELECT linked_id FROM users WHERE id = :uid AND linked_type = "faculty" LIMIT 1');
+            $uStmt->execute([':uid' => $userId]);
+            $facultyId = (int) ($uStmt->fetchColumn() ?: 0);
+        }
+
+        $res = $facultyId ? $this->resultService->getFacultyTimetable($facultyId) : ['info' => null, 'grid' => [], 'is_published' => false];
+
+        $this->render('Result/views/staff_timetable', [
+            'title'        => 'My Staff Timetable',
+            'facultyInfo'  => $res['info'],
+            'grid'         => $res['grid'],
+            'is_published' => $res['is_published'] ?? false,
+            'periodConfig' => ResultService::getPeriodConfig(),
         ], 'layout');
     }
 

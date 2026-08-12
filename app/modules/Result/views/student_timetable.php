@@ -24,6 +24,20 @@ $days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
     </div>
 </div>
 
+<?php if (empty($is_published)): ?>
+    <div class="card" style="padding: 3.5rem 2rem; text-align: center;">
+        <div style="font-size: 3.5rem; margin-bottom: 0.75rem;">📅</div>
+        <h2 style="font-size: 1.35rem; font-weight: 800; color: var(--text-primary); margin: 0 0 0.5rem;">
+            Class timetable has not been published yet.
+        </h2>
+        <p style="color: var(--text-secondary); font-size: 0.875rem; max-width: 480px; margin: 0.5rem auto 0; line-height: 1.5;">
+            Your HOD or department has not published the official class timetable for 
+            <strong><?= e($studentAcademic['section_name'] ?? 'your section') ?></strong> yet.
+            Please check back later once it is published.
+        </p>
+    </div>
+<?php else: ?>
+
 <!-- ── Legend ─────────────────────────────────────────────────── -->
 <div style="display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 1rem; align-items: center;">
     <span style="font-size: 0.8rem; color: var(--text-secondary); font-weight: 600; letter-spacing: 0.03em;">LEGEND:</span>
@@ -191,6 +205,7 @@ $days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
         </table>
     </div>
 </div>
+<?php endif; ?>
 
 <!-- ── Print Styles ─────────────────────────────────────────── -->
 <style>

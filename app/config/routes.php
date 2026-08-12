@@ -136,8 +136,10 @@ Router::get('/fee/receipt/{id}', [FeeController::class, 'receipt']);
 // ─── Academic Module Routes ──────────────────────────────────
 Router::get('/attendance',     [AttendanceController::class, 'index']);
 Router::post('/attendance',    [AttendanceController::class, 'index']);
-Router::get('/timetable',      [ResultController::class, 'timetable']);
-Router::post('/timetable',     [ResultController::class, 'timetable']);
+Router::get('/timetable',         [ResultController::class, 'timetable']);
+Router::post('/timetable',        [ResultController::class, 'timetable']);
+Router::get('/student-timetable', [ResultController::class, 'studentTimetable']);
+Router::get('/staff-timetable',   [ResultController::class, 'staffTimetable']);
 Router::get('/marks/internal', [ResultController::class, 'internalMarks']);
 Router::post('/marks/internal',[ResultController::class, 'internalMarks']);
 Router::get('/results',            [ResultController::class, 'results']);

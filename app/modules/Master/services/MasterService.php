@@ -311,4 +311,17 @@ class MasterService
             ':status'              => $data['status'] ?? 1,
         ]);
     }
+
+    // ─── 8. Rooms ─────────────────────────────────────────────
+    public function getRooms(int $collegeId = 1): array
+    {
+        $stmt = db()->prepare('
+            SELECT r.*, b.name AS building_name
+            FROM rooms r
+            LEFT JOIN buildings b ON b.id = r.building_id
+            ORDER BY r.name ASC
+        ');
+        $stmt->execute();
+        return $stmt->fetchAll() ?: [];
+    }
 }
