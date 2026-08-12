@@ -38,11 +38,12 @@ class Security
 
         $stmt = db()->prepare('
             SELECT COUNT(*) FROM login_history
-            WHERE user_id = (SELECT id FROM users WHERE username = :u OR email = :u LIMIT 1)
+            WHERE user_id = (SELECT id FROM users WHERE username = :u1 OR email = :u2 LIMIT 1)
               AND status = "failed"
               AND attempted_at >= DATE_SUB(NOW(), INTERVAL :secs SECOND)
         ');
-        $stmt->bindValue(':u', $username);
+        $stmt->bindValue(':u1', $username);
+        $stmt->bindValue(':u2', $username);
         $stmt->bindValue(':secs', $lockoutSecs, \PDO::PARAM_INT);
         $stmt->execute();
 
