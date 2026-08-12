@@ -463,4 +463,43 @@ class LibraryService
             return [];
         }
     }
+
+    public function getRecentActivity(int $limit = 5): array
+    {
+        try {
+            $stmt = db()->prepare('
+                SELECT bi.*, b.title AS book_title,
+                       COALESCE(CONCAT(s.first_name, " ", s.last_name, " (", s.roll_number, ")"), CONCAT(f.first_name, " ", f.last_name, " (Faculty)")) AS member_name
+                FROM book_issues bi
+                JOIN books b ON b.id = bi.book_id
+                LEFT JOIN students s ON bi.issued_to_type = "student" AND s.id = bi.issued_to_id
+                LEFT JOIN faculty f ON bi.issued_to_type = "faculty" AND f.id = bi.issued_to_id
+                ORDER BY bi.id DESC
+                LIMIT :lim
+            ');
+            $stmt->bindValue(':lim', $limit, PDO::PARAM_INT);
+            $stmt->execute();
+            return $stmt->fetchAll() ?: [];
+        } catch (\Throwable $e) {
+            return [];
+        }
+    }
+
+    public function getLibraryAnnouncements(int $limit = 3): array
+    {
+        try {
+            $stmt = db()->prepare('
+                SELECT * FROM announcements
+                WHERE (target_role = "all" OR target_role = "student" OR target_role = "faculty")
+                  AND (end_date IS NULL OR end_date >= CURDATE())
+                ORDER BY id DESC
+                LIMIT :lim
+            ');
+            $stmt->bindValue(':lim', $limit, PDO::PARAM_INT);
+            $stmt->execute();
+            return $stmt->fetchAll() ?: [];
+        } catch (\Throwable $e) {
+            return [];
+        }
+    }
 }

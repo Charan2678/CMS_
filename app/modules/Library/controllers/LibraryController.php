@@ -33,18 +33,22 @@ class LibraryController extends Controller
             return;
         }
 
-        $stats        = $this->libraryService->getStatistics(1);
-        $overdueList  = $this->libraryService->getOverdueBooks();
-        $popularBooks = $this->libraryService->getPopularBooks();
-        $deptUsage    = $this->libraryService->getDepartmentUsage();
+        $stats          = $this->libraryService->getStatistics(1);
+        $overdueList    = $this->libraryService->getOverdueBooks();
+        $popularBooks   = $this->libraryService->getPopularBooks();
+        $deptUsage      = $this->libraryService->getDepartmentUsage();
+        $recentActivity = $this->libraryService->getRecentActivity(5);
+        $announcements  = $this->libraryService->getLibraryAnnouncements(3);
 
         $this->render('Library/views/index', [
-            'title'        => 'Library Dashboard — Kuppam Engineering College',
-            'stats'        => $stats,
-            'overdueList'  => $overdueList,
-            'popularBooks' => $popularBooks,
-            'deptUsage'    => $deptUsage,
-            'canManage'    => $canManage,
+            'title'          => 'Library Dashboard — Kuppam Engineering College',
+            'stats'          => $stats,
+            'overdueList'    => $overdueList,
+            'popularBooks'   => $popularBooks,
+            'deptUsage'      => $deptUsage,
+            'recentActivity' => $recentActivity,
+            'announcements'  => $announcements,
+            'canManage'      => $canManage,
         ], 'layout');
     }
 

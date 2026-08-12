@@ -459,49 +459,22 @@ $overduePct = round(($overdueBk / $totalBk) * 100, 1);
             </div>
 
             <div style="display: flex; flex-direction: column; gap: 0.875rem;">
-                <div style="display: flex; align-items: center; justify-content: space-between; padding-bottom: 0.6rem; border-bottom: 1px solid var(--border-color);">
-                    <div style="display: flex; align-items: center; gap: 0.75rem;">
-                        <div style="width: 34px; height: 34px; border-radius: 50%; background: rgba(37,99,235,0.1); color:#2563eb; display:flex; align-items:center; justify-content:center; font-weight:700;">📖</div>
-                        <div>
-                            <div style="font-weight: 700; font-size: 0.84375rem; color: var(--text-primary);">John Doe (2026-CSE-001)</div>
-                            <div style="font-size: 0.75rem; color: var(--text-secondary);">Issued <em>"Database System Concepts"</em></div>
+                <?php if (empty($recentActivity)): ?>
+                    <p style="color: var(--text-secondary); font-size: 0.875rem; margin: 0;">No recent circulation activity recorded.</p>
+                <?php else: ?>
+                    <?php foreach ($recentActivity as $act): ?>
+                        <div style="display: flex; align-items: center; justify-content: space-between; padding-bottom: 0.6rem; border-bottom: 1px solid var(--border-color);">
+                            <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                <div style="width: 34px; height: 34px; border-radius: 50%; background: rgba(37,99,235,0.1); color:#2563eb; display:flex; align-items:center; justify-content:center; font-weight:700;">📖</div>
+                                <div>
+                                    <div style="font-weight: 700; font-size: 0.84375rem; color: var(--text-primary);"><?= e($act['member_name'] ?? 'Member') ?></div>
+                                    <div style="font-size: 0.75rem; color: var(--text-secondary);"><?= ucfirst(e($act['status'] ?? 'issued')) ?> <em>"<?= e($act['book_title'] ?? 'Book') ?>"</em></div>
+                                </div>
+                            </div>
+                            <span style="font-size: 0.75rem; color: var(--text-secondary);"><?= date('d M H:i', strtotime($act['created_at'] ?? 'now')) ?></span>
                         </div>
-                    </div>
-                    <span style="font-size: 0.75rem; color: var(--text-secondary);">10 mins ago</span>
-                </div>
-
-                <div style="display: flex; align-items: center; justify-content: space-between; padding-bottom: 0.6rem; border-bottom: 1px solid var(--border-color);">
-                    <div style="display: flex; align-items: center; gap: 0.75rem;">
-                        <div style="width: 34px; height: 34px; border-radius: 50%; background: rgba(16,185,129,0.1); color:#10b981; display:flex; align-items:center; justify-content:center; font-weight:700;">📥</div>
-                        <div>
-                            <div style="font-weight: 700; font-size: 0.84375rem; color: var(--text-primary);">Jane Smith (2026-CSE-002)</div>
-                            <div style="font-size: 0.75rem; color: var(--text-secondary);">Returned <em>"Digital Signal Processing"</em></div>
-                        </div>
-                    </div>
-                    <span style="font-size: 0.75rem; color: var(--text-secondary);">25 mins ago</span>
-                </div>
-
-                <div style="display: flex; align-items: center; justify-content: space-between; padding-bottom: 0.6rem; border-bottom: 1px solid var(--border-color);">
-                    <div style="display: flex; align-items: center; gap: 0.75rem;">
-                        <div style="width: 34px; height: 34px; border-radius: 50%; background: rgba(99,102,241,0.1); color:#6366f1; display:flex; align-items:center; justify-content:center; font-weight:700;">🔄</div>
-                        <div>
-                            <div style="font-weight: 700; font-size: 0.84375rem; color: var(--text-primary);">Rahul Sharma (2026-ECE-014)</div>
-                            <div style="font-size: 0.75rem; color: var(--text-secondary);">Renewed <em>"Microelectronic Circuits"</em></div>
-                        </div>
-                    </div>
-                    <span style="font-size: 0.75rem; color: var(--text-secondary);">1 hour ago</span>
-                </div>
-
-                <div style="display: flex; align-items: center; justify-content: space-between;">
-                    <div style="display: flex; align-items: center; gap: 0.75rem;">
-                        <div style="width: 34px; height: 34px; border-radius: 50%; background: rgba(245,158,11,0.1); color:#f59e0b; display:flex; align-items:center; justify-content:center; font-weight:700;">📖</div>
-                        <div>
-                            <div style="font-weight: 700; font-size: 0.84375rem; color: var(--text-primary);">Dr. Alan Turing (Faculty)</div>
-                            <div style="font-size: 0.75rem; color: var(--text-secondary);">Issued <em>"Introduction to Algorithms"</em></div>
-                        </div>
-                    </div>
-                    <span style="font-size: 0.75rem; color: var(--text-secondary);">2 hours ago</span>
-                </div>
+                    <?php endforeach; ?>
+                <?php endif; ?>
             </div>
         </div>
 
@@ -525,13 +498,19 @@ $overduePct = round(($overdueBk / $totalBk) * 100, 1);
                         </tr>
                     </thead>
                     <tbody>
-                        <?php foreach ($deptUsage as $du): ?>
+                        <?php if (empty($deptUsage)): ?>
                             <tr>
-                                <td><strong style="color: var(--accent-color);"><?= e($du['code']) ?></strong></td>
-                                <td style="font-weight: 600;"><?= number_format($du['active_members']) ?></td>
-                                <td><span class="badge badge-info"><?= number_format($du['books_issued']) ?></span></td>
+                                <td colspan="3" style="text-align: center; color: var(--text-secondary);">No department data found.</td>
                             </tr>
-                        <?php endforeach; ?>
+                        <?php else: ?>
+                            <?php foreach ($deptUsage as $du): ?>
+                                <tr>
+                                    <td><strong style="color: var(--accent-color);"><?= e($du['code']) ?></strong></td>
+                                    <td style="font-weight: 600;"><?= number_format($du['active_members']) ?></td>
+                                    <td><span class="badge badge-info"><?= number_format($du['books_issued']) ?></span></td>
+                                </tr>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
                     </tbody>
                 </table>
             </div>
@@ -546,25 +525,21 @@ $overduePct = round(($overdueBk / $totalBk) * 100, 1);
                 </div>
 
                 <div style="display: flex; flex-direction: column; gap: 0.75rem;">
-                    <div style="background: var(--bg-main); border: 1px solid var(--border-color); border-radius: 8px; padding: 0.75rem;">
-                        <div style="display: flex; align-items: center; justify-content: space-between;">
-                            <strong style="font-size: 0.8125rem; color: var(--text-primary);">Extended Examination Timings</strong>
-                            <span class="badge badge-danger" style="font-size: 0.65rem;">Urgent</span>
-                        </div>
-                        <p style="font-size: 0.75rem; color: var(--text-secondary); margin: 0.25rem 0 0 0;">
-                            Central Library open until 8:00 PM during end-semester exams.
-                        </p>
-                    </div>
-
-                    <div style="background: var(--bg-main); border: 1px solid var(--border-color); border-radius: 8px; padding: 0.75rem;">
-                        <div style="display: flex; align-items: center; justify-content: space-between;">
-                            <strong style="font-size: 0.8125rem; color: var(--text-primary);">IEEE E-Journal Subscription Renewed</strong>
-                            <span class="badge badge-info" style="font-size: 0.65rem;">Info</span>
-                        </div>
-                        <p style="font-size: 0.75rem; color: var(--text-secondary); margin: 0.25rem 0 0 0;">
-                            Access IEEE Xplore digital library on campus Wi-Fi.
-                        </p>
-                    </div>
+                    <?php if (empty($announcements)): ?>
+                        <p style="color: var(--text-secondary); font-size: 0.875rem; margin: 0;">No active library circulars.</p>
+                    <?php else: ?>
+                        <?php foreach ($announcements as $anc): ?>
+                            <div style="background: var(--bg-main); border: 1px solid var(--border-color); border-radius: 8px; padding: 0.75rem;">
+                                <div style="display: flex; align-items: center; justify-content: space-between;">
+                                    <strong style="font-size: 0.8125rem; color: var(--text-primary);"><?= e($anc['title']) ?></strong>
+                                    <span class="badge badge-info" style="font-size: 0.65rem;"><?= e(strtoupper($anc['target_role'] ?? 'ALL')) ?></span>
+                                </div>
+                                <p style="font-size: 0.75rem; color: var(--text-secondary); margin: 0.25rem 0 0 0;">
+                                    <?= e(mb_strimwidth($anc['content'] ?? '', 0, 100, '...')) ?>
+                                </p>
+                            </div>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
                 </div>
             </div>
         </div>
