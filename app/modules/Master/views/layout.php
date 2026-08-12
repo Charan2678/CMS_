@@ -17,15 +17,45 @@ $svg = [
     'money'        => '<svg class="nav-svg-icon" viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>',
 ];
 ?>
+<?php
+$theme = null;
+try {
+    $themeStmt = db()->query('SELECT * FROM theme_settings WHERE college_id = 1 LIMIT 1');
+    $theme = $themeStmt->fetch(\PDO::FETCH_ASSOC);
+} catch (\Exception $e) {
+    // Fail silently
+}
+$collegeName = $theme['college_name'] ?? 'Kuppam Engineering College';
+$logoPath = $theme['logo_path'] ?? '/assets/images/logo.png';
+$primaryColor = $theme['color_primary'] ?? '#0284c7';
+$secondaryColor = $theme['color_secondary'] ?? '#0369a1';
+$fontFamily = $theme['font_family'] ?? 'Inter';
+$borderRadius = $theme['border_radius'] ?? '8px';
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?= e($title ?? 'Management ERP') ?> — Kuppam Engineering College</title>
+    <title><?= e($title ?? 'Management ERP') ?> — <?= e($collegeName) ?></title>
     <link rel="icon" type="image/png" href="/assets/images/favicon.png">
     <link rel="shortcut icon" href="/favicon.ico">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=<?= urlencode($fontFamily) ?>:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/assets/css/app.css?v=<?= time() ?>">
+    <style>
+        :root {
+            --sidebar-bg: linear-gradient(180deg, <?= $primaryColor ?> 0%, <?= $secondaryColor ?> 100%);
+            --accent-color: <?= $primaryColor ?>;
+            --accent-hover: <?= $secondaryColor ?>;
+            --input-border-radius: <?= $borderRadius ?>;
+            --border-radius: <?= $borderRadius ?>;
+        }
+        body {
+            font-family: '<?= $fontFamily ?>', 'Inter', system-ui, -apple-system, sans-serif !important;
+        }
+    </style>
 </head>
 <body>
 
@@ -37,8 +67,8 @@ $svg = [
     <aside class="sidebar">
         <div class="sidebar-header">
             <div class="brand-logo" style="display: flex; align-items: center; gap: 0.75rem;">
-                <img src="/assets/images/logo.png" alt="KEC Logo" style="width: 36px; height: 36px; object-fit: contain;">
-                <span style="font-size: 0.875rem; font-weight: 700; color: #f8fafc; line-height: 1.2; word-break: break-word;">Kuppam Engineering College</span>
+                <img src="<?= e($logoPath) ?>" alt="Logo" style="width: 36px; height: 36px; object-fit: contain;">
+                <span style="font-size: 0.875rem; font-weight: 700; color: #f8fafc; line-height: 1.2; word-break: break-word;"><?= e($collegeName) ?></span>
             </div>
         </div>
 
@@ -57,6 +87,8 @@ $svg = [
                 <a href="/results" class="nav-item <?= request_uri() === '/results' ? 'active' : '' ?>"><?= $svg['results'] ?> Semester Results</a>
                 <a href="/admit-card" class="nav-item <?= request_uri() === '/admit-card' ? 'active' : '' ?>">🎫 Exam Hall Ticket</a>
                 <a href="/timetable" class="nav-item <?= request_uri() === '/timetable' ? 'active' : '' ?>"><?= $svg['timetable'] ?> Class Timetable</a>
+                <a href="/exam-timetable" class="nav-item <?= request_uri() === '/exam-timetable' ? 'active' : '' ?>">🗓️ Exam Timetable</a>
+                <a href="/placement/portal" class="nav-item <?= request_uri() === '/placement/portal' ? 'active' : '' ?>">💼 Placement Portal</a>
 
                 <div class="nav-section-title">MY FINANCE & SERVICES</div>
                 <a href="/fee/payments" class="nav-item <?= request_uri() === '/fee/payments' ? 'active' : '' ?>"><?= $svg['receipt'] ?> My Fee Receipts</a>
@@ -121,6 +153,36 @@ $svg = [
                 <a href="/canteen" class="nav-item"><?= $svg['canteen'] ?> Canteen & Mess Menu</a>
                 <a href="/announcements" class="nav-item"><?= $svg['announcements'] ?> Announcements</a>
 
+            <?php elseif ($r === 'head_of_coe'): ?>
+                <!-- Head of COE / Exam Cell Sidebar -->
+                <div class="nav-section-title">EXAMINATIONS & SCHEDULING</div>
+                <a href="/exam-timetable" class="nav-item <?= request_uri() === '/exam-timetable' ? 'active' : '' ?>">🗓️ Exam Timetable</a>
+                <a href="/admit-cards/manage" class="nav-item <?= request_uri() === '/admit-cards/manage' ? 'active' : '' ?>">🎫 Hall Tickets & Eligibility</a>
+                <a href="/marks/internal" class="nav-item <?= request_uri() === '/marks/internal' ? 'active' : '' ?>"><?= $svg['results'] ?> Internal CIA Marks</a>
+                <a href="/results" class="nav-item <?= request_uri() === '/results' ? 'active' : '' ?>"><?= $svg['results'] ?> Semester Results Engine</a>
+
+                <div class="nav-section-title">PEOPLE DIRECTORY</div>
+                <a href="/students" class="nav-item <?= request_uri() === '/students' ? 'active' : '' ?>"><?= $svg['people'] ?> Students Directory</a>
+
+                <div class="nav-section-title">REPORTS & MESSAGES</div>
+                <a href="/reports/academic" class="nav-item <?= request_uri() === '/reports/academic' ? 'active' : '' ?>"><?= $svg['reports'] ?> Academic Reports</a>
+                <a href="/announcements" class="nav-item <?= request_uri() === '/announcements' ? 'active' : '' ?>"><?= $svg['announcements'] ?> Announcements</a>
+
+            <?php elseif ($r === 'tpo'): ?>
+                <!-- Training & Placement Officer Sidebar -->
+                <div class="nav-section-title">PLACEMENTS & DRIVES</div>
+                <a href="/dashboard" class="nav-item <?= request_uri() === '/dashboard' ? 'active' : '' ?>">💼 Placement Dashboard</a>
+                <a href="/placement/drives" class="nav-item <?= request_uri() === '/placement/drives' ? 'active' : '' ?>">📝 Company Drives</a>
+                <a href="/placement/companies" class="nav-item <?= request_uri() === '/placement/companies' ? 'active' : '' ?>">🏢 Recruiter Partners</a>
+                <a href="/placement/applications" class="nav-item <?= request_uri() === '/placement/applications' ? 'active' : '' ?>">👨‍🎓 Student Applications</a>
+
+                <div class="nav-section-title">TRAINING & COURSES</div>
+                <a href="/placement/trainings" class="nav-item <?= request_uri() === '/placement/trainings' ? 'active' : '' ?>">📚 Pre-Placement Training</a>
+
+                <div class="nav-section-title">REPORTS & MESSAGES</div>
+                <a href="/placement/reports" class="nav-item <?= request_uri() === '/placement/reports' ? 'active' : '' ?>">📈 Placement Reports</a>
+                <a href="/announcements" class="nav-item <?= request_uri() === '/announcements' ? 'active' : '' ?>"><?= $svg['announcements'] ?> Announcements</a>
+
             <?php else: ?>
                 <!-- Super Admin / Admin Full Navigation -->
                 <div class="nav-section-title">MASTER DATA</div>
@@ -138,7 +200,10 @@ $svg = [
 
                 <div class="nav-section-title">ACADEMICS</div>
                 <a href="/attendance" class="nav-item"><?= $svg['attendance'] ?> Attendance Roster</a>
+
+
                 <a href="/timetable" class="nav-item"><?= $svg['timetable'] ?> Class Timetable</a>
+                <a href="/exam-timetable" class="nav-item <?= request_uri() === '/exam-timetable' ? 'active' : '' ?>">🗓️ Exam Timetable</a>
                 <a href="/marks/internal" class="nav-item"><?= $svg['results'] ?> Internal CIA Marks</a>
                 <a href="/results" class="nav-item"><?= $svg['results'] ?> Semester Results</a>
                 <a href="/admit-cards/manage" class="nav-item">🎫 Exam Hall Tickets</a>
@@ -161,6 +226,10 @@ $svg = [
                 <a href="/reports/attendance" class="nav-item"><?= $svg['reports'] ?> Attendance Audit</a>
                 <a href="/announcements" class="nav-item"><?= $svg['announcements'] ?> Announcements</a>
                 <a href="/audit-logs" class="nav-item"><?= $svg['logs'] ?> System Audit Logs</a>
+
+                <div class="nav-section-title">SYSTEM CONFIG</div>
+                <a href="/settings/theme" class="nav-item <?= request_uri() === '/settings/theme' ? 'active' : '' ?>">🎨 Theme & Branding</a>
+                <a href="/settings/roles" class="nav-item <?= request_uri() === '/settings/roles' ? 'active' : '' ?>">🔑 Role Permissions</a>
             <?php endif; ?>
         </nav>
     </aside>

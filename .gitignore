@@ -11,6 +11,8 @@
 # Storage (runtime data — never commit)
 /storage/logs/*
 /storage/uploads/*
+/public/uploads/*
+composer.phar
 !/storage/logs/.gitkeep
 !/storage/uploads/.gitkeep
 !/storage/uploads/students/.gitkeep

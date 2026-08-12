@@ -16,6 +16,7 @@ use App\Modules\Master\controllers\MasterController;
 use App\Modules\Reports\controllers\ReportController;
 use App\Modules\Result\controllers\ResultController;
 use App\Modules\Settings\controllers\NotificationController;
+use App\Modules\Settings\controllers\SettingsController;
 use App\Modules\Staff\controllers\StaffController;
 use App\Modules\Student\controllers\StudentController;
 use App\Modules\Transport\controllers\TransportController;
@@ -70,6 +71,10 @@ Router::post('/results',           [ResultController::class, 'results']);
 Router::get('/admit-card',         [ResultController::class, 'admitCard']);
 Router::get('/admit-cards/manage',  [ResultController::class, 'admitCardManage']);
 Router::post('/admit-cards/manage', [ResultController::class, 'admitCardManage']);
+Router::get('/exam-timetable',      [ResultController::class, 'examTimetable']);
+Router::post('/exam-timetable',     [ResultController::class, 'examTimetable']);
+
+
 
 // ─── Staff Routes ───────────────────────────────────────────
 Router::get('/staff',        [StaffController::class, 'index']);
@@ -124,6 +129,27 @@ Router::get('/reset-password',  [AuthController::class, 'resetPassword']);
 Router::post('/reset-password', [AuthController::class, 'resetPassword']);
 Router::get('/change-password', [AuthController::class, 'changePassword']);
 Router::post('/change-password',[AuthController::class, 'changePassword']);
+
+// ─── Settings & Custom Roles Configuration ───────────────────
+Router::get('/settings/theme', [SettingsController::class, 'theme']);
+Router::post('/settings/theme', [SettingsController::class, 'theme']);
+Router::get('/settings/roles', [SettingsController::class, 'roles']);
+Router::post('/settings/roles', [SettingsController::class, 'roles']);
+Router::get('/settings/roles/{id}/permissions', [SettingsController::class, 'rolePermissions']);
+Router::post('/settings/roles/{id}/permissions', [SettingsController::class, 'rolePermissions']);
+
+// ─── Placement & TPO Routes ──────────────────────────────────
+Router::get('/placement/drives',      [\App\Modules\Placement\controllers\PlacementController::class, 'drives']);
+Router::post('/placement/drives',     [\App\Modules\Placement\controllers\PlacementController::class, 'drives']);
+Router::get('/placement/companies',   [\App\Modules\Placement\controllers\PlacementController::class, 'companies']);
+Router::post('/placement/companies',  [\App\Modules\Placement\controllers\PlacementController::class, 'companies']);
+Router::get('/placement/applications',[\App\Modules\Placement\controllers\PlacementController::class, 'applications']);
+Router::post('/placement/applications',[\App\Modules\Placement\controllers\PlacementController::class, 'applications']);
+Router::get('/placement/trainings',   [\App\Modules\Placement\controllers\PlacementController::class, 'trainings']);
+Router::post('/placement/trainings',  [\App\Modules\Placement\controllers\PlacementController::class, 'trainings']);
+Router::get('/placement/reports',     [\App\Modules\Placement\controllers\PlacementController::class, 'reports']);
+Router::get('/placement/portal',      [\App\Modules\Placement\controllers\PlacementController::class, 'studentPortal']);
+Router::post('/placement/apply',      [\App\Modules\Placement\controllers\PlacementController::class, 'applyToDrive']);
 
 // Default route -> redirect to login if unauthenticated, else dashboard
 Router::get('/', function() {

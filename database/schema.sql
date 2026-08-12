@@ -1099,6 +1099,7 @@ CREATE TABLE `announcements` (
 -- Never UPDATE or DELETE from this table in application code.
 CREATE TABLE `audit_logs` (
     `id`          BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    `college_id`  INT UNSIGNED    NOT NULL DEFAULT 1,
     `user_id`     INT UNSIGNED    NOT NULL,
     `action`      ENUM('create','update','delete','login','logout','export') NOT NULL,
     `module`      VARCHAR(100)    NOT NULL,
@@ -1106,11 +1107,14 @@ CREATE TABLE `audit_logs` (
     `old_values`  JSON            DEFAULT NULL,
     `new_values`  JSON            DEFAULT NULL,
     `ip_address`  VARCHAR(45)     NOT NULL,
+    `user_agent`  VARCHAR(255)    DEFAULT NULL,
     `created_at`  DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (`id`),
     KEY `idx_audit_user`   (`user_id`),
     KEY `idx_audit_module` (`module`),
     KEY `idx_audit_at`     (`created_at`),
+    CONSTRAINT `fk_audit_college`
+        FOREIGN KEY (`college_id`) REFERENCES `colleges` (`id`),
     CONSTRAINT `fk_audit_user`
         FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
@@ -1141,10 +1145,50 @@ CREATE TABLE `hall_tickets` (
 
 
 -- ============================================================
+-- BLOCK 23 — CANTEEN OPERATIONS
+-- Tables: canteen_items, canteen_orders
+-- ============================================================
+
+CREATE TABLE `canteen_items` (
+  `id` INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  `college_id` INT UNSIGNED NOT NULL DEFAULT 1,
+  `item_name` VARCHAR(150) NOT NULL,
+  `category` VARCHAR(50) NOT NULL DEFAULT 'Snacks',
+  `price` DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+  `stock_status` ENUM('available', 'out_of_stock') NOT NULL DEFAULT 'available',
+  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT `fk_ci_college` FOREIGN KEY (`college_id`) REFERENCES `colleges` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE `canteen_orders` (
+  `id` INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  `order_number` VARCHAR(50) NOT NULL UNIQUE,
+  `college_id` INT UNSIGNED NOT NULL DEFAULT 1,
+  `user_id` INT UNSIGNED NOT NULL,
+  `student_id` INT UNSIGNED DEFAULT NULL,
+  `item_id` INT UNSIGNED NOT NULL,
+  `item_name` VARCHAR(150) NOT NULL,
+  `quantity` INT UNSIGNED NOT NULL DEFAULT 1,
+  `unit_price` DECIMAL(10,2) NOT NULL,
+  `total_price` DECIMAL(10,2) NOT NULL,
+  `payment_method` VARCHAR(50) NOT NULL DEFAULT 'pay_at_counter',
+  `payment_status` VARCHAR(50) NOT NULL DEFAULT 'pending',
+  `order_status` VARCHAR(50) NOT NULL DEFAULT 'placed',
+  `notes` TEXT DEFAULT NULL,
+  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  CONSTRAINT `fk_co_college` FOREIGN KEY (`college_id`) REFERENCES `colleges` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_co_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_co_student` FOREIGN KEY (`student_id`) REFERENCES `students` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `fk_co_item` FOREIGN KEY (`item_id`) REFERENCES `canteen_items` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
+-- ============================================================
 SET FOREIGN_KEY_CHECKS = 1;
 -- ============================================================
 -- SCHEMA COMPLETE
--- Total tables : 45
--- Total FKs    : 78
+-- Total tables : 47
+-- Total FKs    : 84
 -- Normalization: 3NF verified
 -- ============================================================

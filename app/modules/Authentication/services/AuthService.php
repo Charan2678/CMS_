@@ -52,11 +52,11 @@ class AuthService
 
             $isValidRole = false;
             if ($targetRoleType === 'admin') {
-                $isValidRole = in_array($userRoleCode, ['admin', 'super_admin'], true);
+                $isValidRole = in_array($userRoleCode, ['admin', 'super_admin', 'head_of_coe', 'tpo'], true);
             } elseif ($targetRoleType === 'student') {
                 $isValidRole = ($userRoleCode === 'student');
             } elseif ($targetRoleType === 'staff') {
-                $isValidRole = in_array($userRoleCode, ['staff', 'faculty', 'hod'], true);
+                $isValidRole = in_array($userRoleCode, ['staff', 'faculty', 'hod', 'head_of_coe', 'tpo'], true);
             }
 
             if (!$isValidRole) {

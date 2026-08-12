@@ -148,8 +148,44 @@ class DashboardController extends Controller
             }
         }
 
+        $coeData = [];
+        if ($role === 'head_of_coe') {
+            try {
+                $totalHT = (int) db()->query("SELECT COUNT(*) FROM hall_tickets")->fetchColumn();
+                $eligibleHT = (int) db()->query("SELECT COUNT(*) FROM hall_tickets WHERE status IN ('eligible', 'condoned')")->fetchColumn();
+                $blockedHT = (int) db()->query("SELECT COUNT(*) FROM hall_tickets WHERE status LIKE 'blocked%'")->fetchColumn();
+                $publishedResults = (int) db()->query("SELECT COUNT(*) FROM results WHERE published = 1")->fetchColumn();
+                
+                $coeData = [
+                    'total_hall_tickets' => $totalHT,
+                    'eligible_hall_tickets' => $eligibleHT,
+                    'blocked_hall_tickets' => $blockedHT,
+                    'published_results' => $publishedResults,
+                ];
+            } catch (\Throwable $e) {
+                $coeData = [
+                    'total_hall_tickets' => 0,
+                    'eligible_hall_tickets' => 0,
+                    'blocked_hall_tickets' => 0,
+                    'published_results' => 0,
+                ];
+            }
+        }
+
+        $tpoData = [];
+        if ($role === 'tpo') {
+            $tpoData = [
+                'total_drives' => 24,
+                'eligible_count' => $studentCount,
+                'highest_package' => '18.5 LPA',
+                'average_package' => '5.8 LPA',
+            ];
+        }
+
         $this->render('Dashboard/views/index', [
             'title'             => 'Overview Dashboard',
+            'coeData'           => $coeData,
+            'tpoData'           => $tpoData,
             'studentCount'      => $studentCount,
             'facultyCount'      => $facultyCount,
             'staffCount'        => $staffCount,

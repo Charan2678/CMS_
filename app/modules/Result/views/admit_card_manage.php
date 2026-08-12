@@ -18,6 +18,17 @@
         </div>
     <?php endif; ?>
 
+    <!-- Search by Roll Number -->
+    <div style="background: rgba(255,255,255,0.03); padding: 1.25rem; border-radius: 8px; border: 1px solid var(--border-color); margin-bottom: 1.5rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap;">
+        <form method="GET" action="/admit-cards/manage" style="display: flex; gap: 0.5rem; width: 100%; max-width: 500px; margin: 0;">
+            <input type="text" class="form-control" name="roll_number" placeholder="Search Roll Number (e.g., 2026-CSE-001)" value="<?= e($_GET['roll_number'] ?? '') ?>" required style="border-radius: var(--border-radius); background: var(--input-bg); border-color: var(--input-border); color: var(--input-text);">
+            <button type="submit" class="btn btn-primary" style="white-space: nowrap; height: 38px;">🔍 Search Student</button>
+        </form>
+        <div>
+            <span class="text-muted" style="font-size: 0.8125rem;">Or load section eligibility below:</span>
+        </div>
+    </div>
+
     <!-- Filter Form -->
     <form method="GET" action="/admit-cards/manage" style="display: grid; grid-template-columns: 2fr 2fr 1fr; gap: 1rem; margin-bottom: 2rem; background: rgba(255,255,255,0.03); padding: 1.25rem; border-radius: 8px; border: 1px solid var(--border-color);">
         <div>
@@ -51,8 +62,10 @@
         </div>
     </form>
 
-    <?php if ($sectionId > 0): ?>
-        <h2 style="font-size: 1.125rem; font-weight: 700; margin-bottom: 1rem;">Section Eligibility Roster (<?= count($report) ?> Students)</h2>
+    <?php if ($sectionId > 0 || !empty($_GET['roll_number'])): ?>
+        <h2 style="font-size: 1.125rem; font-weight: 700; margin-bottom: 1rem;">
+            <?= !empty($_GET['roll_number']) ? 'Student Eligibility Search Result' : 'Section Eligibility Roster (' . count($report) . ' Students)' ?>
+        </h2>
         
         <div style="overflow-x: auto;">
             <table class="table" style="width: 100%; border-collapse: collapse;">
