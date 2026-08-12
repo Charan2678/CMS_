@@ -185,8 +185,12 @@ Router::get('/master/academic-years', [MasterController::class, 'academicYears']
 Router::post('/master/academic-years',[MasterController::class, 'academicYears']);
 Router::get('/master/departments',    [MasterController::class, 'departments']);
 Router::post('/master/departments',   [MasterController::class, 'departments']);
+Router::get('/academics/departments', [MasterController::class, 'departments']);
+Router::post('/academics/departments', [MasterController::class, 'departments']);
 Router::get('/master/courses',        [MasterController::class, 'courses']);
 Router::post('/master/courses',       [MasterController::class, 'courses']);
+Router::get('/academics/courses',     [MasterController::class, 'courses']);
+Router::post('/academics/courses',    [MasterController::class, 'courses']);
 Router::get('/master/sections',       [MasterController::class, 'sections']);
 Router::post('/master/sections',      [MasterController::class, 'sections']);
 Router::get('/master/subjects',       [MasterController::class, 'subjects']);
