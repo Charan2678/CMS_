@@ -7,9 +7,14 @@
             Roll No: <?= e($student['roll_number']) ?> — Adm No: <?= e($student['admission_number']) ?>
         </div>
     </div>
-    <a href="/students" class="btn btn-secondary" style="font-size: 0.8125rem; display: inline-flex; align-items: center; gap: 0.35rem; text-decoration: none;">
-        &larr; Back to Students Directory
-    </a>
+    <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center;">
+        <a href="/library" class="btn btn-secondary" style="font-size: 0.8125rem; display: inline-flex; align-items: center; gap: 0.35rem; text-decoration: none;">
+            &larr; Back to Library Overview
+        </a>
+        <a href="/students" class="btn btn-secondary" style="font-size: 0.8125rem; display: inline-flex; align-items: center; gap: 0.35rem; text-decoration: none;">
+            &larr; Back to Students Directory
+        </a>
+    </div>
 </div>
 
 <div style="display: grid; grid-template-columns: 1fr 3fr; gap: 1.5rem;">

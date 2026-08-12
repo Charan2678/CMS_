@@ -13,9 +13,14 @@
             </div>
         </div>
 
-        <a href="/students/admission" class="btn-primary" style="text-decoration: none; width: auto; padding: 0.625rem 1.25rem; font-weight: 700;">
-            + Admit New Student
-        </a>
+        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center;">
+            <a href="/library" class="btn-secondary" style="text-decoration: none; padding: 0.625rem 1.25rem; font-weight: 700; font-size: 0.875rem; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-main); color: var(--text-primary); transition: all 0.2s ease;">
+                ← Back to Library Overview
+            </a>
+            <a href="/students/admission" class="btn-primary" style="text-decoration: none; width: auto; padding: 0.625rem 1.25rem; font-weight: 700;">
+                + Admit New Student
+            </a>
+        </div>
     </div>
 
     <!-- Filters & Search Bar — Full Width Grid -->
