@@ -33,7 +33,8 @@ class LeaveController extends Controller
         // Resolve applicant ID & type
         $attSvc = new AttendanceService();
         $applicantType = in_array($role, ['student', 'parent']) ? 'student' : ($role === 'faculty' ? 'faculty' : 'staff');
-        $applicantId   = $applicantType === 'student' ? $attSvc->getStudentIdFromUser($userId) : $userId;
+        $studentIdVal  = $attSvc->getStudentIdFromUser($userId);
+        $applicantId   = $applicantType === 'student' ? ($studentIdVal ? (int)$studentIdVal : null) : (int)$userId;
 
         if ($this->isPost()) {
             if (!csrf_verify($this->input('_csrf_token'))) {
