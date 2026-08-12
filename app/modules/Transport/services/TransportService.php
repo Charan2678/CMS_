@@ -596,24 +596,6 @@ class TransportService
 
         return [];
     }
->>>>>>> 5fb75443465ab85c62c642c90b95a6667cec4441
-
-        if (!empty($filters['route_id'])) {
-            $sql .= ' AND tbp.route_id = :route_id';
-            $params[':route_id'] = (int) $filters['route_id'];
-        }
-
-        if (!empty($filters['search'])) {
-            $sql .= ' AND (s.first_name LIKE :q OR s.last_name LIKE :q OR s.roll_number LIKE :q OR tbp.pass_number LIKE :q)';
-            $params[':q'] = '%' . $filters['search'] . '%';
-        }
-
-        $sql .= ' ORDER BY tbp.id DESC LIMIT ' . $limit;
-
-        $stmt = db()->prepare($sql);
-        $stmt->execute($params);
-        return $stmt->fetchAll() ?: [];
-    }
 
     /**
      * Get Bus Pass KPI Counters for Admin dashboard.
