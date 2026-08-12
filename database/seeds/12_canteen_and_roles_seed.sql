@@ -99,7 +99,7 @@ SELECT 3, id, 1 FROM `permissions` WHERE code IN ('student.view', 'faculty.view'
 
 -- Faculty (Role 4)
 INSERT INTO `role_permissions` (`role_id`, `permission_id`, `granted`)
-SELECT 4, id, 1 FROM `permissions` WHERE code IN ('student.view', 'attendance.mark', 'attendance.view', 'timetable.manage', 'marks.internal', 'notification.announcement', 'leave.apply', 'leave.approve');
+SELECT 4, id, 1 FROM `permissions` WHERE code IN ('student.view', 'attendance.mark', 'attendance.view', 'timetable.manage', 'marks.internal', 'marks.external', 'result.publish', 'notification.announcement', 'leave.apply', 'leave.approve');
 
 -- Accounts Staff (Role 5)
 INSERT INTO `role_permissions` (`role_id`, `permission_id`, `granted`)

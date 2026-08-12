@@ -32,7 +32,7 @@ SELECT 4, id, 1 FROM `permissions`
 WHERE code IN (
     'student.view',
     'attendance.mark', 'attendance.view',
-    'timetable.manage', 'marks.internal',
+    'timetable.manage', 'marks.internal', 'marks.external', 'result.publish',
     'notification.announcement'
 );
 
