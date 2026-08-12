@@ -306,7 +306,6 @@ class FeeController extends Controller
         }
 
         $studentFeeId = is_numeric($id) ? (int)$id : 0;
->>>>>>> 5fb75443465ab85c62c642c90b95a6667cec4441
 
         if ($targetFeeType) {
             $catPattern = match($targetFeeType) {

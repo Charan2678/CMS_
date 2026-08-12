@@ -424,7 +424,6 @@ $overduePct = round(($overdueBk / $totalBk) * 100, 1);
                 <?php endforeach; ?>
             </tbody>
         </table>
->>>>>>> origin/fix/admin-dashboard
     </div>
 
     <!-- 2. B. LIBRARY OVERVIEW STATISTICS (6 CARDS) -->
