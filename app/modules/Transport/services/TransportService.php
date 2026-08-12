@@ -66,6 +66,16 @@ class TransportService
     /**
      * Save student route and pickup stop selection before payment.
      */
+    public function selectRoute(int $studentId, int $routeId, string $pickupPoint): array
+    {
+        return $this->saveStudentRouteSelection($studentId, $routeId, $pickupPoint);
+    }
+
+    public function subscribeRoute(int $studentId, int $routeId, string $pickupPoint): array
+    {
+        return $this->saveStudentRouteSelection($studentId, $routeId, $pickupPoint);
+    }
+
     public function saveStudentRouteSelection(int $studentId, int $routeId, string $pickupPoint): array
     {
         $chk = db()->prepare('SELECT id, status FROM transport_allocations WHERE student_id = :sid ORDER BY id DESC LIMIT 1');
@@ -209,6 +219,11 @@ class TransportService
     /**
      * Get a student's active transport subscription with bus and route details.
      */
+    public function getStudentTransportSummary(int $studentId): ?array
+    {
+        return $this->getStudentActiveSubscription($studentId);
+    }
+
     public function getStudentActiveSubscription(int $studentId): ?array
     {
         $stmt = db()->prepare('

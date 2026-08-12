@@ -335,6 +335,23 @@ class ResultService
     /**
      * Fetch complete result history for a student across all semesters with SGPA and cumulative CGPA.
      */
+    public function getStudentFullExamResults(int $studentId): array
+    {
+        $semResults = $this->getStudentAllSemesterResults($studentId);
+        if (!empty($semResults)) {
+            return $semResults;
+        }
+
+        $stmt = db()->prepare('
+            SELECT im.*, s.name AS subject_name, s.code AS subject_code
+            FROM internal_marks im
+            JOIN subjects s ON s.id = im.subject_id
+            WHERE im.student_id = :sid
+        ');
+        $stmt->execute([':sid' => $studentId]);
+        return $stmt->fetchAll() ?: [];
+    }
+
     public function getStudentAllSemesterResults(int $studentId): array
     {
         // 1. Get consolidated semester results for this student
