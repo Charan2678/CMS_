@@ -8,13 +8,18 @@
  */
 
 $days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+$isParent = (auth_role() === 'parent');
+$pageHeading = $isParent ? 'Ward Class Timetable' : 'My Class Timetable';
+$pageDesc = $isParent 
+    ? 'Weekly class schedule and lecture locations for your child\'s section (' . e($studentAcademic['section_name'] ?? 'Section') . ').'
+    : 'Weekly class schedule and lecture locations for your section (' . e($studentAcademic['section_name'] ?? 'Section A') . ').';
 ?>
 
 <div class="page-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
     <div>
-        <h1 class="page-title" style="font-size: 1.75rem; font-weight: 700; color: var(--text-primary); margin: 0;">My Class Timetable</h1>
+        <h1 class="page-title" style="font-size: 1.75rem; font-weight: 700; color: var(--text-primary); margin: 0;"><?= e($pageHeading) ?></h1>
         <p style="color: var(--text-secondary); font-size: 0.875rem; margin-top: 0.25rem;">
-            Weekly class schedule and lecture locations for your section (<?= e($studentAcademic['section_name'] ?? 'Section A') ?>).
+            <?= $pageDesc ?>
         </p>
     </div>
     <div>
