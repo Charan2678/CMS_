@@ -482,12 +482,36 @@ class ResultController extends Controller
 
         $sectionId      = (int) query('section_id', $this->input('section_id', '0'));
         $academicYearId = (int) query('academic_year_id', $this->input('academic_year_id', '0'));
+        $rollNumber     = trim(query('roll_number', $this->input('roll_number', '')));
 
         $sections      = $this->masterService->getSections();
         $academicYears = $this->masterService->getAcademicYears(1);
         $report        = [];
 
-        if ($sectionId > 0 && $academicYearId > 0) {
+        if (!empty($rollNumber)) {
+            $studStmt = db()->prepare('
+                SELECT s.*, sa.academic_year_id, sa.semester_id, sa.section_id 
+                FROM students s 
+                JOIN student_academics sa ON sa.student_id = s.id AND sa.is_current = 1
+                WHERE s.roll_number = :roll
+                LIMIT 1
+            ');
+            $studStmt->execute([':roll' => $rollNumber]);
+            $st = $studStmt->fetch(\PDO::FETCH_ASSOC);
+
+            if ($st) {
+                $academicYearId = (int) $st['academic_year_id'];
+                $semId = (int) $st['semester_id'];
+                $eligibility = $this->admitCardService->checkEligibility((int)$st['id'], $academicYearId, $semId);
+                $report[] = [
+                    'student'     => $st,
+                    'eligibility' => $eligibility,
+                    'semester_id' => $semId,
+                ];
+            } else {
+                $error = 'Student with Roll Number "' . $rollNumber . '" not found.';
+            }
+        } elseif ($sectionId > 0 && $academicYearId > 0) {
             $students = $this->attendanceService->getStudentsForSection($sectionId);
             foreach ($students as $st) {
                 $placementStmt = db()->prepare('SELECT semester_id FROM student_academics WHERE student_id = :id AND is_current = 1 LIMIT 1');
@@ -514,4 +538,243 @@ class ResultController extends Controller
             'success'        => $success,
         ], 'layout');
     }
+
+    /**
+     * Exam Timetable Scheduler.
+     */
+    public function examTimetable(): void
+    {
+        $role = auth_role();
+        $error = null;
+        $success = null;
+
+        $academicYearId = (int) query('academic_year_id', $this->input('academic_year_id', '0'));
+        $departmentId   = (int) query('department_id', $this->input('department_id', '0'));
+        $courseId       = (int) query('course_id', $this->input('course_id', '0'));
+        $semesterId     = (int) query('semester_id', $this->input('semester_id', '0'));
+
+        // Server-side validation of parent-child relationships to prevent state desync
+        if ($departmentId > 0 && $courseId > 0) {
+            $isValidCourse = db()->query("SELECT COUNT(*) FROM courses WHERE id = $courseId AND department_id = $departmentId")->fetchColumn() > 0;
+            if (!$isValidCourse) {
+                $courseId = 0;
+                $semesterId = 0;
+            }
+        }
+
+        $examType       = query('exam_type', $this->input('exam_type', 'regular'));
+        if (!in_array($examType, ['regular', 'arrear'], true)) {
+            $examType = 'regular';
+        }
+        $rollNumber     = trim($this->input('roll_number', ''));
+        $studentInfo    = null;
+
+        // Handle Form Submission
+        if ($this->isPost() && in_array($role, ['super_admin', 'admin', 'head_of_coe'], true)) {
+            if (!csrf_verify($this->input('_csrf_token'))) {
+                $error = 'Invalid security token.';
+            } else {
+                $examDates = $_POST['exam_date'] ?? [];
+                $timeSlots = $_POST['time_slot'] ?? [];
+                $roomIds   = $_POST['room_id'] ?? [];
+
+                db()->beginTransaction();
+                try {
+                    foreach ($examDates as $subjectId => $date) {
+                        if (empty($date)) continue;
+
+                        $subjId = (int) $subjectId;
+                        $slot   = $timeSlots[$subjId] ?? '09:30 AM - 12:30 PM';
+                        $roomId = !empty($roomIds[$subjId]) ? (int)$roomIds[$subjId] : null;
+
+                        // Check if exists
+                        $chk = db()->prepare('
+                            SELECT id FROM exam_schedules 
+                            WHERE academic_year_id = :acyr AND semester_id = :sem AND subject_id = :subj AND exam_type = :type
+                        ');
+                        $chk->execute([
+                            ':acyr' => $academicYearId,
+                            ':sem'  => $semesterId,
+                            ':subj' => $subjId,
+                            ':type' => $examType
+                        ]);
+                        $existingId = $chk->fetchColumn();
+
+                        if ($existingId) {
+                            $upd = db()->prepare('
+                                UPDATE exam_schedules 
+                                SET exam_date = :date, time_slot = :slot, room_id = :room
+                                WHERE id = :id
+                            ');
+                            $upd->execute([
+                                ':date' => $date,
+                                ':slot' => $slot,
+                                ':room' => $roomId,
+                                ':id'   => $existingId
+                            ]);
+                        } else {
+                            $ins = db()->prepare('
+                                INSERT INTO exam_schedules (academic_year_id, department_id, course_id, semester_id, exam_type, subject_id, exam_date, time_slot, room_id)
+                                VALUES (:acyr, :dept, :course, :sem, :type, :subj, :date, :slot, :room)
+                            ');
+                            $ins->execute([
+                                ':acyr'   => $academicYearId,
+                                ':dept'   => $departmentId,
+                                ':course' => $courseId,
+                                ':sem'    => $semesterId,
+                                ':type'   => $examType,
+                                ':subj'   => $subjId,
+                                ':date'   => $date,
+                                ':slot'   => $slot,
+                                ':room'   => $roomId
+                            ]);
+                        }
+                    }
+                    db()->commit();
+                    $success = ucfirst($examType) . ' exam timetable updated successfully.';
+                } catch (\Exception $e) {
+                    db()->rollBack();
+                    $error = 'Failed to save exam schedule: ' . $e->getMessage();
+                }
+            }
+        }
+
+        // Fetch basic options for dropdowns
+        $academicYears = $this->masterService->getAcademicYears(1);
+        $departments   = $this->masterService->getDepartments(1);
+        $courses       = $departmentId > 0 ? db()->query("SELECT * FROM courses WHERE department_id = $departmentId AND status = 1")->fetchAll(\PDO::FETCH_ASSOC) : [];
+        $semesters     = $courseId > 0 ? $this->masterService->getSemestersByCourse($courseId) : [];
+        
+        // Rooms list
+        $rooms = db()->query('SELECT * FROM rooms WHERE status = 1 ORDER BY name ASC')->fetchAll(\PDO::FETCH_ASSOC) ?: [];
+
+        $subjectsList = [];
+        $arrearSubjectsList = [];
+        $schedules = [];
+        $arrearSchedules = [];
+
+        // If search by roll number (e.g. for student view or roll number search)
+        if ($role === 'student' || !empty($rollNumber)) {
+            $searchUser = ($role === 'student') ? ($_SESSION['username'] ?? '') : $rollNumber;
+            
+            $studStmt = db()->prepare('
+                SELECT s.id AS student_id, sa.academic_year_id, sa.department_id, sa.course_id, sa.semester_id, s.first_name, s.last_name, s.roll_number
+                FROM students s
+                JOIN student_academics sa ON sa.student_id = s.id AND sa.is_current = 1
+                WHERE s.roll_number = :roll
+                LIMIT 1
+            ');
+            $studStmt->execute([':roll' => $searchUser]);
+            $studentInfo = $studStmt->fetch(\PDO::FETCH_ASSOC);
+
+            if ($studentInfo) {
+                $studentId = (int) $studentInfo['student_id'];
+                $academicYearId = (int) $studentInfo['academic_year_id'];
+                $departmentId   = (int) $studentInfo['department_id'];
+                $courseId       = (int) $studentInfo['course_id'];
+                $semesterId     = (int) $studentInfo['semester_id'];
+
+                // 1. Regular Subjects
+                $subjectsStmt = db()->prepare('SELECT * FROM subjects WHERE semester_id = :sem AND status = 1');
+                $subjectsStmt->execute([':sem' => $semesterId]);
+                $subjectsList = $subjectsStmt->fetchAll(\PDO::FETCH_ASSOC) ?: [];
+
+                // 2. Arrear Subjects (failed and not subsequently passed)
+                $arrearStmt = db()->prepare("
+                    SELECT sub.*, em.grade, em.academic_year_id AS fail_year 
+                    FROM external_marks em
+                    JOIN subjects sub ON sub.id = em.subject_id
+                    WHERE em.student_id = :student_id AND em.grade = 'F'
+                      AND NOT EXISTS (
+                          SELECT 1 FROM external_marks em2 
+                          WHERE em2.student_id = em.student_id 
+                            AND em2.subject_id = em.subject_id 
+                            AND em2.grade != 'F' 
+                            AND em2.created_at > em.created_at
+                      )
+                ");
+                $arrearStmt->execute([':student_id' => $studentId]);
+                $arrearSubjectsList = $arrearStmt->fetchAll(\PDO::FETCH_ASSOC) ?: [];
+            }
+        } elseif ($semesterId > 0) {
+            $subjectsStmt = db()->prepare('SELECT * FROM subjects WHERE semester_id = :sem AND status = 1');
+            $subjectsStmt->execute([':sem' => $semesterId]);
+            $subjectsList = $subjectsStmt->fetchAll(\PDO::FETCH_ASSOC) ?: [];
+        }
+
+        // Fetch regular schedules for filter selection
+        if ($semesterId > 0 && $academicYearId > 0) {
+            $schedStmt = db()->prepare('
+                SELECT * FROM exam_schedules 
+                WHERE academic_year_id = :acyr AND semester_id = :sem AND exam_type = :type
+            ');
+            $schedStmt->execute([
+                ':acyr' => $academicYearId,
+                ':sem'  => $semesterId,
+                ':type' => $examType
+            ]);
+            $schedulesRaw = $schedStmt->fetchAll(\PDO::FETCH_ASSOC) ?: [];
+            foreach ($schedulesRaw as $s) {
+                $schedules[$s['subject_id']] = $s;
+            }
+        }
+
+        // Fetch student's consolidated exam schedules (both regular and arrear)
+        if ($studentInfo) {
+            $regStmt = db()->prepare('
+                SELECT * FROM exam_schedules 
+                WHERE academic_year_id = :acyr AND semester_id = :sem AND exam_type = \'regular\'
+            ');
+            $regStmt->execute([
+                ':acyr' => $studentInfo['academic_year_id'],
+                ':sem'  => $studentInfo['semester_id']
+            ]);
+            $regRaw = $regStmt->fetchAll(\PDO::FETCH_ASSOC) ?: [];
+            $schedules = [];
+            foreach ($regRaw as $s) {
+                $schedules[$s['subject_id']] = $s;
+            }
+
+            if (!empty($arrearSubjectsList)) {
+                $arrSubjIds = array_map(fn($item) => (int)$item['id'], $arrearSubjectsList);
+                $placeholders = implode(',', array_fill(0, count($arrSubjIds), '?'));
+                
+                $arrStmt = db()->prepare("
+                    SELECT * FROM exam_schedules 
+                    WHERE subject_id IN ($placeholders) AND exam_type = 'arrear'
+                ");
+                $arrStmt->execute($arrSubjIds);
+                $arrRaw = $arrStmt->fetchAll(\PDO::FETCH_ASSOC) ?: [];
+                $arrearSchedules = [];
+                foreach ($arrRaw as $s) {
+                    $arrearSchedules[$s['subject_id']] = $s;
+                }
+            }
+        }
+
+        $this->render('Result/views/exam_timetable', [
+            'title'              => 'Exam Timetable Scheduler',
+            'role'               => $role,
+            'academicYears'      => $academicYears,
+            'departments'        => $departments,
+            'courses'            => $courses,
+            'semesters'          => $semesters,
+            'rooms'              => $rooms,
+            'academicYearId'     => $academicYearId,
+            'departmentId'       => $departmentId,
+            'courseId'           => $courseId,
+            'semesterId'         => $semesterId,
+            'examType'           => $examType,
+            'rollNumber'         => $rollNumber,
+            'studentInfo'        => $studentInfo,
+            'subjectsList'       => $subjectsList,
+            'arrearSubjectsList' => $arrearSubjectsList,
+            'schedules'          => $schedules,
+            'arrearSchedules'    => $arrearSchedules,
+            'error'              => $error,
+            'success'            => $success,
+        ], 'layout');
+    }
 }
+
+

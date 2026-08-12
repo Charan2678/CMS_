@@ -1205,6 +1205,7 @@ CREATE TABLE `announcements` (
 -- Never UPDATE or DELETE from this table in application code.
 CREATE TABLE `audit_logs` (
     `id`          BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    `college_id`  INT UNSIGNED    NOT NULL DEFAULT 1,
     `user_id`     INT UNSIGNED    NOT NULL,
     `action`      ENUM('create','update','delete','login','logout','export') NOT NULL,
     `module`      VARCHAR(100)    NOT NULL,
@@ -1212,11 +1213,14 @@ CREATE TABLE `audit_logs` (
     `old_values`  JSON            DEFAULT NULL,
     `new_values`  JSON            DEFAULT NULL,
     `ip_address`  VARCHAR(45)     NOT NULL,
+    `user_agent`  VARCHAR(255)    DEFAULT NULL,
     `created_at`  DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (`id`),
     KEY `idx_audit_user`   (`user_id`),
     KEY `idx_audit_module` (`module`),
     KEY `idx_audit_at`     (`created_at`),
+    CONSTRAINT `fk_audit_college`
+        FOREIGN KEY (`college_id`) REFERENCES `colleges` (`id`),
     CONSTRAINT `fk_audit_user`
         FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
@@ -1387,7 +1391,7 @@ CREATE TABLE `marks_revision_log` (
 SET FOREIGN_KEY_CHECKS = 1;
 -- ============================================================
 -- SCHEMA COMPLETE
--- Total tables : 53
+-- Total tables : 58
 -- Total FKs    : 86
 -- Normalization: 3NF verified
 -- ============================================================
