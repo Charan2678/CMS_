@@ -10,10 +10,9 @@ $isLimitReached = ($taken >= $limit);
         <h1 style="font-size: 1.35rem; font-weight: 800; color: var(--text-primary); margin: 0;">📚 Library Catalog Repository</h1>
         <p style="color: var(--text-secondary); font-size: 0.8125rem; margin: 0.25rem 0 0 0;">Search books, view live copy availability, and reserve books for collection</p>
     </div>
-    <div style="display: flex; gap: 0.5rem;">
-        <?php if (!empty($canManage)): ?>
-            <a href="/library" class="btn btn-secondary" style="font-size: 0.8125rem;">&larr; Back to Library Overview</a>
-        <?php else: ?>
+    <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+        <a href="/library" class="btn btn-secondary" style="font-size: 0.8125rem;">&larr; Back to Library Overview</a>
+        <?php if (empty($canManage)): ?>
             <a href="/library/my-books" class="btn btn-primary" style="font-size: 0.8125rem;">📖 My Issued &amp; Reserved Books</a>
             <a href="/library/history" class="btn btn-secondary" style="font-size: 0.8125rem;">📅 Monthly Book History</a>
         <?php endif; ?>

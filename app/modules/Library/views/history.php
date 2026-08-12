@@ -13,7 +13,8 @@ $isLimitReached = ($taken >= $limit);
         <h1 style="font-size: 1.35rem; font-weight: 800; color: var(--text-primary); margin: 0;">📅 Monthly Book History &amp; Quota Log</h1>
         <p style="color: var(--text-secondary); font-size: 0.8125rem; margin: 0.25rem 0 0 0;">View month-by-month library transactions and monitor your 4-book monthly quota limit</p>
     </div>
-    <div style="display: flex; gap: 0.5rem;">
+    <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+        <a href="/library" class="btn btn-secondary" style="font-size: 0.8125rem;">&larr; Back to Library Overview</a>
         <a href="/library/catalog" class="btn btn-primary" style="font-size: 0.8125rem;">🔍 Browse Catalog</a>
         <a href="/library/my-books" class="btn btn-secondary" style="font-size: 0.8125rem;">📖 My Issued Books</a>
     </div>

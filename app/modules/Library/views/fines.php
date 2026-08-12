@@ -3,7 +3,7 @@
         <h1 style="font-size: 1.35rem; font-weight: 800; color: var(--text-primary); margin: 0;">💰 My Library Fees &amp; Overdue Fines</h1>
         <p style="color: var(--text-secondary); font-size: 0.8125rem; margin: 0.25rem 0 0 0;">View late book return penalties, payment statuses, and settle outstanding library dues</p>
     </div>
-    <a href="/library/my-books" class="btn btn-secondary" style="font-size: 0.8125rem;">&larr; Back to My Books</a>
+    <a href="/library" class="btn btn-secondary" style="font-size: 0.8125rem;">&larr; Back to Library Overview</a>
 </div>
 
 <?php if (!empty($success)): ?>
