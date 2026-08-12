@@ -12,7 +12,12 @@
                 Create teaching staff profile and auto-provision faculty portal login
             </div>
         </div>
-        <span class="badge badge-info" style="font-size: 0.75rem;">Auto Provisions Login Account</span>
+        <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
+            <a href="/faculty" class="btn-secondary" style="display: inline-flex; align-items: center; gap: 0.5rem; text-decoration: none; padding: 0.5rem 1rem; border-radius: 8px; font-weight: 600; font-size: 0.875rem; background: var(--bg-main); border: 1px solid var(--border-color); color: var(--text-primary); transition: all 0.2s ease;">
+                <span>←</span> Back to Faculty Directory
+            </a>
+            <span class="badge badge-info" style="font-size: 0.75rem;">Auto Provisions Login Account</span>
+        </div>
     </div>
 
     <form method="POST" action="/faculty/create">
