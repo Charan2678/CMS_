@@ -18,6 +18,11 @@
             </h2>
             <p style="color: var(--text-secondary); font-size: 0.8125rem; margin: 0.25rem 0 0 0;">Track student resident outpasses, expected return times, and check-in arrivals.</p>
         </div>
+        <div>
+            <a href="/hostel/management" class="btn-secondary" style="display: inline-flex; align-items: center; gap: 0.5rem; text-decoration: none; padding: 0.5rem 1rem; border-radius: 8px; font-weight: 600; font-size: 0.875rem; background: var(--bg-main); border: 1px solid var(--border-color); color: var(--text-primary); transition: all 0.2s ease;">
+                <span>←</span> Back to Overview
+            </a>
+        </div>
     </div>
 
     <?php if (empty($outpasses)): ?>
