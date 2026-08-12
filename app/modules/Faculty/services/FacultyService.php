@@ -13,13 +13,8 @@ class FacultyService
     // ─── Designations ──────────────────────────────────────────
     public function getDesignations(int $collegeId = 1, ?string $departmentType = null): array
     {
-        if ($departmentType !== null) {
-            $stmt = db()->prepare('SELECT * FROM designations WHERE college_id = :college_id AND department_type = :dept_type AND status = 1 ORDER BY level DESC, name ASC');
-            $stmt->execute([':college_id' => $collegeId, ':dept_type' => $departmentType]);
-        } else {
-            $stmt = db()->prepare('SELECT * FROM designations WHERE college_id = :college_id AND status = 1 ORDER BY level DESC, name ASC');
-            $stmt->execute([':college_id' => $collegeId]);
-        }
+        $stmt = db()->prepare('SELECT * FROM designations WHERE college_id = :college_id AND status = 1 ORDER BY level DESC, name ASC');
+        $stmt->execute([':college_id' => $collegeId]);
         return $stmt->fetchAll() ?: [];
     }
 
