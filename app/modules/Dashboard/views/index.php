@@ -569,26 +569,6 @@ $hSummary = $sData['hostel_summary'] ?? null;
     </div>
 
 <?php endif; ?>
-                <?php if (empty($ancList)): ?>
-                    <p style="color: var(--text-secondary); font-size: 0.875rem; margin: 0;">No active campus announcements currently.</p>
-                <?php else: ?>
-                    <div style="display: flex; flex-direction: column; gap: 1rem;">
-                        <?php foreach (array_slice($ancList, 0, 3) as $anc): ?>
-                            <div style="background: var(--bg-main); padding: 0.875rem 1rem; border-radius: 8px; border: 1px solid var(--border-color);">
-                                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.25rem;">
-                                    <h3 style="font-size: 0.875rem; font-weight: 700; color: var(--text-primary); margin: 0;"><?= e($anc['title']) ?></h3>
-                                    <span class="badge badge-info" style="font-size: 0.6875rem; text-transform: uppercase;">
-                                        <?= e($anc['target_role'] ?? 'Everyone') ?>
-                                    </span>
-                                </div>
-                                <p style="color: var(--text-secondary); font-size: 0.75rem; line-height: 1.4; margin: 0;">
-                                    <?= e(mb_strimwidth($anc['content'], 0, 100, '...')) ?>
-                                </p>
-                            </div>
-                        <?php endforeach; ?>
-                    </div>
-                <?php endif; ?>
-            </div>
 
             <!-- Recent Audit Log Activity Stream -->
             <?php if (!empty($auditLogs)): ?>
