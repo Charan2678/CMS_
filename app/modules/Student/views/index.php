@@ -5,8 +5,8 @@
 <div class="card" style="width: 100%;">
     <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem;">
         <div>
-            <h2 style="font-size: 1.25rem; font-weight: 800; color: var(--text-primary); margin: 0; display: flex; align-items: center; gap: 0.5rem;">
-                <span>👨‍🎓</span> Institutional Student Directory
+            <h2 style="font-size: 1.25rem; font-weight: 800; color: var(--text-primary); margin: 0; display: flex; align-items: center; gap: 0.5rem; letter-spacing: -0.015em;">
+                <?= icon('graduation-cap', 'icon-md') ?> Institutional Student Directory
             </h2>
             <div style="font-size: 0.8125rem; color: var(--text-secondary); margin-top: 0.25rem;">
                 Search, filter, and manage enrolled student profiles
@@ -14,7 +14,7 @@
         </div>
 
         <a href="/students/admission" class="btn-primary" style="text-decoration: none; width: auto; padding: 0.625rem 1.25rem; font-weight: 700;">
-            + Admit New Student
+            <?= icon('user-plus', 'icon-sm') ?> Admit New Student
         </a>
     </div>
 
@@ -56,19 +56,19 @@
         </div>
 
         <div>
-            <button type="submit" class="btn-primary" style="width: 100%; margin-top: 0;">Apply Filters</button>
+            <button type="submit" class="btn-primary" style="width: 100%; margin-top: 0;"><?= icon('filter', 'icon-xs') ?> Apply Filters</button>
         </div>
     </form>
 
     <!-- Student Table — Full Width -->
-    <div style="overflow-x: auto; width: 100%;">
+    <div class="table-responsive">
         <table class="table">
             <thead>
                 <tr>
                     <th>Roll Number</th>
                     <th>Student Name</th>
                     <th>Department</th>
-                    <th>Course & Sem</th>
+                    <th>Course &amp; Sem</th>
                     <th>Section</th>
                     <th>Status</th>
                     <th style="text-align: right;">Action</th>
@@ -93,15 +93,15 @@
                             <td style="font-weight: 600;"><?= e($cleanSec) ?></td>
                             <td>
                                 <?php if ($std['status'] === 'active'): ?>
-                                    <span class="badge badge-success">Active</span>
+                                    <span class="badge badge-success"><?= icon('check-circle-2', 'icon-xs') ?> Active</span>
                                 <?php elseif ($std['status'] === 'graduated'): ?>
-                                    <span class="badge badge-info">Graduated</span>
+                                    <span class="badge badge-info"><?= icon('graduation-cap', 'icon-xs') ?> Graduated</span>
                                 <?php else: ?>
                                     <span class="badge badge-danger"><?= e($std['status']) ?></span>
                                 <?php endif; ?>
                             </td>
                             <td style="text-align: right;">
-                                <a href="/students/<?= $std['id'] ?>" class="btn-primary" style="padding: 0.35rem 0.875rem; font-size: 0.75rem; border-radius: 6px; text-decoration: none; display: inline-block;">View 360° Profile &rarr;</a>
+                                <a href="/students/<?= $std['id'] ?>" class="btn-primary" style="padding: 0.35rem 0.875rem; font-size: 0.75rem; border-radius: 6px; text-decoration: none; display: inline-flex; align-items: center; gap: 0.35rem;">View Profile <?= icon('arrow-right', 'icon-xs') ?></a>
                             </td>
                         </tr>
                     <?php endforeach; ?>
@@ -118,13 +118,13 @@
             </div>
             <div style="display: flex; gap: 0.5rem;">
                 <?php if ($pagination['page'] > 1): ?>
-                    <a href="?page=<?= $pagination['page'] - 1 ?>&<?= http_build_query(array_filter($filters)) ?>" class="btn btn-secondary btn-sm">« Previous</a>
+                    <a href="?page=<?= $pagination['page'] - 1 ?>&<?= http_build_query(array_filter($filters)) ?>" class="btn btn-secondary btn-sm"><?= icon('chevron-left', 'icon-xs') ?> Previous</a>
                 <?php endif; ?>
 
                 <span class="btn btn-sm btn-primary" style="pointer-events: none;">Page <?= $pagination['page'] ?> of <?= $pagination['total_pages'] ?></span>
 
                 <?php if ($pagination['page'] < $pagination['total_pages']): ?>
-                    <a href="?page=<?= $pagination['page'] + 1 ?>&<?= http_build_query(array_filter($filters)) ?>" class="btn btn-secondary btn-sm">Next »</a>
+                    <a href="?page=<?= $pagination['page'] + 1 ?>&<?= http_build_query(array_filter($filters)) ?>" class="btn btn-secondary btn-sm">Next <?= icon('chevron-right', 'icon-xs') ?></a>
                 <?php endif; ?>
             </div>
         </div>

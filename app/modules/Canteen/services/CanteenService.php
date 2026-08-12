@@ -250,7 +250,7 @@ class CanteenService
         if ($ok && $status === 'ready') {
             $this->notifSvc->notify(
                 (int) $order['user_id'],
-                "🍳 Food Order Ready! (Token: {$order['order_number']})",
+                "Food Order Ready! (Token: {$order['order_number']})",
                 "Your canteen order for '{$order['item_name']}' is prepared and ready for pickup at the counter.",
                 '/canteen',
                 'success',

@@ -54,11 +54,11 @@ class AuthService
             if ($targetRoleType === 'admin') {
                 $isValidRole = in_array($userRoleCode, ['admin', 'super_admin'], true);
             } elseif ($targetRoleType === 'student') {
-                $isValidRole = ($userRoleCode === 'student');
+                $isValidRole = ($userRoleCode === 'student' || ($user['linked_type'] ?? '') === 'student');
             } elseif ($targetRoleType === 'parent') {
-                $isValidRole = ($userRoleCode === 'parent');
+                $isValidRole = ($userRoleCode === 'parent' || ($user['linked_type'] ?? '') === 'parent');
             } elseif ($targetRoleType === 'staff') {
-                $isValidRole = in_array($userRoleCode, ['staff', 'faculty', 'hod'], true);
+                $isValidRole = (!in_array($userRoleCode, ['student', 'parent'], true));
             }
 
             if (!$isValidRole) {
@@ -99,7 +99,9 @@ class AuthService
         $upd->execute([':id' => $user['id']]);
 
         // Regenerate Session & Store User details
-        session_regenerate_id(true);
+        if (!headers_sent() && session_status() === PHP_SESSION_ACTIVE) {
+            session_regenerate_id(true);
+        }
         $_SESSION['user_id']              = (int) $user['id'];
         $_SESSION['college_id']           = (int) $user['college_id'];
         $_SESSION['username']             = $user['username'];

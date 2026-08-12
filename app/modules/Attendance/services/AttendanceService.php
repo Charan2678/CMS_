@@ -142,7 +142,7 @@ class AttendanceService
                     if ($studentUserId) {
                         $this->notifSvc->notify(
                             $studentUserId,
-                            "⚠️ Attendance Shortage Alert ({$pct}%)",
+                            "Attendance Shortage Alert ({$pct}%)",
                             $msg,
                             '/attendance',
                             'alert',
@@ -155,7 +155,7 @@ class AttendanceService
                     if ($parentUserId) {
                         $this->notifSvc->notify(
                             $parentUserId,
-                            "🚨 [Ward Alert] Attendance Shortage ({$name} - {$pct}%)",
+                            "[Ward Alert] Attendance Shortage ({$name} - {$pct}%)",
                             "Your ward {$name}'s overall attendance has dropped to {$pct}%. Safe standing is 75% or higher.",
                             '/attendance',
                             'alert',

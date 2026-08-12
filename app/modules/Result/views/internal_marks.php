@@ -9,8 +9,8 @@
 <div class="card" style="width: 100%;">
     <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem;">
         <div>
-            <h2 style="font-size: 1.25rem; font-weight: 800; color: var(--text-primary); margin: 0; display: flex; align-items: center; gap: 0.5rem;">
-                <span>📝</span> Internal Assessment (CIA) Marks Entry
+            <h2 style="font-size: 1.25rem; font-weight: 800; color: var(--text-primary); margin: 0; display: flex; align-items: center; gap: 0.5rem; letter-spacing: -0.015em;">
+                <?= icon('file-signature', 'icon-md') ?> Internal Assessment (CIA) Marks Entry
             </h2>
             <div style="font-size: 0.8125rem; color: var(--text-secondary); margin-top: 0.25rem;">
                 Enter mid-term, assignment, or continuous internal assessment marks
@@ -19,7 +19,7 @@
     </div>
 
     <!-- Selector Bar — Full Width Grid -->
-    <form method="GET" action="/marks/internal" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; align-items: end; background: var(--bg-main); padding: 1.25rem; border-radius: 10px; border: 1px solid var(--border-color); width: 100%;">
+    <form method="GET" action="/marks/internal" class="filter-bar">
         <div>
             <label class="form-label">Academic Session *</label>
             <select name="academic_year_id" class="form-control" required>
@@ -71,7 +71,7 @@
         </div>
 
         <div>
-            <button type="submit" class="btn-primary" style="width: 100%; margin-top: 0;">Load Marks Roster</button>
+            <button type="submit" class="btn-primary" style="width: 100%; margin-top: 0;"><?= icon('search', 'icon-xs') ?> Load Marks Roster</button>
         </div>
     </form>
 </div>
@@ -79,8 +79,8 @@
 <?php if ($sectionId > 0 && $subjectId > 0): ?>
     <div class="card" style="width: 100%;">
         <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem;">
-            <h2 style="font-size: 1.125rem; font-weight: 700; color: var(--text-primary); margin: 0; display: flex; align-items: center; gap: 0.5rem;">
-                <span>📋</span> Enter Student Marks & Grade Log
+            <h2 style="font-size: 1.125rem; font-weight: 800; color: var(--text-primary); margin: 0; display: flex; align-items: center; gap: 0.5rem;">
+                <?= icon('clipboard-list', 'icon-sm') ?> Enter Student Marks &amp; Grade Log
             </h2>
             <span class="badge badge-info" style="font-weight: 700; text-transform: uppercase;">Exam: <?= strtoupper(e($examType)) ?></span>
         </div>
@@ -100,7 +100,7 @@
                     <input type="number" name="max_marks" class="form-control" value="25" min="5" max="100">
                 </div>
 
-                <div style="overflow-x: auto; width: 100%;">
+                <div class="table-responsive">
                     <table class="table">
                         <thead>
                             <tr>
@@ -124,7 +124,7 @@
                 </div>
 
                 <div style="margin-top: 1.5rem; text-align: right; border-top: 1px solid var(--border-color); padding-top: 1.25rem;">
-                    <button type="submit" class="btn-primary" style="width: auto; padding: 0.875rem 3rem; font-weight: 700;">Save Internal Marks</button>
+                    <button type="submit" class="btn-primary" style="width: auto; padding: 0.875rem 2.5rem; font-weight: 700;"><?= icon('save', 'icon-sm') ?> Save Internal Marks</button>
                 </div>
             </form>
         <?php endif; ?>

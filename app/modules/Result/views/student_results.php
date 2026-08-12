@@ -1,21 +1,25 @@
-<div class="page-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+<div class="page-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
     <div>
-        <h1 class="page-title" style="font-size: 1.75rem; font-weight: 700; color: var(--text-primary); margin: 0;">My Semester Results & Marksheets</h1>
+        <h1 class="page-title" style="font-size: 1.5rem; font-weight: 800; color: var(--text-primary); margin: 0; display: flex; align-items: center; gap: 0.5rem; letter-spacing: -0.015em;">
+            <?= icon('award', 'icon-md') ?> My Semester Results &amp; Marksheets
+        </h1>
         <p style="color: var(--text-secondary); font-size: 0.875rem; margin-top: 0.25rem;">
             Official academic performance report cards for all current and previous semesters.
         </p>
     </div>
     <div>
         <button onclick="window.print()" class="btn-primary" style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem;">
-            <span>🖨️</span> Print / Download Marksheets
+            <?= icon('printer', 'icon-xs') ?> Print / Download Marksheets
         </button>
     </div>
 </div>
 
 <?php if (empty($semesters)): ?>
-    <div class="card" style="padding: 2rem; text-align: center;">
-        <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">🏆</div>
-        <h2 style="font-size: 1.25rem; color: var(--text-primary); margin-top: 0;">No Semester Results Published Yet</h2>
+    <div class="card" style="padding: 2.5rem; text-align: center;">
+        <div style="color: var(--accent-color); margin-bottom: 0.75rem;">
+            <?= icon('award', 'icon-xl') ?>
+        </div>
+        <h2 style="font-size: 1.25rem; font-weight: 800; color: var(--text-primary); margin-top: 0;">No Semester Results Published Yet</h2>
         <p style="color: var(--text-secondary); font-size: 0.875rem; max-width: 500px; margin: 0.5rem auto 0;">
             Your semester examination results are either currently being evaluated or pending official publishing by the examination cell.
         </p>
@@ -28,16 +32,16 @@
                 <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 1rem; margin-bottom: 1.25rem; flex-wrap: wrap; gap: 1rem;">
                     <div>
                         <span style="font-size: 0.75rem; text-transform: uppercase; font-weight: 700; color: var(--accent-color); letter-spacing: 0.05em;"><?= e($sem['course_name']) ?></span>
-                        <h2 style="font-size: 1.35rem; font-weight: 700; color: var(--text-primary); margin: 0.25rem 0 0;"><?= e($sem['semester_name']) ?> — <?= e($sem['academic_year_name']) ?></h2>
+                        <h2 style="font-size: 1.25rem; font-weight: 800; color: var(--text-primary); margin: 0.25rem 0 0;"><?= e($sem['semester_name']) ?> — <?= e($sem['academic_year_name']) ?></h2>
                     </div>
 
                     <div style="display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap;">
-                        <div style="text-align: right; background: rgba(37,99,235,0.08); padding: 0.4rem 0.875rem; border-radius: 8px; border: 1px solid rgba(37,99,235,0.2);">
+                        <div style="text-align: right; background: rgba(2, 132, 199, 0.08); padding: 0.4rem 0.875rem; border-radius: 8px; border: 1px solid rgba(2, 132, 199, 0.2); box-shadow: var(--shadow-xs);">
                             <div style="font-size: 0.7rem; text-transform: uppercase; font-weight: 700; color: var(--accent-color);">Semester SGPA</div>
                             <div style="font-size: 1.35rem; font-weight: 800; color: var(--accent-color);"><?= number_format((float)($sem['sgpa'] ?? 0), 2) ?> <span style="font-size: 0.75rem; color: var(--text-secondary);">/ 10.0</span></div>
                         </div>
 
-                        <div style="text-align: right; background: rgba(16,185,129,0.08); padding: 0.4rem 0.875rem; border-radius: 8px; border: 1px solid rgba(16,185,129,0.2);">
+                        <div style="text-align: right; background: rgba(16, 185, 129, 0.08); padding: 0.4rem 0.875rem; border-radius: 8px; border: 1px solid rgba(16, 185, 129, 0.2); box-shadow: var(--shadow-xs);">
                             <div style="font-size: 0.7rem; text-transform: uppercase; font-weight: 700; color: var(--success);">Cumulative CGPA</div>
                             <div style="font-size: 1.35rem; font-weight: 800; color: var(--success);"><?= number_format((float)($sem['cgpa'] ?? 0), 2) ?> <span style="font-size: 0.75rem; color: var(--text-secondary);">/ 10.0</span></div>
                         </div>
@@ -51,11 +55,11 @@
                         <div>
                             <?php if ($sem['result'] === 'pass'): ?>
                                 <span class="badge badge-success" style="padding: 0.5rem 1rem; font-size: 0.875rem;">
-                                    PASSED
+                                    <?= icon('check-circle-2', 'icon-xs') ?> PASSED
                                 </span>
                             <?php else: ?>
                                 <span class="badge badge-danger" style="padding: 0.5rem 1rem; font-size: 0.875rem;">
-                                    FAILED / BACKLOG
+                                    <?= icon('alert-triangle', 'icon-xs') ?> FAILED / BACKLOG
                                 </span>
                             <?php endif; ?>
                         </div>
@@ -63,7 +67,7 @@
                 </div>
 
                 <!-- Subject Marks Table -->
-                <div style="overflow-x: auto;">
+                <div class="table-responsive">
                     <table class="table">
                         <thead>
                             <tr>
@@ -83,13 +87,13 @@
                             <?php else: ?>
                                 <?php foreach ($sem['subjects'] as $sub): ?>
                                     <tr>
-                                        <td style="font-weight: 600; color: var(--accent-color);"><?= e($sub['subject_code']) ?></td>
-                                        <td style="color: var(--text-primary); font-weight: 500;"><?= e($sub['subject_name']) ?></td>
+                                        <td style="font-weight: 700; color: var(--accent-color);"><?= e($sub['subject_code']) ?></td>
+                                        <td style="color: var(--text-primary); font-weight: 600;"><?= e($sub['subject_name']) ?></td>
                                         <td style="text-align: center; color: var(--text-secondary);"><?= number_format((float)$sub['credits'], 1) ?></td>
                                         <td style="text-align: center; color: var(--text-primary);"><?= $sub['internal_marks'] !== null ? number_format((float)$sub['internal_marks'], 1) : 'N/A' ?></td>
                                         <td style="text-align: center; color: var(--text-primary);"><?= number_format((float)$sub['external_marks'], 1) ?> / <?= number_format((float)$sub['external_max'], 0) ?></td>
                                         <td style="text-align: right;">
-                                            <span style="font-weight: 700; color: <?= $sub['grade'] === 'F' ? 'var(--danger)' : 'var(--success)' ?>; font-size: 0.9375rem;">
+                                            <span style="font-weight: 800; color: <?= $sub['grade'] === 'F' ? 'var(--danger)' : 'var(--success)' ?>; font-size: 0.9375rem;">
                                                 <?= e($sub['grade']) ?>
                                             </span>
                                         </td>

@@ -5,8 +5,8 @@
 <div class="card" style="width: 100%;">
     <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem;">
         <div>
-            <h2 style="font-size: 1.25rem; font-weight: 800; color: var(--text-primary); margin: 0; display: flex; align-items: center; gap: 0.5rem;">
-                <span>💼</span> Onboard Non-Faculty Staff Member
+            <h2 style="font-size: 1.25rem; font-weight: 800; color: var(--text-primary); margin: 0; display: flex; align-items: center; gap: 0.5rem; letter-spacing: -0.015em;">
+                <?= icon('briefcase', 'icon-md') ?> Onboard Non-Faculty Staff Member
             </h2>
             <div style="font-size: 0.8125rem; color: var(--text-secondary); margin-top: 0.25rem;">
                 Create staff profile for Accounts, Library, Hostel, Transport, or Canteen and provision portal access
@@ -18,7 +18,7 @@
     <form method="POST" action="/staff/create">
         <?= csrf_field() ?>
 
-        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.25rem; margin-bottom: 1.5rem;">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.25rem; margin-bottom: 1.5rem;">
             <div class="form-group">
                 <label class="form-label" for="employee_id">Staff Code / Employee ID *</label>
                 <input type="text" id="employee_id" name="employee_id" class="form-control" required placeholder="e.g. STF-ACC-001">
@@ -37,10 +37,10 @@
             <div class="form-group">
                 <label class="form-label" for="department_type">Department Domain *</label>
                 <select id="department_type" name="department_type" class="form-control" required>
-                    <option value="accounts">Accounts & Finance</option>
+                    <option value="accounts">Accounts &amp; Finance</option>
                     <option value="library">Library Services</option>
                     <option value="hostel">Hostel Administration</option>
-                    <option value="transport">Transport & Logistics</option>
+                    <option value="transport">Transport &amp; Logistics</option>
                     <option value="canteen">Canteen Services</option>
                     <option value="admin">General Administration</option>
                 </select>
@@ -73,7 +73,7 @@
         </div>
 
         <div style="text-align: right; border-top: 1px solid var(--border-color); padding-top: 1.25rem;">
-            <button type="submit" class="btn-primary" style="width: auto; padding: 0.875rem 3rem; font-weight: 700;">Onboard Staff & Create Account</button>
+            <button type="submit" class="btn-primary" style="width: auto; padding: 0.875rem 2.5rem; font-weight: 700;"><?= icon('user-check', 'icon-sm') ?> Onboard Staff &amp; Create Account</button>
         </div>
     </form>
 </div>

@@ -239,6 +239,14 @@ function flash(string $key, mixed $value): void
 }
 
 /**
+ * Alias for flash().
+ */
+function flash_set(string $key, mixed $value): void
+{
+    flash($key, $value);
+}
+
+/**
  * Get and immediately remove a flash message.
  */
 function flash_get(string $key, mixed $default = null): mixed
@@ -477,4 +485,22 @@ function number_to_words_inr(float $number): string
     }
     return $result . ' Only';
 }
+
+/**
+ * Render a Lucide vector icon tag.
+ *
+ * @param string $name Lucide icon name (e.g. 'graduation-cap', 'check-circle-2', 'credit-card')
+ * @param string $class Extra CSS classes
+ * @param array $attrs Extra HTML attributes
+ */
+function icon(string $name, string $class = '', array $attrs = []): string
+{
+    $attrString = '';
+    foreach ($attrs as $k => $v) {
+        $attrString .= ' ' . htmlspecialchars((string) $k, ENT_QUOTES, 'UTF-8') . '="' . htmlspecialchars((string) $v, ENT_QUOTES, 'UTF-8') . '"';
+    }
+    $classes = trim('lucide-icon ' . $class);
+    return '<i data-lucide="' . htmlspecialchars($name, ENT_QUOTES, 'UTF-8') . '" class="' . htmlspecialchars($classes, ENT_QUOTES, 'UTF-8') . '"' . $attrString . '></i>';
+}
+
 

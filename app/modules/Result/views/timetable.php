@@ -9,8 +9,8 @@
 <div class="card" style="width: 100%;">
     <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem;">
         <div>
-            <h2 style="font-size: 1.25rem; font-weight: 800; color: var(--text-primary); margin: 0; display: flex; align-items: center; gap: 0.5rem;">
-                <span>🗓️</span> Class Timetable Scheduler & Matrix
+            <h2 style="font-size: 1.25rem; font-weight: 800; color: var(--text-primary); margin: 0; display: flex; align-items: center; gap: 0.5rem; letter-spacing: -0.015em;">
+                <?= icon('clock', 'icon-md') ?> Class Timetable Scheduler &amp; Matrix
             </h2>
             <div style="font-size: 0.8125rem; color: var(--text-secondary); margin-top: 0.25rem;">
                 Select section to allocate weekly periods and view class schedule grid
@@ -19,7 +19,7 @@
     </div>
 
     <!-- Section Selection — Full Width Grid -->
-    <form method="GET" action="/timetable" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; align-items: end; background: var(--bg-main); padding: 1.25rem; border-radius: 10px; border: 1px solid var(--border-color); width: 100%;">
+    <form method="GET" action="/timetable" class="filter-bar">
         <div>
             <label class="form-label">Academic Session *</label>
             <select name="academic_year_id" class="form-control" required>
@@ -48,17 +48,17 @@
         </div>
 
         <div>
-            <button type="submit" class="btn-primary" style="width: 100%; margin-top: 0;">Load Schedule Matrix</button>
+            <button type="submit" class="btn-primary" style="width: 100%; margin-top: 0;"><?= icon('search', 'icon-xs') ?> Load Schedule Matrix</button>
         </div>
     </form>
 </div>
 
 <?php if ($sectionId > 0): ?>
-    <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 1.5rem; width: 100%;">
+    <div class="dashboard-grid-2" style="width: 100%;">
         <!-- Add Slot Form -->
         <div class="card">
-            <h3 style="font-size: 1.125rem; font-weight: 700; color: var(--text-primary); margin-top: 0; margin-bottom: 1.25rem; display: flex; align-items: center; gap: 0.5rem;">
-                <span>➕</span> Allocate Class Slot
+            <h3 style="font-size: 1.125rem; font-weight: 800; color: var(--text-primary); margin-top: 0; margin-bottom: 1.25rem; display: flex; align-items: center; gap: 0.5rem;">
+                <?= icon('plus', 'icon-sm') ?> Allocate Class Slot
             </h3>
 
             <form method="POST" action="/timetable">
@@ -103,20 +103,20 @@
                     </select>
                 </div>
 
-                <button type="submit" class="btn-primary" style="width: 100%;">Allocate Slot</button>
+                <button type="submit" class="btn-primary" style="width: 100%;"><?= icon('plus', 'icon-xs') ?> Allocate Slot</button>
             </form>
         </div>
 
         <!-- Weekly Schedule Grid Panel -->
         <div class="card">
-            <h3 style="font-size: 1.125rem; font-weight: 700; color: var(--text-primary); margin-top: 0; margin-bottom: 1.25rem; display: flex; align-items: center; gap: 0.5rem;">
-                <span>📅</span> Weekly Class Schedule Matrix
+            <h3 style="font-size: 1.125rem; font-weight: 800; color: var(--text-primary); margin-top: 0; margin-bottom: 1.25rem; display: flex; align-items: center; gap: 0.5rem;">
+                <?= icon('calendar-days', 'icon-sm') ?> Weekly Class Schedule Matrix
             </h3>
 
             <?php
             $days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
             ?>
-            <div style="overflow-x: auto; width: 100%;">
+            <div class="table-responsive">
                 <table class="table">
                     <thead>
                         <tr>
@@ -132,7 +132,7 @@
                                 <td style="font-weight: 800; text-transform: uppercase; color: var(--accent-color);"><?= substr($day, 0, 3) ?></td>
                                 <?php for ($p = 1; $p <= 6; $p++): ?>
                                     <?php $slot = $grid[$day][$p] ?? null; ?>
-                                    <td style="text-align: center; background: <?= $slot ? 'rgba(2, 132, 199, 0.12)' : 'var(--bg-main)' ?>; border: 1px solid var(--border-color); padding: 0.625rem 0.35rem;">
+                                    <td style="text-align: center; background: <?= $slot ? 'rgba(2, 132, 199, 0.08)' : 'var(--bg-main)' ?>; border: 1px solid var(--border-color); padding: 0.625rem 0.35rem; border-radius: 6px;">
                                         <?php if ($slot): ?>
                                             <strong style="color: var(--text-primary); display: block; font-size: 0.8125rem;"><?= e($slot['subject_code']) ?></strong>
                                             <span style="font-size: 0.6875rem; color: var(--accent-color); font-weight: 700;"><?= e($slot['faculty_last_name']) ?></span>

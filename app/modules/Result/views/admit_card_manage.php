@@ -1,25 +1,27 @@
 <div class="panel">
-    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem;">
+    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
         <div>
-            <h1 style="font-size: 1.5rem; font-weight: 700; margin: 0;">🎫 Exam Eligibility & Hall Ticket Control Center</h1>
-            <p style="color: var(--text-secondary); margin: 0.25rem 0 0 0; font-size: 0.875rem;">Cross-check section-wise attendance (>=75%) & fee dues balance (== ₹0) before hall ticket issuance.</p>
+            <h1 style="font-size: 1.5rem; font-weight: 800; margin: 0; color: var(--text-primary); display: flex; align-items: center; gap: 0.5rem; letter-spacing: -0.015em;">
+                <?= icon('ticket', 'icon-md') ?> Exam Eligibility &amp; Hall Ticket Control Center
+            </h1>
+            <p style="color: var(--text-secondary); margin: 0.25rem 0 0 0; font-size: 0.875rem;">Cross-check section-wise attendance (&ge;75%) &amp; fee dues balance (₹0) before hall ticket issuance.</p>
         </div>
     </div>
 
     <?php if (!empty($error)): ?>
-        <div class="badge badge-danger" style="display: block; padding: 0.75rem 1rem; margin-bottom: 1rem; font-size: 0.875rem; border-radius: 6px; text-align: left;">
-            ⚠️ <?= e($error) ?>
+        <div class="alert alert-danger">
+            <?= icon('alert-triangle', 'icon-xs') ?> <?= e($error) ?>
         </div>
     <?php endif; ?>
 
     <?php if (!empty($success)): ?>
-        <div class="badge badge-success" style="display: block; padding: 0.75rem 1rem; margin-bottom: 1rem; font-size: 0.875rem; border-radius: 6px; text-align: left;">
-            ✓ <?= e($success) ?>
+        <div class="alert alert-success">
+            <?= icon('check-circle-2', 'icon-xs') ?> <?= e($success) ?>
         </div>
     <?php endif; ?>
 
     <!-- Filter Form -->
-    <form method="GET" action="/admit-cards/manage" style="display: grid; grid-template-columns: 2fr 2fr 1fr; gap: 1rem; margin-bottom: 2rem; background: rgba(255,255,255,0.03); padding: 1.25rem; border-radius: 8px; border: 1px solid var(--border-color);">
+    <form method="GET" action="/admit-cards/manage" class="filter-bar" style="grid-template-columns: 2fr 2fr 1fr;">
         <div>
             <label class="form-label" for="academic_year_id">Academic Year *</label>
             <select name="academic_year_id" id="academic_year_id" class="form-control" required>
@@ -45,17 +47,19 @@
         </div>
 
         <div style="display: flex; align-items: flex-end;">
-            <button type="submit" class="btn btn-primary" style="width: 100%;">
-                🔍 Load Eligibility Report
+            <button type="submit" class="btn-primary" style="width: 100%; margin-top: 0;">
+                <?= icon('search', 'icon-xs') ?> Load Eligibility Report
             </button>
         </div>
     </form>
 
     <?php if ($sectionId > 0): ?>
-        <h2 style="font-size: 1.125rem; font-weight: 700; margin-bottom: 1rem;">Section Eligibility Roster (<?= count($report) ?> Students)</h2>
+        <h2 style="font-size: 1.125rem; font-weight: 800; margin-bottom: 1rem; color: var(--text-primary); display: flex; align-items: center; gap: 0.5rem;">
+            <?= icon('clipboard-list', 'icon-sm') ?> Section Eligibility Roster (<?= count($report) ?> Students)
+        </h2>
         
-        <div style="overflow-x: auto;">
-            <table class="table" style="width: 100%; border-collapse: collapse;">
+        <div class="table-responsive">
+            <table class="table">
                 <thead>
                     <tr>
                         <th>Roll Number</th>
@@ -77,8 +81,8 @@
                                 $status = $el['status'];
                             ?>
                             <tr>
-                                <td style="font-family: monospace; font-weight: bold;"><?= e($st['roll_number']) ?></td>
-                                <td><strong><?= e($st['first_name'] . ' ' . $st['last_name']) ?></strong></td>
+                                <td style="font-family: monospace; font-weight: bold; color: var(--accent-color);"><?= e($st['roll_number']) ?></td>
+                                <td><strong style="color: var(--text-primary);"><?= e($st['first_name'] . ' ' . $st['last_name']) ?></strong></td>
                                 <td>
                                     <?php if ($el['attendance_pct'] >= 75.0): ?>
                                         <span class="badge badge-success"><?= number_format($el['attendance_pct'], 1) ?>%</span>
@@ -95,19 +99,19 @@
                                 </td>
                                 <td>
                                     <?php if ($status === 'eligible'): ?>
-                                        <span class="badge badge-success">✓ Eligible</span>
+                                        <span class="badge badge-success"><?= icon('check-circle-2', 'icon-xs') ?> Eligible</span>
                                     <?php elseif ($status === 'condoned'): ?>
-                                        <span class="badge badge-info">✓ Condoned</span>
+                                        <span class="badge badge-info"><?= icon('check-circle-2', 'icon-xs') ?> Condoned</span>
                                     <?php elseif ($status === 'blocked_attendance'): ?>
-                                        <span class="badge badge-danger">🛑 Blocked (Attendance)</span>
+                                        <span class="badge badge-danger"><?= icon('ban', 'icon-xs') ?> Blocked (Attendance)</span>
                                     <?php else: ?>
-                                        <span class="badge badge-danger">🛑 Blocked (Fee Dues)</span>
+                                        <span class="badge badge-danger"><?= icon('ban', 'icon-xs') ?> Blocked (Fee Dues)</span>
                                     <?php endif; ?>
                                 </td>
                                 <td style="text-align: right; white-space: nowrap;">
                                     <?php if ($el['is_eligible']): ?>
                                         <a href="/admit-card?student_id=<?= $st['id'] ?>" target="_blank" class="btn btn-sm btn-secondary">
-                                            📄 View Admit Card
+                                            <?= icon('file-text', 'icon-xs') ?> View Admit Card
                                         </a>
                                     <?php elseif ($status === 'blocked_attendance'): ?>
                                         <form method="POST" action="/admit-cards/manage" style="display: inline-block;">
@@ -116,12 +120,12 @@
                                             <input type="hidden" name="academic_year_id" value="<?= $academicYearId ?>">
                                             <input type="hidden" name="semester_id" value="<?= $item['semester_id'] ?>">
                                             <button type="submit" onclick="return confirm('Grant attendance condonation for <?= e($st['first_name']) ?>?')" class="btn btn-sm btn-warning">
-                                                ⚖️ Condone Shortage
+                                                <?= icon('scale', 'icon-xs') ?> Condone Shortage
                                             </button>
                                         </form>
                                     <?php else: ?>
                                         <a href="/fee/payments?student_id=<?= $st['id'] ?>" class="btn btn-sm btn-primary">
-                                            💳 Collect Dues
+                                            <?= icon('credit-card', 'icon-xs') ?> Collect Dues
                                         </a>
                                     <?php endif; ?>
                                 </td>

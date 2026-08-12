@@ -14,8 +14,8 @@
     <?php if (!empty($canManage)): ?>
     <!-- Manager Add Item Panel -->
     <div class="card" style="height: fit-content; border-top: 4px solid var(--accent-color);">
-        <h2 style="font-size: 1.125rem; font-weight: 700; color: var(--text-primary); margin-top: 0; margin-bottom: 1.25rem; display: flex; align-items: center; gap: 0.5rem;">
-            <span>➕</span> Add Canteen Menu Item
+        <h2 style="font-size: 1.125rem; font-weight: 800; color: var(--text-primary); margin-top: 0; margin-bottom: 1.25rem; display: flex; align-items: center; gap: 0.5rem;">
+            <?= icon('plus', 'icon-sm') ?> Add Canteen Menu Item
         </h2>
 
         <form method="POST" action="/canteen">
@@ -24,31 +24,31 @@
 
             <div class="form-group" style="margin-bottom: 1rem;">
                 <label class="form-label" for="item_name" style="font-weight: 600; font-size: 0.8125rem; display: block; margin-bottom: 0.35rem;">Food Item Name *</label>
-                <input type="text" id="item_name" name="item_name" class="form-control" required placeholder="e.g. Masala Dosa / Veg Thali" style="width: 100%; padding: 0.5rem 0.75rem; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-surface); color: var(--text-primary);">
+                <input type="text" id="item_name" name="item_name" class="form-control" required placeholder="e.g. Masala Dosa / Veg Thali">
             </div>
 
             <div class="form-group" style="margin-bottom: 1rem;">
                 <label class="form-label" for="category" style="font-weight: 600; font-size: 0.8125rem; display: block; margin-bottom: 0.35rem;">Category *</label>
-                <select id="category" name="category" class="form-control" style="width: 100%; padding: 0.5rem 0.75rem; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-surface); color: var(--text-primary);" required>
+                <select id="category" name="category" class="form-control" required>
                     <option value="Breakfast">Breakfast</option>
                     <option value="Lunch">Lunch</option>
-                    <option value="Snacks">Snacks & Fast Food</option>
-                    <option value="Beverages">Beverages & Juice</option>
+                    <option value="Snacks">Snacks &amp; Fast Food</option>
+                    <option value="Beverages">Beverages &amp; Juice</option>
                 </select>
             </div>
 
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.25rem;">
                 <div class="form-group">
                     <label class="form-label" for="price" style="font-weight: 600; font-size: 0.8125rem; display: block; margin-bottom: 0.35rem;">Price (₹) *</label>
-                    <input type="number" step="0.50" id="price" name="price" class="form-control" required placeholder="40.00" style="width: 100%; padding: 0.5rem 0.75rem; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-surface); color: var(--text-primary);">
+                    <input type="number" step="0.50" id="price" name="price" class="form-control" required placeholder="40.00">
                 </div>
                 <div class="form-group">
                     <label class="form-label" for="stock_quantity" style="font-weight: 600; font-size: 0.8125rem; display: block; margin-bottom: 0.35rem;">Daily Stock Qty *</label>
-                    <input type="number" id="stock_quantity" name="stock_quantity" value="50" min="0" class="form-control" required style="width: 100%; padding: 0.5rem 0.75rem; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-surface); color: var(--text-primary);">
+                    <input type="number" id="stock_quantity" name="stock_quantity" value="50" min="0" class="form-control" required>
                 </div>
             </div>
 
-            <button type="submit" class="btn btn-primary" style="width: 100%; padding: 0.6rem; font-weight: 700;">Add Menu Item</button>
+            <button type="submit" class="btn-primary" style="width: 100%; padding: 0.6rem; font-weight: 700;"><?= icon('plus', 'icon-xs') ?> Add Menu Item</button>
         </form>
     </div>
     <?php endif; ?>
@@ -56,21 +56,21 @@
     <!-- Food Menu Table -->
     <div class="card" style="border-top: 4px solid var(--accent-color);">
         <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem;">
-            <h2 style="font-size: 1.125rem; font-weight: 700; color: var(--text-primary); margin: 0; display: flex; align-items: center; gap: 0.5rem;">
-                <span>☕</span> Canteen &amp; Mess Food Menu
+            <h2 style="font-size: 1.125rem; font-weight: 800; color: var(--text-primary); margin: 0; display: flex; align-items: center; gap: 0.5rem;">
+                <?= icon('utensils', 'icon-sm') ?> Canteen &amp; Mess Food Menu
             </h2>
             <span class="badge badge-info"><?= count($items) ?> Items Available</span>
         </div>
 
-        <div style="overflow-x: auto;">
-            <table class="table" style="width: 100%; border-collapse: collapse; font-size: 0.8125rem;">
+        <div class="table-responsive">
+            <table class="table" style="font-size: 0.8125rem;">
                 <thead>
-                    <tr style="border-bottom: 2px solid var(--border-color); text-align: left; background: var(--bg-main);">
-                        <th style="padding: 0.65rem 0.75rem;">Item Name</th>
-                        <th style="padding: 0.65rem 0.75rem;">Category</th>
-                        <th style="padding: 0.65rem 0.75rem;">Price</th>
-                        <th style="padding: 0.65rem 0.75rem;">Stock Status</th>
-                        <th style="padding: 0.65rem 0.75rem; text-align: right;">Action</th>
+                    <tr>
+                        <th>Item Name</th>
+                        <th>Category</th>
+                        <th>Price</th>
+                        <th>Stock Status</th>
+                        <th style="text-align: right;">Action</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -81,25 +81,25 @@
                     <?php else: ?>
                         <?php foreach ($items as $i): ?>
                             <?php $inStock = ($i['stock_status'] === 'available') && ((int)$i['stock_quantity'] > 0); ?>
-                            <tr style="border-bottom: 1px solid var(--border-color);">
-                                <td style="padding: 0.75rem; font-weight: 700; color: var(--text-primary);">
+                            <tr>
+                                <td style="font-weight: 700; color: var(--text-primary);">
                                     <?= e($i['item_name']) ?>
                                 </td>
-                                <td style="padding: 0.75rem; color: var(--text-secondary);"><?= e($i['category']) ?></td>
-                                <td style="padding: 0.75rem; font-weight: 700; color: var(--success); font-size: 0.9375rem;">
+                                <td style="color: var(--text-secondary);"><?= e($i['category']) ?></td>
+                                <td style="font-weight: 700; color: var(--success); font-size: 0.9375rem;">
                                     ₹<?= number_format((float)$i['price'], 2) ?>
                                 </td>
-                                <td style="padding: 0.75rem;">
+                                <td>
                                     <?php if ($inStock): ?>
-                                        <span class="badge badge-success">IN STOCK (<?= e($i['stock_quantity']) ?>)</span>
+                                        <span class="badge badge-success"><?= icon('check-circle-2', 'icon-xs') ?> IN STOCK (<?= e($i['stock_quantity']) ?>)</span>
                                     <?php else: ?>
-                                        <span class="badge badge-danger">OUT OF STOCK</span>
+                                        <span class="badge badge-danger"><?= icon('x-circle', 'icon-xs') ?> OUT OF STOCK</span>
                                     <?php endif; ?>
                                 </td>
-                                <td style="padding: 0.75rem; text-align: right;">
+                                <td style="text-align: right;">
                                     <?php if ($inStock): ?>
-                                        <button type="button" onclick="addToCart(<?= $i['id'] ?>, '<?= addslashes($i['item_name']) ?>', <?= (float)$i['price'] ?>, <?= (int)$i['stock_quantity'] ?>)" class="btn btn-sm btn-primary" style="padding: 0.35rem 0.75rem; font-size: 0.75rem; font-weight: 700;">
-                                            🛒 Add to Order
+                                        <button type="button" onclick="addToCart(<?= $i['id'] ?>, '<?= addslashes($i['item_name']) ?>', <?= (float)$i['price'] ?>, <?= (int)$i['stock_quantity'] ?>)" class="btn btn-sm btn-primary" style="padding: 0.35rem 0.75rem; font-size: 0.75rem; font-weight: 700; display: inline-flex; align-items: center; gap: 0.3rem;">
+                                            <?= icon('shopping-cart', 'icon-xs') ?> Add to Order
                                         </button>
                                     <?php else: ?>
                                         <button class="btn btn-sm btn-secondary" disabled style="padding: 0.35rem 0.75rem; font-size: 0.75rem;">Unavailable</button>
@@ -115,8 +115,8 @@
 
     <!-- Active Multi-Item Shopping Cart Drawer -->
     <div class="card" style="border-top: 4px solid var(--success); height: fit-content;">
-        <h2 style="font-size: 1.125rem; font-weight: 700; color: var(--text-primary); margin-top: 0; margin-bottom: 1.25rem; display: flex; align-items: center; justify-content: space-between;">
-            <span style="display: flex; align-items: center; gap: 0.4rem;"><span>🛒</span> Meal Order Cart</span>
+        <h2 style="font-size: 1.125rem; font-weight: 800; color: var(--text-primary); margin-top: 0; margin-bottom: 1.25rem; display: flex; align-items: center; justify-content: space-between;">
+            <span style="display: flex; align-items: center; gap: 0.4rem;"><?= icon('shopping-bag', 'icon-sm') ?> Meal Order Cart</span>
             <span id="cartCountBadge" class="badge badge-info">0 Items</span>
         </h2>
 
@@ -138,19 +138,19 @@
 
             <div class="form-group" style="margin-bottom: 0.75rem;">
                 <label class="form-label" style="font-weight: 600; font-size: 0.75rem; display: block; margin-bottom: 0.25rem;">Payment Option</label>
-                <select name="payment_method" class="form-control" style="width: 100%; padding: 0.4rem 0.6rem; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-surface); color: var(--text-primary); font-size: 0.8125rem;">
-                    <option value="pay_at_counter">💵 Pay at Canteen Counter (Cash/Card)</option>
-                    <option value="upi_qr">📱 UPI QR Scan at Counter</option>
+                <select name="payment_method" class="form-control" style="font-size: 0.8125rem;">
+                    <option value="pay_at_counter">Pay at Canteen Counter (Cash/Card)</option>
+                    <option value="upi_qr">UPI QR Scan at Counter</option>
                 </select>
             </div>
 
             <div class="form-group" style="margin-bottom: 1rem;">
                 <label class="form-label" style="font-weight: 600; font-size: 0.75rem; display: block; margin-bottom: 0.25rem;">Special Notes (Optional)</label>
-                <input type="text" name="notes" placeholder="e.g. Extra spicy, no onions" class="form-control" style="width: 100%; padding: 0.4rem 0.6rem; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-surface); color: var(--text-primary); font-size: 0.8125rem;">
+                <input type="text" name="notes" placeholder="e.g. Extra spicy, no onions" class="form-control" style="font-size: 0.8125rem;">
             </div>
 
-            <button type="submit" id="checkoutBtn" class="btn btn-success" style="width: 100%; padding: 0.75rem; font-weight: 800; font-size: 0.9375rem;" disabled>
-                Confirm &amp; Generate Food Token
+            <button type="submit" id="checkoutBtn" class="btn btn-success" style="width: 100%; padding: 0.75rem; font-weight: 800; font-size: 0.9375rem; display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem;" disabled>
+                <?= icon('check-circle-2', 'icon-xs') ?> Confirm &amp; Generate Food Token
             </button>
         </form>
     </div>
@@ -160,34 +160,34 @@
 <?php if (!empty($canManage) && !empty($allOrders)): ?>
 <!-- Manager Live Orders Queue -->
 <div class="card" style="margin-bottom: 2rem;">
-    <h2 style="font-size: 1.125rem; font-weight: 700; color: var(--text-primary); margin-top: 0; margin-bottom: 1.25rem; display: flex; align-items: center; gap: 0.5rem;">
-        <span>📋</span> Live Orders &amp; Mess Queue
+    <h2 style="font-size: 1.125rem; font-weight: 800; color: var(--text-primary); margin-top: 0; margin-bottom: 1.25rem; display: flex; align-items: center; gap: 0.5rem;">
+        <?= icon('clipboard-list', 'icon-sm') ?> Live Orders &amp; Mess Queue
     </h2>
 
-    <div style="overflow-x: auto;">
-        <table class="table" style="width: 100%; border-collapse: collapse; font-size: 0.8125rem;">
+    <div class="table-responsive">
+        <table class="table" style="font-size: 0.8125rem;">
             <thead>
-                <tr style="border-bottom: 2px solid var(--border-color); text-align: left; background: var(--bg-main);">
-                    <th style="padding: 0.65rem 0.75rem;">Token / Order #</th>
-                    <th style="padding: 0.65rem 0.75rem;">User / Customer</th>
-                    <th style="padding: 0.65rem 0.75rem;">Items Ordered</th>
-                    <th style="padding: 0.65rem 0.75rem;">Total</th>
-                    <th style="padding: 0.65rem 0.75rem;">Payment</th>
-                    <th style="padding: 0.65rem 0.75rem;">Order Status</th>
-                    <th style="padding: 0.65rem 0.75rem; text-align: center;">Update Status</th>
+                <tr>
+                    <th>Token / Order #</th>
+                    <th>User / Customer</th>
+                    <th>Items Ordered</th>
+                    <th>Total</th>
+                    <th>Payment</th>
+                    <th>Order Status</th>
+                    <th style="text-align: center;">Update Status</th>
                 </tr>
             </thead>
             <tbody>
                 <?php foreach ($allOrders as $ord): ?>
-                    <tr style="border-bottom: 1px solid var(--border-color);">
-                        <td style="padding: 0.75rem; font-family: monospace; font-weight: 800; color: var(--accent-color);">
+                    <tr>
+                        <td style="font-family: monospace; font-weight: 800; color: var(--accent-color);">
                             <?= e($ord['order_number']) ?>
                         </td>
-                        <td style="padding: 0.75rem;">
+                        <td>
                             <div style="font-weight: 600; color: var(--text-primary);"><?= e($ord['username'] ?? 'Customer') ?></div>
                             <div style="font-size: 0.7rem; color: var(--text-secondary);"><?= date('d M, h:i A', strtotime($ord['created_at'])) ?></div>
                         </td>
-                        <td style="padding: 0.75rem;">
+                        <td>
                             <div style="font-weight: 600; color: var(--text-primary);"><?= e($ord['item_name']) ?></div>
                             <?php if (!empty($ord['items'])): ?>
                                 <div style="font-size: 0.7rem; color: var(--text-secondary); margin-top: 0.2rem;">
@@ -197,20 +197,20 @@
                                 </div>
                             <?php endif; ?>
                         </td>
-                        <td style="padding: 0.75rem; font-weight: 700; color: var(--success);">
+                        <td style="font-weight: 700; color: var(--success);">
                             ₹<?= number_format((float)$ord['total_price'], 2) ?>
                         </td>
-                        <td style="padding: 0.75rem;">
+                        <td>
                             <?php if ($ord['payment_status'] === 'paid'): ?>
-                                <span class="badge badge-success">PAID</span>
+                                <span class="badge badge-success"><?= icon('check-circle-2', 'icon-xs') ?> PAID</span>
                             <?php else: ?>
                                 <span class="badge badge-warning">PENDING (<?= e($ord['payment_method']) ?>)</span>
                             <?php endif; ?>
                         </td>
-                        <td style="padding: 0.75rem;">
-                            <span class="badge badge-info" style="text-transform: uppercase;">🍳 <?= e($ord['order_status']) ?></span>
+                        <td>
+                            <span class="badge badge-info" style="text-transform: uppercase;"><?= e($ord['order_status']) ?></span>
                         </td>
-                        <td style="padding: 0.75rem; text-align: center;">
+                        <td style="text-align: center;">
                             <form method="POST" action="/canteen" style="display: inline-flex; gap: 0.35rem; align-items: center;">
                                 <?= csrf_field() ?>
                                 <input type="hidden" name="_action" value="update_order_status">
@@ -237,32 +237,32 @@
 
 <!-- Customer My Orders Table -->
 <div class="card">
-    <h2 style="font-size: 1.125rem; font-weight: 700; color: var(--text-primary); margin-top: 0; margin-bottom: 1.25rem; display: flex; align-items: center; gap: 0.5rem;">
-        <span>📜</span> My Order History &amp; Food Tokens
+    <h2 style="font-size: 1.125rem; font-weight: 800; color: var(--text-primary); margin-top: 0; margin-bottom: 1.25rem; display: flex; align-items: center; gap: 0.5rem;">
+        <?= icon('receipt', 'icon-sm') ?> My Order History &amp; Food Tokens
     </h2>
 
     <?php if (empty($myOrders)): ?>
         <p style="text-align: center; color: var(--text-secondary); padding: 2rem 0;">You haven't placed any food orders yet.</p>
     <?php else: ?>
-        <div style="overflow-x: auto;">
-            <table class="table" style="width: 100%; border-collapse: collapse; font-size: 0.8125rem;">
+        <div class="table-responsive">
+            <table class="table" style="font-size: 0.8125rem;">
                 <thead>
-                    <tr style="border-bottom: 2px solid var(--border-color); text-align: left; background: var(--bg-main);">
-                        <th style="padding: 0.65rem 0.75rem;">Food Token</th>
-                        <th style="padding: 0.65rem 0.75rem;">Items</th>
-                        <th style="padding: 0.65rem 0.75rem;">Date &amp; Time</th>
-                        <th style="padding: 0.65rem 0.75rem;">Amount</th>
-                        <th style="padding: 0.65rem 0.75rem;">Payment</th>
-                        <th style="padding: 0.65rem 0.75rem;">Status</th>
+                    <tr>
+                        <th>Food Token</th>
+                        <th>Items</th>
+                        <th>Date &amp; Time</th>
+                        <th>Amount</th>
+                        <th>Payment</th>
+                        <th>Status</th>
                     </tr>
                 </thead>
                 <tbody>
                     <?php foreach ($myOrders as $mo): ?>
-                        <tr style="border-bottom: 1px solid var(--border-color);">
-                            <td style="padding: 0.75rem; font-family: monospace; font-weight: 800; color: var(--accent-color);">
+                        <tr>
+                            <td style="font-family: monospace; font-weight: 800; color: var(--accent-color);">
                                 <?= e($mo['order_number']) ?>
                             </td>
-                            <td style="padding: 0.75rem;">
+                            <td>
                                 <div style="font-weight: 600; color: var(--text-primary);"><?= e($mo['item_name']) ?></div>
                                 <?php if (!empty($mo['items'])): ?>
                                     <div style="font-size: 0.7rem; color: var(--text-secondary); margin-top: 0.2rem;">
@@ -272,28 +272,28 @@
                                     </div>
                                 <?php endif; ?>
                             </td>
-                            <td style="padding: 0.75rem; color: var(--text-secondary); white-space: nowrap;">
+                            <td style="color: var(--text-secondary); white-space: nowrap;">
                                 <?= date('d M, h:i A', strtotime($mo['created_at'])) ?>
                             </td>
-                            <td style="padding: 0.75rem; font-weight: 700; color: var(--success);">
+                            <td style="font-weight: 700; color: var(--success);">
                                 ₹<?= number_format((float)$mo['total_price'], 2) ?>
                             </td>
-                            <td style="padding: 0.75rem;">
+                            <td>
                                 <?php if ($mo['payment_status'] === 'paid'): ?>
-                                    <span class="badge badge-success">PAID</span>
+                                    <span class="badge badge-success"><?= icon('check-circle-2', 'icon-xs') ?> PAID</span>
                                 <?php else: ?>
                                     <span class="badge badge-warning">Pay at Counter</span>
                                 <?php endif; ?>
                             </td>
-                            <td style="padding: 0.75rem;">
+                            <td>
                                 <?php if ($mo['order_status'] === 'ready'): ?>
-                                    <span class="badge badge-success" style="font-size: 0.75rem; animation: pulse 2s infinite;">🎉 READY FOR PICKUP</span>
+                                    <span class="badge badge-success" style="font-size: 0.75rem; animation: pulse 2s infinite;"><?= icon('sparkles', 'icon-xs') ?> READY FOR PICKUP</span>
                                 <?php elseif ($mo['order_status'] === 'completed'): ?>
-                                    <span class="badge badge-secondary">COMPLETED</span>
+                                    <span class="badge badge-secondary"><?= icon('check-check', 'icon-xs') ?> COMPLETED</span>
                                 <?php elseif ($mo['order_status'] === 'preparing'): ?>
-                                    <span class="badge badge-info">🍳 PREPARING</span>
+                                    <span class="badge badge-info"><?= icon('utensils', 'icon-xs') ?> PREPARING</span>
                                 <?php else: ?>
-                                    <span class="badge badge-warning">PLACED</span>
+                                    <span class="badge badge-warning"><?= icon('clock', 'icon-xs') ?> PLACED</span>
                                 <?php endif; ?>
                             </td>
                         </tr>

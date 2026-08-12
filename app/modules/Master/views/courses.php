@@ -9,8 +9,8 @@
 <div class="page-split">
     <!-- Create Course Panel -->
     <div class="card">
-        <h2 style="font-size: 1.125rem; font-weight: 700; color: var(--text-primary); margin-top: 0; margin-bottom: 1.25rem; display: flex; align-items: center; gap: 0.5rem;">
-            <span>🎓</span> Add New Course
+        <h2 style="font-size: 1.125rem; font-weight: 800; color: var(--text-primary); margin-top: 0; margin-bottom: 1.25rem; display: flex; align-items: center; gap: 0.5rem;">
+            <?= icon('graduation-cap', 'icon-sm') ?> Add New Course
         </h2>
 
         <form method="POST" action="/master/courses">
@@ -58,17 +58,17 @@
                 </div>
             </div>
 
-            <button type="submit" class="btn-primary" style="width: 100%;">Create Course & Semesters</button>
+            <button type="submit" class="btn-primary" style="width: 100%;"><?= icon('plus', 'icon-sm') ?> Create Course &amp; Semesters</button>
         </form>
     </div>
 
     <!-- Courses List Panel -->
     <div class="card">
-        <h2 style="font-size: 1.125rem; font-weight: 700; color: var(--text-primary); margin-top: 0; margin-bottom: 1.25rem; display: flex; align-items: center; gap: 0.5rem;">
-            <span>📚</span> Degree Programs & Courses Directory
+        <h2 style="font-size: 1.125rem; font-weight: 800; color: var(--text-primary); margin-top: 0; margin-bottom: 1.25rem; display: flex; align-items: center; gap: 0.5rem;">
+            <?= icon('book-open', 'icon-sm') ?> Degree Programs &amp; Courses Directory
         </h2>
 
-        <div style="overflow-x: auto;">
+        <div class="table-responsive">
             <table class="table">
                 <thead>
                     <tr>

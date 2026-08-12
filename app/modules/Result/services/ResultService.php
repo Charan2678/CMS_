@@ -317,7 +317,7 @@ class ResultService
             $recipients = $stStmt->fetchAll() ?: [];
 
             foreach ($recipients as $rec) {
-                $title = "🎓 {$semName} Official Results Published!";
+                $title = "{$semName} Official Results Published!";
                 $msg   = "Your official examination marks and SGPA for {$semName} have been published. View your marksheet now.";
 
                 if (!empty($rec['student_user_id'])) {

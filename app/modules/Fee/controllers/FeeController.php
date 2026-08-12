@@ -245,9 +245,13 @@ class FeeController extends Controller
     /**
      * Interactive Multi-QR & Online Checkout Screen for Student/Parent.
      */
-    public function pay(string $id): void
+    /**
+     * Interactive Multi-QR & Online Checkout Screen for Student/Parent.
+     */
+    public function pay(?string $id = null): void
     {
-        $targetFeeType = in_array(strtolower($id), ['hostel', 'transport', 'academic', 'mess']) ? strtolower($id) : null;
+        $idStr = strtolower(trim((string)$id));
+        $targetFeeType = in_array($idStr, ['hostel', 'transport', 'transport_change', 'academic', 'mess'], true) ? $idStr : null;
 
         // Resolve student ID from active session
         $myStudentId = 1;
@@ -260,11 +264,16 @@ class FeeController extends Controller
             }
         }
 
+        if (empty($idStr) || $idStr === 'default') {
+            $targetFeeType = 'academic';
+        }
+
         if ($targetFeeType) {
             $catPattern = match($targetFeeType) {
-                'hostel', 'mess' => 'hostel',
-                'transport'      => 'transport',
-                default          => 'tuition',
+                'hostel', 'mess'    => 'hostel',
+                'transport_change'  => 'transport_change',
+                'transport'         => 'transport',
+                default             => 'tuition',
             };
             $sfStmt = db()->prepare('
                 SELECT sf.id FROM student_fees sf
@@ -278,19 +287,22 @@ class FeeController extends Controller
 
             if (!$sfId) {
                 $catName = match($targetFeeType) {
-                    'hostel', 'mess' => 'Hostel & Mess Fee',
-                    'transport'      => 'College Bus Transport Fee',
-                    default          => 'Tuition Fee',
+                    'hostel', 'mess'    => 'Hostel & Mess Fee',
+                    'transport_change'  => 'Bus Route & Stop Modification Fee',
+                    'transport'         => 'College Bus Transport Fee',
+                    default             => 'Tuition Fee',
                 };
                 $catCode = match($targetFeeType) {
-                    'hostel', 'mess' => 'hostel_fee',
-                    'transport'      => 'transport_fee',
-                    default          => 'tuition_fee',
+                    'hostel', 'mess'    => 'hostel_fee',
+                    'transport_change'  => 'transport_change_fee',
+                    'transport'         => 'transport_fee',
+                    default             => 'tuition_fee',
                 };
                 $catAmount = match($targetFeeType) {
-                    'hostel', 'mess' => 25000.00,
-                    'transport'      => 15000.00,
-                    default          => 45000.00,
+                    'hostel', 'mess'    => 25000.00,
+                    'transport_change'  => 99.00,
+                    'transport'         => 15000.00,
+                    default             => 45000.00,
                 };
                 $cStmt = db()->prepare('SELECT id FROM fee_categories WHERE code = :code LIMIT 1');
                 $cStmt->execute([':code' => $catCode]);
@@ -345,8 +357,19 @@ class FeeController extends Controller
         $fee = $sfStmt->fetch();
 
         if (!$fee) {
-            http_response_code(404);
-            $this->render('Master/views/404', [], null);
+            // Fallback to student's latest fee record
+            $altSf = db()->prepare('SELECT id FROM student_fees WHERE student_id = :sid ORDER BY id DESC LIMIT 1');
+            $altSf->execute([':sid' => $myStudentId]);
+            $fallbackId = $altSf->fetchColumn();
+            if ($fallbackId) {
+                $sfStmt->execute([':id' => $fallbackId]);
+                $fee = $sfStmt->fetch();
+            }
+        }
+
+        if (!$fee) {
+            // Redirect to general payment list
+            $this->redirect('/fee/payments');
             return;
         }
 

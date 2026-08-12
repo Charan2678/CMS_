@@ -9,8 +9,8 @@
 <div class="card" style="width: 100%;">
     <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem;">
         <div>
-            <h2 style="font-size: 1.25rem; font-weight: 800; color: var(--text-primary); margin: 0; display: flex; align-items: center; gap: 0.5rem;">
-                <span>✅</span> Daily Class Attendance Roster
+            <h2 style="font-size: 1.25rem; font-weight: 800; color: var(--text-primary); margin: 0; display: flex; align-items: center; gap: 0.5rem; letter-spacing: -0.015em;">
+                <?= icon('calendar-check', 'icon-md') ?> Daily Class Attendance Roster
             </h2>
             <div style="font-size: 0.8125rem; color: var(--text-secondary); margin-top: 0.25rem;">
                 Select academic placement and load enrolled student roster to log attendance
@@ -19,7 +19,7 @@
     </div>
 
     <!-- Selection Bar — Full Width Grid -->
-    <form method="GET" action="/attendance" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; align-items: end; background: var(--bg-main); padding: 1.25rem; border-radius: 10px; border: 1px solid var(--border-color); width: 100%;">
+    <form method="GET" action="/attendance" class="filter-bar">
         <div>
             <label class="form-label">Academic Session *</label>
             <select name="academic_year_id" class="form-control" required>
@@ -65,7 +65,7 @@
         </div>
 
         <div>
-            <button type="submit" class="btn-primary" style="width: 100%; margin-top: 0;">Load Student Roster</button>
+            <button type="submit" class="btn-primary" style="width: 100%; margin-top: 0;"><?= icon('users', 'icon-xs') ?> Load Student Roster</button>
         </div>
     </form>
 </div>
@@ -73,10 +73,10 @@
 <?php if ($sectionId > 0 && $subjectId > 0): ?>
     <div class="card" style="width: 100%;">
         <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem;">
-            <h2 style="font-size: 1.125rem; font-weight: 700; color: var(--text-primary); margin: 0; display: flex; align-items: center; gap: 0.5rem;">
-                <span>📋</span> Enrolled Student Attendance Roster
+            <h2 style="font-size: 1.125rem; font-weight: 800; color: var(--text-primary); margin: 0; display: flex; align-items: center; gap: 0.5rem;">
+                <?= icon('clipboard-list', 'icon-sm') ?> Enrolled Student Attendance Roster
             </h2>
-            <span class="badge badge-info" style="font-weight: 700;">Date: <?= date('d M Y', strtotime($date)) ?></span>
+            <span class="badge badge-info" style="font-weight: 700;"><?= icon('calendar', 'icon-xs') ?> Date: <?= date('d M Y', strtotime($date)) ?></span>
         </div>
 
         <?php if (empty($students)): ?>
@@ -89,7 +89,7 @@
                 <input type="hidden" name="academic_year_id" value="<?= $academicYearId ?>">
                 <input type="hidden" name="date" value="<?= e($date) ?>">
 
-                <div style="overflow-x: auto; width: 100%;">
+                <div class="table-responsive">
                     <table class="table">
                         <thead>
                             <tr>
@@ -105,7 +105,7 @@
                                     <td style="font-weight: 800; color: var(--accent-color);"><?= e($st['roll_number']) ?></td>
                                     <td style="font-weight: 700; color: var(--text-primary);"><?= e($st['first_name'] . ' ' . $st['last_name']) ?></td>
                                     <td style="text-align: right;">
-                                        <div style="display: inline-flex; gap: 1.25rem; align-items: center; background: var(--bg-main); padding: 0.35rem 0.875rem; border-radius: 20px; border: 1px solid var(--border-color);">
+                                        <div style="display: inline-flex; gap: 1.25rem; align-items: center; background: var(--bg-main); padding: 0.35rem 0.875rem; border-radius: 20px; border: 1px solid var(--border-color); box-shadow: var(--shadow-xs);">
                                             <label style="color: var(--success); font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 0.25rem;">
                                                 <input type="radio" name="attendance[<?= $st['id'] ?>]" value="present" <?= $currStatus === 'present' ? 'checked' : '' ?>> Present
                                             </label>
@@ -127,7 +127,7 @@
                 </div>
 
                 <div style="margin-top: 1.5rem; text-align: right; border-top: 1px solid var(--border-color); padding-top: 1.25rem;">
-                    <button type="submit" class="btn-primary" style="width: auto; padding: 0.875rem 3rem; font-weight: 700;">Submit Attendance</button>
+                    <button type="submit" class="btn-primary" style="width: auto; padding: 0.875rem 2.5rem; font-weight: 700;"><?= icon('check-circle-2', 'icon-sm') ?> Submit Attendance</button>
                 </div>
             </form>
         <?php endif; ?>

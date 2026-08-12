@@ -1,6 +1,8 @@
-<div class="page-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+<div class="page-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
     <div>
-        <h1 class="page-title" style="font-size: 1.75rem; font-weight: 700; color: var(--text-primary); margin: 0;">My Fee Receipts & Dues Ledger</h1>
+        <h1 class="page-title" style="font-size: 1.5rem; font-weight: 800; color: var(--text-primary); margin: 0; display: flex; align-items: center; gap: 0.5rem; letter-spacing: -0.015em;">
+            <?= icon('receipt', 'icon-md') ?> My Fee Receipts &amp; Dues Ledger
+        </h1>
         <p style="color: var(--text-secondary); font-size: 0.875rem; margin-top: 0.25rem;">
             View your institutional fee statements, payment records, and official downloadable receipts.
         </p>
@@ -18,10 +20,10 @@
 ?>
 
 <!-- Stat Cards -->
-<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.25rem; margin-bottom: 2rem;">
+<div class="grid-metrics">
     <div class="metric-card">
-        <div style="width: 48px; height: 48px; border-radius: 10px; background: rgba(2, 132, 199, 0.15); display: flex; align-items: center; justify-content: center; font-size: 1.5rem; color: var(--accent-color);">
-            💵
+        <div class="metric-icon">
+            <?= icon('wallet', 'icon-lg') ?>
         </div>
         <div>
             <div class="metric-label">Total Fee Payable</div>
@@ -30,8 +32,8 @@
     </div>
 
     <div class="metric-card">
-        <div style="width: 48px; height: 48px; border-radius: 10px; background: rgba(16, 185, 129, 0.15); display: flex; align-items: center; justify-content: center; font-size: 1.5rem; color: var(--success);">
-            ✅
+        <div class="metric-icon" style="background: rgba(16, 185, 129, 0.12); color: var(--success); border-color: rgba(16, 185, 129, 0.25);">
+            <?= icon('check-circle-2', 'icon-lg') ?>
         </div>
         <div>
             <div class="metric-label">Total Amount Paid</div>
@@ -40,8 +42,8 @@
     </div>
 
     <div class="metric-card">
-        <div style="width: 48px; height: 48px; border-radius: 10px; background: rgba(239, 68, 68, 0.15); display: flex; align-items: center; justify-content: center; font-size: 1.5rem; color: var(--danger);">
-            ⏳
+        <div class="metric-icon" style="background: rgba(239, 68, 68, 0.12); color: var(--danger); border-color: rgba(239, 68, 68, 0.25);">
+            <?= icon('clock', 'icon-lg') ?>
         </div>
         <div>
             <div class="metric-label">Outstanding Dues</div>
@@ -52,14 +54,14 @@
 
 <!-- Assigned Fee Structures Table -->
 <div class="card" style="margin-bottom: 2rem;">
-    <h2 style="font-size: 1.125rem; font-weight: 700; color: var(--text-primary); margin-top: 0; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
-        <span>🏷️</span> Fee Breakdown & Status
+    <h2 style="font-size: 1.125rem; font-weight: 800; color: var(--text-primary); margin-top: 0; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+        <?= icon('tag', 'icon-sm') ?> Fee Breakdown &amp; Status
     </h2>
 
     <?php if (empty($fees)): ?>
         <p style="color: var(--text-secondary); font-size: 0.875rem; margin: 0;">No fee structures currently assigned to your account.</p>
     <?php else: ?>
-        <div style="overflow-x: auto;">
+        <div class="table-responsive">
             <table class="table">
                 <thead>
                     <tr>
@@ -87,24 +89,26 @@
                             <td style="color: var(--text-secondary);">Semester <?= $f['semester_number'] ?></td>
                             <td style="text-align: right; color: var(--text-primary); font-weight: 600;">₹<?= number_format($final, 2) ?></td>
                             <td style="text-align: right; color: var(--success); font-weight: 600;">₹<?= number_format($paid, 2) ?></td>
-                            <td style="text-align: right; color: <?= $bal > 0 ? 'var(--danger)' : 'var(--success)' ?>; font-weight: 600;">₹<?= number_format($bal, 2) ?></td>
+                            <td style="text-align: right; color: <?= $bal > 0 ? 'var(--danger)' : 'var(--success)' ?>; font-weight: 700;">₹<?= number_format($bal, 2) ?></td>
                             <td style="text-align: center; color: var(--text-secondary);"><?= !empty($f['due_date']) ? date('d M Y', strtotime($f['due_date'])) : 'N/A' ?></td>
                             <td style="text-align: center;">
                                 <?php if ($f['status'] === 'paid'): ?>
-                                    <span class="badge badge-success">PAID</span>
+                                    <span class="badge badge-success"><?= icon('check-circle-2', 'icon-xs') ?> PAID</span>
                                 <?php elseif ($f['status'] === 'partial'): ?>
-                                    <span class="badge badge-warning">PARTIAL</span>
+                                    <span class="badge badge-warning"><?= icon('clock', 'icon-xs') ?> PARTIAL</span>
                                 <?php else: ?>
-                                    <span class="badge badge-danger">PENDING</span>
+                                    <span class="badge badge-danger"><?= icon('alert-circle', 'icon-xs') ?> PENDING</span>
                                 <?php endif; ?>
                             </td>
                             <td style="text-align: right;">
                                 <?php if ($bal > 0): ?>
                                     <a href="/fee/pay/<?= $f['id'] ?>" class="btn btn-sm btn-primary" style="padding: 0.35rem 0.75rem; font-size: 0.75rem; font-weight: 700; text-decoration: none; display: inline-flex; align-items: center; gap: 0.3rem;">
-                                        <span>📱</span> Pay Online / QR
+                                        <?= icon('credit-card', 'icon-xs') ?> Pay Online / QR
                                     </a>
                                 <?php else: ?>
-                                    <span style="color: var(--success); font-weight: 700; font-size: 0.8125rem;">✅ Cleared</span>
+                                    <span style="color: var(--success); font-weight: 700; font-size: 0.8125rem; display: inline-flex; align-items: center; gap: 0.25rem;">
+                                        <?= icon('check-circle-2', 'icon-xs') ?> Cleared
+                                    </span>
                                 <?php endif; ?>
                             </td>
                         </tr>
@@ -117,14 +121,14 @@
 
 <!-- Official Payment Receipts Table -->
 <div class="card">
-    <h2 style="font-size: 1.125rem; font-weight: 700; color: var(--text-primary); margin-top: 0; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
-        <span>📜</span> Downloadable Payment Receipts
+    <h2 style="font-size: 1.125rem; font-weight: 800; color: var(--text-primary); margin-top: 0; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+        <?= icon('receipt', 'icon-sm') ?> Downloadable Payment Receipts
     </h2>
 
     <?php if (empty($receipts)): ?>
         <p style="color: var(--text-secondary); font-size: 0.875rem; margin: 0;">No payment receipts issued yet.</p>
     <?php else: ?>
-        <div style="overflow-x: auto;">
+        <div class="table-responsive">
             <table class="table">
                 <thead>
                     <tr>
@@ -139,14 +143,14 @@
                 <tbody>
                     <?php foreach ($receipts as $rcp): ?>
                         <tr>
-                            <td style="font-weight: 600; color: var(--accent-color); font-family: monospace;"><?= e($rcp['receipt_number']) ?></td>
-                            <td style="color: var(--text-primary);"><?= e($rcp['category_name']) ?></td>
+                            <td style="font-weight: 700; color: var(--accent-color); font-family: monospace;"><?= e($rcp['receipt_number']) ?></td>
+                            <td style="color: var(--text-primary); font-weight: 600;"><?= e($rcp['category_name']) ?></td>
                             <td style="color: var(--text-secondary);"><?= date('d M Y', strtotime($rcp['payment_date'])) ?></td>
-                            <td style="color: var(--text-secondary); text-transform: uppercase; font-size: 0.8125rem;"><?= e($rcp['payment_method']) ?></td>
-                            <td style="text-align: right; color: var(--success); font-weight: 700;">₹<?= number_format((float)$rcp['amount_paid'], 2) ?></td>
+                            <td style="color: var(--text-secondary); text-transform: uppercase; font-size: 0.8125rem; font-weight: 600;"><?= e($rcp['payment_method']) ?></td>
+                            <td style="text-align: right; color: var(--success); font-weight: 800;">₹<?= number_format((float)$rcp['amount_paid'], 2) ?></td>
                             <td style="text-align: right;">
-                                <a href="/fee/receipt/<?= $rcp['receipt_id'] ?>" target="_blank" class="btn-primary" style="padding: 0.35rem 0.75rem; font-size: 0.75rem; text-decoration: none;">
-                                    <span>🖨️</span> View Receipt
+                                <a href="/fee/receipt/<?= $rcp['receipt_id'] ?>" target="_blank" class="btn-primary" style="padding: 0.35rem 0.75rem; font-size: 0.75rem; text-decoration: none; display: inline-flex; align-items: center; gap: 0.3rem;">
+                                    <?= icon('printer', 'icon-xs') ?> View Receipt
                                 </a>
                             </td>
                         </tr>

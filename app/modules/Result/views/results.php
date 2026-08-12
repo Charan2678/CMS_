@@ -9,8 +9,8 @@
 <div class="card" style="width: 100%;">
     <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem;">
         <div>
-            <h2 style="font-size: 1.25rem; font-weight: 800; color: var(--text-primary); margin: 0; display: flex; align-items: center; gap: 0.5rem;">
-                <span>📊</span> Semester Examination Results Calculation Engine
+            <h2 style="font-size: 1.25rem; font-weight: 800; color: var(--text-primary); margin: 0; display: flex; align-items: center; gap: 0.5rem; letter-spacing: -0.015em;">
+                <?= icon('bar-chart-3', 'icon-md') ?> Semester Examination Results Calculation Engine
             </h2>
             <div style="font-size: 0.8125rem; color: var(--text-secondary); margin-top: 0.25rem;">
                 Compute semester SGPA, percentage, and publish gradecards to student portals
@@ -19,7 +19,7 @@
     </div>
 
     <!-- Selection Bar — Full Width Grid -->
-    <form method="GET" action="/results" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; align-items: end; background: var(--bg-main); padding: 1.25rem; border-radius: 10px; border: 1px solid var(--border-color); width: 100%;">
+    <form method="GET" action="/results" class="filter-bar">
         <div>
             <label class="form-label">Academic Session *</label>
             <select name="academic_year_id" class="form-control" required>
@@ -32,7 +32,7 @@
         </div>
 
         <div>
-            <label class="form-label">Course & Semester *</label>
+            <label class="form-label">Course &amp; Semester *</label>
             <select name="semester_id" class="form-control" required>
                 <option value="">-- Select Semester --</option>
                 <?php foreach ($semesters as $s): ?>
@@ -58,7 +58,7 @@
         </div>
 
         <div>
-            <button type="submit" class="btn-primary" style="width: 100%; margin-top: 0;">Load Results Roster</button>
+            <button type="submit" class="btn-primary" style="width: 100%; margin-top: 0;"><?= icon('search', 'icon-xs') ?> Load Results Roster</button>
         </div>
     </form>
 </div>
@@ -66,8 +66,8 @@
 <!-- Section 1: External Marks Entry & Calculation Engine -->
 <?php if ($sectionId > 0 && !empty($students) && !empty($subjects)): ?>
     <div class="card" style="width: 100%;">
-        <h3 style="font-size: 1.125rem; font-weight: 700; color: var(--text-primary); margin-top: 0; margin-bottom: 1.25rem; display: flex; align-items: center; gap: 0.5rem;">
-            <span>✍️</span> External Semester Exam Marks Entry
+        <h3 style="font-size: 1.125rem; font-weight: 800; color: var(--text-primary); margin-top: 0; margin-bottom: 1.25rem; display: flex; align-items: center; gap: 0.5rem;">
+            <?= icon('file-signature', 'icon-sm') ?> External Semester Exam Marks Entry
         </h3>
 
         <form method="POST" action="/results">
@@ -76,7 +76,7 @@
             <input type="hidden" name="academic_year_id" value="<?= $academicYearId ?>">
             <input type="hidden" name="section_id" value="<?= $sectionId ?>">
 
-            <div style="overflow-x: auto; width: 100%;">
+            <div class="table-responsive">
                 <table class="table">
                     <thead>
                         <tr>
@@ -104,7 +104,7 @@
             </div>
 
             <div style="margin-top: 1.5rem; text-align: right; border-top: 1px solid var(--border-color); padding-top: 1.25rem;">
-                <button type="submit" class="btn-primary" style="width: auto; padding: 0.875rem 3rem; font-weight: 700;">Calculate & Generate Semester Results</button>
+                <button type="submit" class="btn-primary" style="width: auto; padding: 0.875rem 2.5rem; font-weight: 700;"><?= icon('calculator', 'icon-sm') ?> Calculate &amp; Generate Semester Results</button>
             </div>
         </form>
     </div>
@@ -114,8 +114,8 @@
 <?php if ($semesterId > 0 && $academicYearId > 0): ?>
     <div class="card" style="width: 100%;">
         <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.25rem;">
-            <h3 style="font-size: 1.125rem; font-weight: 700; color: var(--text-primary); margin: 0; display: flex; align-items: center; gap: 0.5rem;">
-                <span>📜</span> Consolidated Semester Results Ledger
+            <h3 style="font-size: 1.125rem; font-weight: 800; color: var(--text-primary); margin: 0; display: flex; align-items: center; gap: 0.5rem;">
+                <?= icon('file-spreadsheet', 'icon-sm') ?> Consolidated Semester Results Ledger
             </h3>
             <?php if (!empty($results)): ?>
                 <form method="POST" action="/results" style="display: inline;">
@@ -123,7 +123,7 @@
                     <input type="hidden" name="_action" value="publish">
                     <input type="hidden" name="semester_id" value="<?= $semesterId ?>">
                     <input type="hidden" name="academic_year_id" value="<?= $academicYearId ?>">
-                    <button type="submit" class="btn-primary" style="width: auto; padding: 0.625rem 1.25rem; font-size: 0.8125rem; font-weight: 700;">📢 Publish Results to Student Portal</button>
+                    <button type="submit" class="btn-primary" style="width: auto; padding: 0.625rem 1.25rem; font-size: 0.8125rem; font-weight: 700;"><?= icon('send', 'icon-xs') ?> Publish Results to Student Portal</button>
                 </form>
             <?php endif; ?>
         </div>
@@ -131,7 +131,7 @@
         <?php if (empty($results)): ?>
             <p style="color: var(--text-secondary); font-size: 0.875rem; margin: 0; padding: 1rem 0;">No calculated results found for this semester. Enter external marks above to run calculation engine.</p>
         <?php else: ?>
-            <div style="overflow-x: auto; width: 100%;">
+            <div class="table-responsive">
                 <table class="table">
                     <thead>
                         <tr>
@@ -156,16 +156,16 @@
                                 <td><span class="badge badge-info"><?= e($res['grade']) ?></span></td>
                                 <td>
                                     <?php if ($res['result'] === 'pass'): ?>
-                                        <span class="badge badge-success">PASS</span>
+                                        <span class="badge badge-success"><?= icon('check-circle-2', 'icon-xs') ?> PASS</span>
                                     <?php else: ?>
-                                        <span class="badge badge-danger">FAIL</span>
+                                        <span class="badge badge-danger"><?= icon('x-circle', 'icon-xs') ?> FAIL</span>
                                     <?php endif; ?>
                                 </td>
                                 <td>
                                     <?php if ((int)$res['published'] === 1): ?>
-                                        <span class="badge badge-success">Published</span>
+                                        <span class="badge badge-success"><?= icon('check-circle-2', 'icon-xs') ?> Published</span>
                                     <?php else: ?>
-                                        <span class="badge badge-warning">Draft</span>
+                                        <span class="badge badge-warning"><?= icon('clock', 'icon-xs') ?> Draft</span>
                                     <?php endif; ?>
                                 </td>
                             </tr>

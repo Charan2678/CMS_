@@ -9,8 +9,8 @@
 <div class="card" style="width: 100%;">
     <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem;">
         <div>
-            <h2 style="font-size: 1.25rem; font-weight: 800; color: var(--text-primary); margin: 0; display: flex; align-items: center; gap: 0.5rem;">
-                <span>💳</span> Mass Assign Fees to Enrolled Students
+            <h2 style="font-size: 1.25rem; font-weight: 800; color: var(--text-primary); margin: 0; display: flex; align-items: center; gap: 0.5rem; letter-spacing: -0.015em;">
+                <?= icon('credit-card', 'icon-md') ?> Mass Assign Fees to Enrolled Students
             </h2>
             <div style="font-size: 0.8125rem; color: var(--text-secondary); margin-top: 0.25rem;">
                 Batch generate student fee ledgers for an entire section or academic class
@@ -22,7 +22,7 @@
     <form method="POST" action="/fee/assign">
         <?= csrf_field() ?>
 
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;">
+        <div class="dashboard-grid-equal" style="margin-bottom: 1.5rem;">
             <div class="form-group">
                 <label class="form-label" for="fee_structure_id">Select Configured Fee Schedule *</label>
                 <select id="fee_structure_id" name="fee_structure_id" class="form-control" required>
@@ -52,15 +52,19 @@
             </div>
         </div>
 
-        <div style="background: rgba(2, 132, 199, 0.1); border: 1px solid var(--border-color); padding: 1.25rem; border-radius: 8px; margin-bottom: 1.5rem;">
-            <strong style="color: var(--accent-color); font-size: 0.9375rem;">⚡ Automated Batch Generation:</strong>
-            <p style="font-size: 0.8125rem; color: var(--text-secondary); margin: 0.25rem 0 0 0; line-height: 1.4;">
+        <div style="background: rgba(2, 132, 199, 0.08); border: 1px solid var(--border-color); padding: 1.25rem; border-radius: 10px; margin-bottom: 1.5rem; box-shadow: var(--shadow-xs);">
+            <strong style="color: var(--accent-color); font-size: 0.9375rem; display: flex; align-items: center; gap: 0.4rem;">
+                <?= icon('zap', 'icon-xs') ?> Automated Batch Generation:
+            </strong>
+            <p style="font-size: 0.8125rem; color: var(--text-secondary); margin: 0.35rem 0 0 0; line-height: 1.45;">
                 Executing this action will create individual fee ledgers for all active enrolled students in the selected section based on the configured fee structure.
             </p>
         </div>
 
         <div style="text-align: right; border-top: 1px solid var(--border-color); padding-top: 1.25rem;">
-            <button type="submit" class="btn-primary" style="width: auto; padding: 0.875rem 3rem; font-weight: 700;">Assign Fee to All Section Students</button>
+            <button type="submit" class="btn-primary" style="width: auto; padding: 0.875rem 2.5rem; font-weight: 700;">
+                <?= icon('check-circle-2', 'icon-xs') ?> Assign Fee to All Section Students
+            </button>
         </div>
     </form>
 </div>

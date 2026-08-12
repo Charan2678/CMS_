@@ -257,12 +257,21 @@ class PaymentGatewayService
 
             db()->commit();
 
+            // Auto-activate or update Transport Bus Pass if fee type is transport or route change
+            if (($tx['fee_type'] === 'transport' || $tx['fee_type'] === 'transport_change' || str_contains((string)$tx['fee_type'], 'transport')) && $studentId) {
+                try {
+                    (new \App\Modules\Transport\services\TransportService())->getOrCreateBusPass((int)$studentId);
+                } catch (\Throwable $e) {
+                    // Log or ignore non-blocking pass activation
+                }
+            }
+
             // 5. Dispatch Receipts & Notifications
             $studentUserId = $this->getStudentUserId((int)$studentId);
             $parentUserId  = $this->getParentUserId((int)$studentId);
             $formattedAmt  = number_format((float)$tx['amount'], 2);
 
-            $notifTitle = "💰 Fee Payment Receipt: ₹{$formattedAmt} Confirmed";
+            $notifTitle = "Fee Payment Receipt: ₹{$formattedAmt} Confirmed";
             $notifMsg   = "Your fee payment of ₹{$formattedAmt} (Receipt: {$receiptNo}) for {$tx['fee_type']} fee has been successfully processed.";
 
             if ($studentUserId) {

@@ -227,6 +227,26 @@ class FeeService
 
             db()->commit();
 
+            // Auto-activate or update transport route and bus pass if transport fee or modification fee was paid
+            $catCodeStmt = db()->prepare('
+                SELECT fc.code, fc.name FROM student_fees sf 
+                JOIN fee_structures fs ON fs.id = sf.fee_structure_id 
+                JOIN fee_categories fc ON fc.id = fs.fee_category_id 
+                WHERE sf.id = :sfid LIMIT 1
+            ');
+            $catCodeStmt->execute([':sfid' => $studentFeeId]);
+            $catInfo = $catCodeStmt->fetch();
+            $catCode = strtolower((string)($catInfo['code'] ?? ''));
+            $catName = strtolower((string)($catInfo['name'] ?? ''));
+
+            if (str_contains($catCode, 'transport') || str_contains($catName, 'transport') || str_contains($catName, 'bus') || str_contains($catName, 'route')) {
+                try {
+                    (new \App\Modules\Transport\services\TransportService())->getOrCreateBusPass((int)$sf['student_id']);
+                } catch (\Throwable $e) {
+                    // Non-blocking bus pass sync
+                }
+            }
+
             return [
                 'success'        => true,
                 'message'        => 'Payment recorded successfully! Receipt Generated: ' . $receiptNumber,

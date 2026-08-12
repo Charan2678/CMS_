@@ -6,18 +6,20 @@
     <title><?= e($title ?? 'Official Payment Receipt') ?></title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary: #0f172a;
-            --primary-accent: #2563eb;
-            --primary-light: #eff6ff;
-            --text-dark: #0f172a;
-            --text-muted: #64748b;
-            --border: #e2e8f0;
-            --success: #059669;
-            --success-light: #ecfdf5;
+            --primary: #1F2937;
+            --primary-accent: #F6B26B;
+            --primary-orange: #F28C28;
+            --primary-light: #FFF1E4;
+            --text-dark: #1F2937;
+            --text-muted: #6B7280;
+            --border: #ECECEC;
+            --success: #3FA76A;
+            --success-light: #EDF7F1;
             --font-main: 'Inter', system-ui, -apple-system, sans-serif;
+            --font-heading: 'Plus Jakarta Sans', sans-serif;
             --font-mono: 'JetBrains Mono', monospace;
         }
 
@@ -29,7 +31,7 @@
 
         body {
             font-family: var(--font-main);
-            background-color: #f1f5f9;
+            background-color: #FFFCF8;
             color: var(--text-dark);
             line-height: 1.5;
             padding: 2rem 1rem;
@@ -62,12 +64,13 @@
         }
 
         .btn-primary {
-            background-color: var(--primary-accent);
+            background: linear-gradient(135deg, #F6B26B 0%, #F28C28 100%);
             color: #ffffff;
-            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+            box-shadow: 0 4px 14px -1px rgba(242, 140, 40, 0.35);
         }
         .btn-primary:hover {
-            background-color: #1d4ed8;
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px -2px rgba(242, 140, 40, 0.45);
         }
 
         .btn-outline {
@@ -539,6 +542,7 @@
             }
         }
     </style>
+    <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body>
 
@@ -546,18 +550,18 @@
     <div class="toolbar no-print">
         <div style="display: flex; gap: 0.75rem; align-items: center;">
             <button type="button" onclick="window.print()" class="btn btn-primary">
-                <span>🖨️</span> Print Official Receipt
+                <?= icon('printer', 'icon-xs') ?> Print Official Receipt
             </button>
             <button type="button" onclick="window.print()" class="btn btn-outline">
-                <span>📥</span> Save as PDF
+                <?= icon('download', 'icon-xs') ?> Save as PDF
             </button>
         </div>
         <div style="display: flex; gap: 0.75rem; align-items: center;">
             <a href="/fee/payments" class="btn btn-outline">
-                <span>←</span> Back to Fee Payments
+                <?= icon('arrow-left', 'icon-xs') ?> Back to Fee Payments
             </a>
             <a href="/dashboard" class="btn btn-outline">
-                <span>🏠</span> Dashboard
+                <?= icon('layout-dashboard', 'icon-xs') ?> Dashboard
             </a>
         </div>
     </div>
@@ -578,7 +582,7 @@
                         </div>
                         <div class="brand-address">
                             <?= e($receipt['college_address'] ?? 'KES Nagar, PB Road, Kuppam - 517425, Chittoor Dist., Andhra Pradesh') ?><br>
-                            📞 <?= e($receipt['college_phone'] ?? '+91 8570 256262') ?> &bull; ✉️ <?= e($receipt['college_email'] ?? 'principal@kec.ac.in') ?> &bull; 🌐 <?= e($receipt['college_website'] ?? 'www.kec.ac.in') ?>
+                            <?= icon('phone', 'icon-xs') ?> <?= e($receipt['college_phone'] ?? '+91 8570 256262') ?> &bull; <?= icon('mail', 'icon-xs') ?> <?= e($receipt['college_email'] ?? 'principal@kec.ac.in') ?> &bull; <?= icon('globe', 'icon-xs') ?> <?= e($receipt['college_website'] ?? 'www.kec.ac.in') ?>
                         </div>
                     </div>
                 </div>
@@ -597,7 +601,7 @@
                 <!-- Billed To: Student / Customer -->
                 <div class="info-box">
                     <div class="info-box-title">
-                        <span>👤</span> Billed To / Student Details
+                        <?= icon('user', 'icon-xs') ?> Billed To / Student Details
                     </div>
                     <div class="info-row">
                         <span class="info-label">Student Name:</span>
@@ -622,7 +626,7 @@
                     <?php if (!empty($receipt['student_mobile'])): ?>
                     <div class="info-row">
                         <span class="info-label">Mobile Contact:</span>
-                        <span class="info-value">📞 <?= e($receipt['student_mobile']) ?></span>
+                        <span class="info-value"><?= icon('phone', 'icon-xs') ?> <?= e($receipt['student_mobile']) ?></span>
                     </div>
                     <?php endif; ?>
                 </div>
@@ -630,7 +634,7 @@
                 <!-- Payment & Transaction Details -->
                 <div class="info-box">
                     <div class="info-box-title">
-                        <span>💳</span> Payment &amp; Transaction Details
+                        <?= icon('credit-card', 'icon-xs') ?> Payment &amp; Transaction Details
                     </div>
                     <div class="info-row">
                         <span class="info-label">Payment Method:</span>
@@ -662,7 +666,7 @@
             <!-- Status Banner -->
             <div class="status-banner">
                 <div class="paid-tag">
-                    <span style="font-size: 0.9rem; line-height: 1;">✓</span>
+                    <?= icon('check-circle-2', 'icon-xs') ?>
                     <span>PAID &amp; VERIFIED</span>
                 </div>
                 <div class="status-msg">
@@ -771,8 +775,8 @@
                 </div>
 
                 <div class="signature-block">
-                    <div class="seal-stamp">
-                        🏛️ KEC ACCOUNTS VERIFIED
+                    <div class="seal-stamp" style="display: flex; align-items: center; justify-content: center; gap: 0.35rem;">
+                        <?= icon('landmark', 'icon-xs') ?> KEC ACCOUNTS VERIFIED
                     </div>
                     <div class="sign-line"></div>
                     <div class="sign-title">Authorized Finance Officer</div>
@@ -782,5 +786,10 @@
         </div>
     </div>
 
+    <script>
+        if (window.lucide) {
+            lucide.createIcons();
+        }
+    </script>
 </body>
 </html>
